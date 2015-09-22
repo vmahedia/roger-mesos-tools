@@ -1,0 +1,107 @@
+#!/usr/bin/python
+
+import sys
+import argparse
+import shutil
+import json
+import os
+import re
+from copy import deepcopy
+
+import contextlib
+
+pattern = re.compile('.+/(\S+).git', re.IGNORECASE)
+
+@contextlib.contextmanager
+def chdir(dirname):
+  '''Withable chdir function that restores directory'''
+  curdir = os.getcwd()
+  try:
+    os.chdir(dirname)
+    yield
+  finally: os.chdir(curdir)
+
+# Currently not used, but will be in future Swaparoos
+GIT_ACCOUNT="seomoz"
+def download_private_repos(projects):
+  '''Clone (or pull if already existing) private projects to the "git" subdirectory'''
+  if not os.path.isdir('git'):
+    os.mkdir('git')
+
+  with chdir('git'):
+    for path in projects:
+      project = pattern.findall(path)[0]
+      print "Project is:{}".format(project)
+      if os.path.isdir(project):
+        os.chdir(project)
+        os.system('git pull origin master')
+        os.chdir(root)
+      else:
+        os.system('git clone {}'.format(path))
+
+### SWAPAROOS
+### Swaparoos swap out package.json / Gemfile etc replacing references to private Github repos with local ones
+### They are language-specific and may work different ways
+
+
+# Basic Node swaparoo written originally by Chris Whitten.
+# Simplye installs the modules into local node_modules; you must then not include that
+# in .dockerignore. This is not ideal and I want to rewrite it
+@contextlib.contextmanager
+def packagejson_swaparoo():
+  '''Swap out package.json for the fixed one referencing git/ repos'''
+  # Get package.json
+  with open('package.json', 'r') as packagejson:
+    data = json.load(packagejson)
+  originalData = deepcopy(data)
+
+  # Do the swaparoo
+  for name, version in data['dependencies'].items():
+    if('git' in version or 'https' in version) and 'seomoz' in version:
+      data['dependencies'].pop(name, None)
+      print "popped {} as a private dependency".format(name)
+      os.system('npm install {}'.format(name))
+
+  # Write modified
+  with open('package.json', 'w+') as packagejson:
+    packagejson.write(json.dumps(data, indent=2))
+
+  try:
+    yield # do the docker build
+  finally:
+    # Rewrite original
+    with open('package.json', 'w+') as packagejson:
+      packagejson.write(json.dumps(originalData, indent=2))
+
+@contextlib.contextmanager
+def null_swaparoo():
+  '''Does nothing, a placeholder default swaparoo'''
+  yield []
+
+def docker_build(config_file,image_base):
+  '''run a `docker_build -t image_base .` in the current directory, handling any private repos'''
+  root = os.path.dirname(os.path.realpath(__file__))
+
+  with open("{0}/config/{1}".format(root,config_file), 'r') as config:
+    data = json.load(config)
+    for elem in data['apps'].keys():
+      if elem in image_base:
+        sourcePath = "{}/src/{}".format(root, elem)
+        if os.path.isdir(sourcePath):
+          os.chdir("{}/src/{}".format(root, elem))
+
+          if 'privateProjects' in data['apps'][elem].keys():
+            projects = data['apps'][elem]['privateProjects']
+	    download_private_repos(projects)
+
+  if os.path.isfile('package.json'):
+    swaparoo = packagejson_swaparoo
+  else:
+    swaparoo = null_swaparoo
+
+  with swaparoo():
+    #os.system('hostname')
+    os.system('docker build -t {} .'.format(image_base))
+
+if __name__ == "__main__":
+  docker_build(sys.argv[1],sys.argv[3] if sys.argv[2] == '-t' else sys.argv[2])

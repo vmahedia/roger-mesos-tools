@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+#
+# Look at Marathon JSON file and generate a Docker command line to do the same thing.
+# Useful for debugging why your deployment isn't working
+#
+
+import json, sys
+
+def shellquote(s):
+    return "'" + s.replace("'", "'\\''") + "'"
+
+with open(sys.argv[1]) as f:
+    j = json.load(f)
+
+cmdline = "docker run --rm -it"
+
+for envname, envval in j['env'].iteritems():
+    cmdline += " --env %s=%s" % (shellquote(envname), shellquote(envval))
+
+try:
+    if 'portMappings' in j['container']['docker']:
+        for mapping in j['container']['docker']['portMappings']:
+            cmdline += " -p %d" % mapping['containerPort']
+except Exception as e:
+    sys.stderr.write("Couldn't get portmapping: %s\n" % e)
+
+cmdline += ' ' + shellquote(j['container']['docker']['image'])
+
+# This is probably not perfect, but should work most of the time. Examples:
+# "cmd": "bundle exec rake work"
+# "cmd": "true && echo hello"
+# "cmd": "echo  this  will  probably   break and add extra spaces"
+if 'cmd' in j:
+    cmdline += ' ' + ' '.join([shellquote(s) for s in j['cmd'].split(" ")])
+
+print cmdline
+
