@@ -12,15 +12,17 @@ def parseArgs():
   	parser = argparse.ArgumentParser(description='Get an Interactive Bash session into your container.')
   	parser.add_argument('appTaskId', metavar='appTaskId', help="Application Task Id to uniquely identify a container Id. example: 'content.56847afe9799")
   	parser.add_argument('configFile', metavar='configFile', help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
+	parser.add_argument('environment', metavar='env', help="Environment to deploy to. example: 'dev' or 'stage'")
   	parser.add_argument('-H','--hostname', metavar='hostname', help="Hostname to search. example: 'daldevmesos01' or 'daldevmesos04'")
   	return parser
 
-def getHostnameFromMarathon(configFile,appTaskId):
+def getHostnameFromMarathon(environment,configFile,appTaskId):
 	hostname = ''
 	with open('config/{}'.format(configFile)) as config:
 		config = json.load(config)
 	headers = {'Accept': 'application/json','Accept-Encoding': 'gzip, deflate','Content-Type': 'application/json'}
-  	resp = requests.get("{}".format(config['marathon_url']), headers=headers)
+	url = config['environments'][environment]['orchestration']+"v2/tasks?status=running"	
+  	resp = requests.get("{}".format(url), headers=headers)
   	tasks = resp.json()['tasks']
   	for task in tasks:
 		if task['id'].startswith(appTaskId):
@@ -38,8 +40,11 @@ def getContainerId(appTaskId,hostname):
 	for container in containers.split('\n'):
 		if container.strip() != '':
 			mesosTaskId = subprocess.check_output("sudo docker -H tcp://{0}:4243 exec {1} printenv MESOS_TASK_ID".format(hostname,container),shell=True)
-			if mesosTaskId.startswith(appTaskId):
-				containerId = container.strip()
+			if mesosTaskId != '' and mesosTaskId != None:
+				if mesosTaskId.startswith(appTaskId):
+					containerId = container.strip()
+			else:
+				print "Mesos Task Id info fetched is empty/blank for container id - {0}".format(container)
 	return containerId
 
 def main():
@@ -48,7 +53,7 @@ def main():
 	hostname = ''
 	containerId = ''
 	if args.hostname == None:
-		hostname = getHostnameFromMarathon(args.configFile,args.appTaskId);
+		hostname = getHostnameFromMarathon(args.environment,args.configFile,args.appTaskId);
 	else:
 		hostname = args.hostname;
 
@@ -58,7 +63,7 @@ def main():
 		print "Most likely hostname could not be retrieved with appTaskId {0}. Hostname is also an optional argument. See -h for usage.".format(args.appTaskId);
 	if containerId != '' and containerId != None:
 		print "If there are multiple containers that pattern match the given mesos task Id, then will log into the first one"
-		print "Executing bash shell on host {0} in Container with Id:{1}".format(hostname,containerId);
+		print "Executing bash in docker container - {0} on host - {1}".format(containerId,hostname);
 		os.system("sudo docker -H tcp://{0}:4243 exec -it {1} bash".format(hostname,containerId)); 
 	else:
 		print "No Container found on host {0} with application Task Id {1}".format(hostname,args.appTaskId);
