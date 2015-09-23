@@ -21,7 +21,7 @@ def getHostnameFromMarathon(environment,configFile,appTaskId):
 	with open('config/{}'.format(configFile)) as config:
 		config = json.load(config)
 	headers = {'Accept': 'application/json','Accept-Encoding': 'gzip, deflate','Content-Type': 'application/json'}
-	url = config['environments'][environment]['orchestration']+"v2/tasks?status=running"	
+	url = config['environments'][environment]['orchestration']+"/v2/tasks?status=running"	
   	resp = requests.get("{}".format(url), headers=headers)
   	tasks = resp.json()['tasks']
   	for task in tasks:

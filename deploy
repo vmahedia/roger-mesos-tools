@@ -121,7 +121,7 @@ def extractShaFromImage(image):
   return ''
 
 def getMarathonState(config, environment):
-  url = config['environments'][environment]['orchestration']+"v2/apps"
+  url = config['environments'][environment]['orchestration']+"/v2/apps"
   resp = requests.get(url)
   return resp.json()
 
@@ -274,7 +274,7 @@ def deployApp(config, environment, app, branch, slack, config_file):
 
     if version != Decimal(0.00):
       resp = requests.put(
-        "{}v2/apps/{}".format(environmentObj['orchestration'], appName),
+        "{}/v2/apps/{}".format(environmentObj['orchestration'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
       marathon_message = "{0}: {1}".format(appName, resp)
@@ -282,7 +282,7 @@ def deployApp(config, environment, app, branch, slack, config_file):
       print marathon_message
     else:
       resp = requests.post(
-        "{}v2/apps/{}".format(environmentObj['orchestration'], appName),
+        "{}/v2/apps/{}".format(environmentObj['orchestration'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
       marathon_message = "{0}: {1}".format(appName, resp.status_code)
