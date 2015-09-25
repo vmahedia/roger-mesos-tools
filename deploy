@@ -215,42 +215,52 @@ def deployApp(config, environment, app, branch, slack, config_file):
 
   print "sudo rm -rf src/{}".format(repo)
   os.system("sudo rm -rf src/{}".format(repo))
+  version = ''
+  image = ''
 
-  # get/update target source(s)
-  path = "src/{}".format(repo)
-  if os.path.isdir(path):
-    with chdir(path):
-      os.system("git checkout {}".format(branch))
-      os.system("git pull origin {}".format(branch))
-  else:
-    with chdir('src'):
-      os.system("git clone git@github.com:seomoz/{}.git".format(repo))
-      with chdir(repo):
+  if 'imageBase' in data:	#If imageBase not present for the app, then git clone, docker build,tag and push is not needed to do
+    '''
+    # get/update target source(s)
+    path = "src/{}".format(repo)
+    if os.path.isdir(path):
+      with chdir(path):
         os.system("git checkout {}".format(branch))
+        os.system("git pull origin {}".format(branch))
+    else:
+      with chdir('src'):
+        os.system("git clone git@github.com:seomoz/{}.git".format(repo))
+        with chdir(repo):
+          os.system("git checkout {}".format(branch))
 
-  version = getNextVersion(config, environment, app, branch, repo)
+    version = getNextVersion(config, environment, app, branch, repo)
 
-  # build/tag docker images
-  if version != 'current':
-    with chdir(path):
-      os.system("../../docker-build {0} {1}".format(config_file,data['imageBase']))
+    # build/tag docker images
+    if version != 'current':
+      with chdir(path):
+        os.system("../../docker-build {0} {1}".format(config_file,data['imageBase']))
 
-    image = "{0}/{1}-{2}-{3}".format(
-      config['registry'], config['name'], app, version)
+      image = "{0}/{1}-{2}-{3}".format(
+        config['registry'], config['name'], app, version)
 
-    os.system("docker tag -f {0} {1}".format(data['imageBase'], image))
-    os.system("docker push {0}".format(image))
+      os.system("docker tag -f {0} {1}".format(data['imageBase'], image))
+      os.system("docker push {0}".format(image))
 
-    version_message = "IMAGE TAGGED AND PUSHED TO REGISTERY COMPLETED, VERSION: {}".format(version)
-    #slack.api_call(version_message)
-    print version_message
-  else:
-    version = getCurrentVersion(config, environment, app)
+      version_message = "IMAGE TAGGED AND PUSHED TO REGISTERY COMPLETED, VERSION: {}".format(version)
+      #slack.api_call(version_message)
+      print version_message
+    else:
+      version = getCurrentVersion(config, environment, app)
+    '''
 
   # template marathon files
   for container in data['containers']:
     containerConfig = "{0}-{1}.json".format(config['name'], container)
-    env = Environment(loader=FileSystemLoader("templates/{}".format(environment)))
+    template = ''
+    if 'path' not in data:
+      env = Environment(loader=FileSystemLoader("templates/{}".format(environment)))
+    else:
+      env = Environment(loader=FileSystemLoader("{}".format(data['path'])))
+    
     template = env.get_template(containerConfig)
 
     output = template.render(version=version, environment=environment, image=image)
@@ -264,6 +274,7 @@ def deployApp(config, environment, app, branch, slack, config_file):
     with open("components/{0}/{1}".format(environment,containerConfig), 'wb') as fh:
       fh.write(output)
 
+  
   # push to roger
   for container in data['containers']:
     containerConfig = "{0}-{1}.json".format(config['name'], container)
