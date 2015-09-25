@@ -81,6 +81,7 @@ def null_swaparoo():
 def docker_build(config_file,image_base):
   '''run a `docker_build -t image_base .` in the current directory, handling any private repos'''
   root = os.path.dirname(os.path.realpath(__file__))
+  print root
 
   with open("{0}/config/{1}".format(root,config_file), 'r') as config:
     data = json.load(config)
@@ -94,9 +95,27 @@ def docker_build(config_file,image_base):
             projects = data['apps'][elem]['privateProjects']
 	    download_private_repos(projects)
 
+        if 'path' in data['apps'][elem]:
+            os.chdir(root)
+            print "Present:"+os.getcwd()
+            path = data['apps'][elem]['path']+"roger-{}".format(data['apps'][elem]['name'])
+            print "To move:"+path
+            os.chdir(path)
+            print "Dir is:"+os.getcwd()
+
   if os.path.isfile('package.json'):
+    print "Here"
+    print "Current dir:"+os.getcwd()
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    print dirname
+    print filename
     swaparoo = packagejson_swaparoo
   else:
+    print "There"
+    print "Current dir:"+os.getcwd()
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    print dirname
+    print filename
     swaparoo = null_swaparoo
 
   with swaparoo():

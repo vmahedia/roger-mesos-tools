@@ -203,34 +203,45 @@ def main():
     apps = [args.application]
 
   os.chdir(applicationRoot)
-  for app in apps:
-    deployApp(config, args.environment, app, args.branch, slack, args.config_file)
+  common_repo = ''
+  if 'repo' in config.keys():
+	common_repo = config['repo']
 
-def deployApp(config, environment, app, branch, slack, config_file):
+  for app in apps:
+    deployApp(config, args.environment, app, args.branch, slack, args.config_file, common_repo)
+
+def deployApp(config, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
 
   environmentObj = config['environments'][environment]
   data = config['apps'][app]
-  repo = data['repo'] if 'repo' in data else app
+  print data
+  repo = ''
+  if common_repo != '':
+    repo = data['repo'] if 'repo' in data else common_repo
+  else:
+    repo = data['repo'] if 'repo' in data else app
 
-  print "sudo rm -rf src/{}".format(repo)
-  os.system("sudo rm -rf src/{}".format(repo))
+  #print "sudo rm -rf src/{}".format(repo)
+  #os.system("sudo rm -rf src/{}".format(repo))
   version = ''
   image = ''
 
   if 'imageBase' in data:	#If imageBase not present for the app, then git clone, docker build,tag and push is not needed to do
-    '''
     # get/update target source(s)
     path = "src/{}".format(repo)
     if os.path.isdir(path):
       with chdir(path):
-        os.system("git checkout {}".format(branch))
-        os.system("git pull origin {}".format(branch))
+        os.system("hostname")
+        #os.system("git checkout {}".format(branch))
+        #os.system("git pull origin {}".format(branch))
     else:
       with chdir('src'):
-        os.system("git clone git@github.com:seomoz/{}.git".format(repo))
+        os.system("hostname")
+        #os.system("git clone git@github.com:seomoz/{}.git".format(repo))
         with chdir(repo):
-          os.system("git checkout {}".format(branch))
+          os.system("hostname")
+          #os.system("git checkout {}".format(branch))
 
     version = getNextVersion(config, environment, app, branch, repo)
 
@@ -241,7 +252,8 @@ def deployApp(config, environment, app, branch, slack, config_file):
 
       image = "{0}/{1}-{2}-{3}".format(
         config['registry'], config['name'], app, version)
-
+      print "Image is :"+image
+      
       os.system("docker tag -f {0} {1}".format(data['imageBase'], image))
       os.system("docker push {0}".format(image))
 
@@ -250,7 +262,7 @@ def deployApp(config, environment, app, branch, slack, config_file):
       print version_message
     else:
       version = getCurrentVersion(config, environment, app)
-    '''
+    
 
   # template marathon files
   for container in data['containers']:
@@ -274,7 +286,6 @@ def deployApp(config, environment, app, branch, slack, config_file):
     with open("components/{0}/{1}".format(environment,containerConfig), 'wb') as fh:
       fh.write(output)
 
-  
   # push to roger
   for container in data['containers']:
     containerConfig = "{0}-{1}.json".format(config['name'], container)
@@ -306,6 +317,7 @@ def deployApp(config, environment, app, branch, slack, config_file):
     git_username.rstrip(), app, environment, branch, deployTime.total_seconds(), version, marathon_message)
   slack.api_call(deployMessage)
   print deployMessage
+  
 
 if __name__ == "__main__":
   main()
