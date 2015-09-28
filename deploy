@@ -221,8 +221,8 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
   else:
     repo = data['repo'] if 'repo' in data else app
 
-  print "sudo rm -rf src/{}".format(repo)
-  os.system("sudo rm -rf src/{}".format(repo))
+  print "rm -rf src/{}".format(repo)
+  os.system("rm -rf src/{}".format(repo))
   version = ''
   image = ''
 
