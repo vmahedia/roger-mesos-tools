@@ -289,24 +289,16 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
     data = open("components/{0}/{1}".format(environment,containerConfig)).read()
 
     print "TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container)
-    appName = containerConfig.split('.')[0]
+    appName = json.loads(data)['id']
 
-    if version != Decimal(0.00):
-      resp = requests.put(
-        "{}/v2/apps/{}".format(environmentObj['orchestration'], appName),
-        data=data,
-        headers = {'Content-type': 'application/json'})
-      marathon_message = "{0}: {1}".format(appName, resp)
-      #slack.api_call(marathon_message)
-      print marathon_message
-    else:
-      resp = requests.post(
-        "{}/v2/apps/{}".format(environmentObj['orchestration'], appName),
-        data=data,
-        headers = {'Content-type': 'application/json'})
-      marathon_message = "{0}: {1}".format(appName, resp.status_code)
-      #slack.api_call(marathon_message)
-      print marathon_message
+    resp = requests.put(
+      "{}/v2/apps/{}".format(environmentObj['orchestration'], appName),
+      data=data,
+      headers = {'Content-type': 'application/json'})
+    marathon_message = "{0}: {1}".format(appName, resp)
+    print "curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/{}".format(containerConfig, environmentObj['orchestration'], appName)
+    #slack.api_call(marathon_message)
+    print marathon_message
 
   deployTime = datetime.now() - startTime
   git_username = subprocess.check_output("git config user.name", shell=True)
