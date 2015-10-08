@@ -263,11 +263,11 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
   for container in data['containers']:
     containerConfig = "{0}-{1}.json".format(config['name'], container)
     template = ''
-    if 'path' not in data:
+    if 'config_path' not in data:
       env = Environment(loader=FileSystemLoader("templates/{}".format(environment)))
     else:
       applicationRoot = os.path.dirname(os.path.realpath(__file__))
-      app_path = applicationRoot+"/src/{0}/{1}".format(repo,data['path'])
+      app_path = applicationRoot+"/src/{0}/{1}".format(repo,data['config_path'])
       env = Environment(loader=FileSystemLoader("{}".format(app_path)))
     
     template = env.get_template(containerConfig)

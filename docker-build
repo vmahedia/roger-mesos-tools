@@ -107,8 +107,6 @@ def docker_build(config_file,image_base):
             repo = data['apps'][elem]['repo'] if 'repo' in data['apps'][elem] else elem
           app_path = root+"/src/{0}/{1}".format(repo,data['apps'][elem]['path'])
           os.chdir(app_path)
-          path = "roger-{}".format(data['apps'][elem]['name'])
-          os.chdir(path)
 
   if os.path.isfile('package.json'):
     swaparoo = packagejson_swaparoo
