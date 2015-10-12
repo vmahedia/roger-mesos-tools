@@ -329,12 +329,19 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
     print "TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container)
     appName = json.loads(data)['id']
 
-    resp = requests.put(
-      "{}/v2/apps/{}".format(environmentObj['orchestration'], appName),
-      data=data,
-      headers = {'Content-type': 'application/json'})
+    if 'group' in data:
+      resp = requests.put(
+        "{}/v2/groups/{}".format(environmentObj['orchestration'], appName),
+        data=data,
+        headers = {'Content-type': 'application/json'})
+      print "curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/groups/{}".format(containerConfig, environmentObj['orchestration'], appName)
+    else:
+      resp = requests.put(
+        "{}/v2/apps/{}".format(environmentObj['orchestration'], appName),
+        data=data,
+        headers = {'Content-type': 'application/json'})
+      print "curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/apps/{}".format(containerConfig, environmentObj['orchestration'], appName)
     marathon_message = "{0}: {1}".format(appName, resp)
-    print "curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/{}".format(containerConfig, environmentObj['orchestration'], appName)
     #slack.api_call(marathon_message)
     print marathon_message
 
