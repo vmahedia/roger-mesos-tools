@@ -80,7 +80,7 @@ def null_swaparoo():
 
 def docker_build(config_file,image_base):
   '''run a `docker_build -t image_base .` in the current directory, handling any private repos'''
-  root = os.path.dirname(os.path.realpath(__file__))
+  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'../'))
 
   with open("{0}/config/{1}".format(root,config_file), 'r') as config:
     data = json.load(config)

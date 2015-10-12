@@ -146,11 +146,11 @@ def parseArgs():
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
   return parser
 
-def getArgs():
+def getArgs(applicationRoot):
   parser = parseArgs()
   args = parser.parse_args()
 
-  with open('config/{}'.format(args.config_file)) as config:
+  with open('{0}/config/{1}'.format(applicationRoot,args.config_file)) as config:
     config = json.load(config)
 
   if args.environment not in config['environments'].keys():
@@ -217,15 +217,15 @@ def renderTemplate(template,version,environment,image,app_data,config):
     return output
 
 def main():
-  args = getArgs()
-  with open('config/{}'.format(args.config_file)) as config:
+  applicationRoot = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'../'))
+  args = getArgs(applicationRoot)
+  with open('{0}/config/{1}'.format(applicationRoot,args.config_file)) as config:
     config = json.load(config)
 
   #Setup for Slack-Client, token, and git user
   slack = Slack(config['notifications'], '.slack_token')
 
-  applicationRoot = os.path.dirname(os.path.realpath(__file__))
-
+  os.chdir(applicationRoot)
   if not os.path.isdir('src'):
     os.mkdir('src')
 
@@ -245,6 +245,7 @@ def main():
 def deployApp(config, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
 
+  applicationRoot = os.path.dirname(os.path.realpath(__file__))
   environmentObj = config['environments'][environment]
   data = config['apps'][app]
   repo = ''
@@ -276,7 +277,7 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
     # build/tag docker images
     if version != 'current':
       with chdir(path):
-        os.system("../../docker-build {0} {1}".format(config_file,data['imageBase']))
+        os.system("{0}/bin/docker-build {1} {2}".format(applicationRoot,config_file,data['imageBase']))
 
       image = "{0}/{1}-{2}-{3}".format(
         config['registry'], config['name'], app, version)
