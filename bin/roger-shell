@@ -21,9 +21,9 @@ def parse_args():
 	  example: 'daldevmesos01' or 'daldevmesos04'")
     return parser
 
-def get_hostname_from_marathon(environment, configFile, appTaskId):
+def get_hostname_from_marathon(root, environment, configFile, appTaskId):
     hostname = ''
-    with open('config/{}'.format(configFile)) as config:
+    with open('{0}/config/{1}'.format(root, configFile)) as config:
         config = json.load(config)
     headers = {'Accept': 'application/json','Accept-Encoding': 'gzip, deflate','Content-Type': 'application/json'}
     url = config['environments'][environment]['orchestration']+'/v2/tasks?status=running'	
@@ -49,6 +49,7 @@ def get_containerid(appTaskId, hostname):
             if mesosTaskId:
                 if mesosTaskId.startswith(appTaskId):
                     containerId = container.strip()
+                    break
             else:
                 print("Mesos Task Id info fetched is empty/blank for container id - {0}".format(container))
     return containerId
@@ -58,8 +59,9 @@ def main():
     args = parser.parse_args()
     hostname = ''
     containerId = ''
+    root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
     if args.hostname == None:
-        hostname = get_hostname_from_marathon(args.environment, args.configFile, args.appTaskId);
+        hostname = get_hostname_from_marathon(root, args.environment, args.configFile, args.appTaskId);
     else:
         hostname = args.hostname;
 
