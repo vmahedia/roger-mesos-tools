@@ -31,7 +31,6 @@ def download_private_repos(projects):
   with chdir('git'):
     for path in projects:
       project = pattern.findall(path)[0]
-      #print "Project is:{}".format(project)
       if os.path.isdir(project):
         os.chdir(project)
         os.system('git pull origin master')
@@ -80,9 +79,9 @@ def null_swaparoo():
 
 def docker_build(config_file,image_base):
   '''run a `docker_build -t image_base .` in the current directory, handling any private repos'''
-  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'../'))
+  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
 
-  with open("{0}/config/{1}".format(root,config_file), 'r') as config:
+  with open("{0}/config/{1}".format(root, config_file), 'r') as config:
     data = json.load(config)
     common_repo = ''
     if 'repo' in data.keys():
@@ -105,7 +104,7 @@ def docker_build(config_file,image_base):
             repo = data['apps'][elem]['repo'] if 'repo' in data['apps'][elem] else common_repo
           else:
             repo = data['apps'][elem]['repo'] if 'repo' in data['apps'][elem] else elem
-          app_path = root+"/src/{0}/{1}".format(repo,data['apps'][elem]['path'])
+          app_path = root+"/src/{0}/{1}".format(repo, data['apps'][elem]['path'])
           os.chdir(app_path)
 
   if os.path.isfile('package.json'):

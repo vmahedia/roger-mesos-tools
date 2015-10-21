@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import argparse
 from decimal import *
 from jinja2 import Environment, FileSystemLoader
@@ -28,7 +29,7 @@ class Slack:
     try:
       from slackclient import SlackClient
     except:
-      sys.stderr.write("Warning: SlackClient library not found, not using slack\n")
+      print("Warning: SlackClient library not found, not using slack\n", file=sys.stderr)
       return
 
     try:
@@ -37,7 +38,7 @@ class Slack:
       self.username = config['username']
       self.emoji = config['emoji']
     except (TypeError, KeyError) as e:
-      sys.stderr.write("Warning: slack not setup in config (error: %s). Not using slack.\n" % e)
+      print("Warning: slack not setup in config (error: %s). Not using slack.\n" % e, file=sys.stderr)
       return
 
     try:
@@ -46,7 +47,7 @@ class Slack:
       slack_token = ''.join(r).strip()
       self.client = SlackClient(slack_token)
     except IOError:
-      sys.stderr.write("Warning: slack token file %s not found/readable. Not using slack.\n" % token_file)
+      print("Warning: slack token file %s not found/readable. Not using slack.\n" % token_file, file=sys.stderr)
       return
 
     self.disabled = False
@@ -84,13 +85,13 @@ def getNextVersion(config, environment, application, branch, repo):
         if match and match.group(1) == (config['name'] + '-' + application): # Regex must match up with image naming scheme below
           currentSha = extractShaFromImage(app['container']['docker']['image'])
           if currentSha is None:
-            print '''
+            print('''
               Current {} image has no embedded SHA, continuing..
-              '''.format(application)
+              '''.format(application))
 
           version = match.group(2)
           newVersion = "{}/v{}".format(sha, Decimal(version) + Decimal(10) ** -2)
-          print "Bumping version: {}".format(newVersion)
+          print("Bumping version: {}".format(newVersion))
           return newVersion
 
     return "{}/v{}".format(sha, Decimal(0.00) + Decimal(10) ** -2)
@@ -150,7 +151,7 @@ def getArgs(applicationRoot):
   parser = parseArgs()
   args = parser.parse_args()
 
-  with open('{0}/config/{1}'.format(applicationRoot,args.config_file)) as config:
+  with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
     config = json.load(config)
 
   if args.environment not in config['environments'].keys():
@@ -167,7 +168,7 @@ def loadSecretsJson(environment, jsonFileName):
     with open(path) as f:
       return json.load(f)
   except IOError:
-    sys.stderr.write("Couldn't load secrets file environment %s\n" % path)
+    print("Couldn't load secrets file environment %s\n" % path, file=sys.stderr)
     return {}
 
 def mergeSecrets(jsonStr, secretsObj):
@@ -183,7 +184,7 @@ def mergeSecrets(jsonStr, secretsObj):
       raise StandardError('env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?' % k)
   return jsonStr
 
-def renderTemplate(template,version,environment,image,app_data,config):
+def renderTemplate(template, version, environment, image, app_data, config):
     output = ''
     variables = {}
     variables['version'] = version
@@ -217,9 +218,9 @@ def renderTemplate(template,version,environment,image,app_data,config):
     return output
 
 def main():
-  applicationRoot = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'../'))
+  applicationRoot = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
   args = getArgs(applicationRoot)
-  with open('{0}/config/{1}'.format(applicationRoot,args.config_file)) as config:
+  with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
     config = json.load(config)
 
   #Setup for Slack-Client, token, and git user
@@ -254,7 +255,7 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
   else:
     repo = data['repo'] if 'repo' in data else app
 
-  print "rm -rf src/{}".format(repo)
+  print("rm -rf src/{}".format(repo))
   os.system("rm -rf src/{}".format(repo))
   version = ''
   image = ''
@@ -277,7 +278,7 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
     # build/tag docker images
     if version != 'current':
       with chdir(path):
-        os.system("{0}/bin/docker-build {1} {2}".format(applicationRoot,config_file,data['imageBase']))
+        os.system("{0}/bin/docker-build {1} {2}".format(applicationRoot, config_file, data['imageBase']))
 
       image = "{0}/{1}-{2}-{3}".format(
         config['registry'], config['name'], app, version)
@@ -287,7 +288,7 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
 
       version_message = "IMAGE TAGGED AND PUSHED TO REGISTERY COMPLETED, VERSION: {}".format(version)
       #slack.api_call(version_message)
-      print version_message
+      print(version_message)
     else:
       version = getCurrentVersion(config, environment, app)
 
@@ -299,12 +300,12 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
       env = Environment(loader=FileSystemLoader("templates/"))
     else:
       applicationRoot = os.path.dirname(os.path.realpath(__file__))
-      app_path = applicationRoot+"/src/{0}/{1}".format(repo,data['config_path'])
+      app_path = applicationRoot+"/src/{0}/{1}".format(repo, data['config_path'])
       env = Environment(loader=FileSystemLoader("{}".format(app_path)))
     
     template = env.get_template(containerConfig)
 
-    output = renderTemplate(template,version,environment,image,data,config)
+    output = renderTemplate(template, version, environment, image, data, config)
     #Adding check so that not all apps try to mergeSecrets 
     outputObj = json.loads(output)
     if 'env' in outputObj:
@@ -317,16 +318,16 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
       os.mkdir("components/{0}".format(environment));
     except:
       pass
-    with open("components/{0}/{1}".format(environment,containerConfig), 'wb') as fh:
+    with open("components/{0}/{1}".format(environment, containerConfig), 'wb') as fh:
       fh.write(output)
 
   
   # push to roger
   for container in data['containers']:
     containerConfig = "{0}-{1}.json".format(config['name'], container)
-    data = open("components/{0}/{1}".format(environment,containerConfig)).read()
+    data = open("components/{0}/{1}".format(environment, containerConfig)).read()
 
-    print "TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container)
+    print("TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container))
     appName = json.loads(data)['id']
 
     if 'group' in data:
@@ -334,24 +335,24 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
         "{}/v2/groups/{}".format(environmentObj['orchestration'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
-      print "curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/groups/{}".format(containerConfig, environmentObj['orchestration'], appName)
+      print("curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/groups/{}".format(containerConfig, environmentObj['orchestration'], appName))
     else:
       resp = requests.put(
         "{}/v2/apps/{}".format(environmentObj['orchestration'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
-      print "curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/apps/{}".format(containerConfig, environmentObj['orchestration'], appName)
+      print("curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/apps/{}".format(containerConfig, environmentObj['orchestration'], appName))
     marathon_message = "{0}: {1}".format(appName, resp)
     #slack.api_call(marathon_message)
-    print marathon_message
+    print(marathon_message)
 
   deployTime = datetime.now() - startTime
   git_username = subprocess.check_output("git config user.name", shell=True)
   deployMessage = "{0}'s deploy for {1} / {2} / {3} ({5}) completed in {4} seconds. Marathon says: {6}".format(
     git_username.rstrip(), app, environment, branch, deployTime.total_seconds(), version, marathon_message)
   slack.api_call(deployMessage)
-  print deployMessage
-  
+  print(deployMessage)
+
 
 if __name__ == "__main__":
   main()
