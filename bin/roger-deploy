@@ -240,7 +240,7 @@ def main():
   if 'repo' in config.keys():
 	common_repo = config['repo']
 
-  environment = "dev"	#Default env is "dev"
+  environment = ''
   if 'default' in roger_env:
     environment = roger_env['default']
 
@@ -256,7 +256,7 @@ def main():
     environment = args.environment
 
   if environment not in roger_env['environments'].keys():
-    sys.exit('Environment specified not found.')
+    sys.exit('Environment not found in roger-env.json file.')
 
   for app in apps:
     deployApp(config, roger_env, environment, app, args.branch, slack, args.config_file, common_repo)
