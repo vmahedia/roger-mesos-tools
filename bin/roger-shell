@@ -19,10 +19,8 @@ def parse_args():
 	  example: 'daldevmesos01' or 'daldevmesos04'")
     return parser
 
-def get_hostname_from_marathon(root, environment, appTaskId):
+def get_hostname_from_marathon(root, environment, roger_env, appTaskId):
     hostname = ''
-    with open('{0}/config/roger-env.json'.format(root)) as roger_env:
-        roger_env = json.load(roger_env)
     headers = {'Accept': 'application/json','Accept-Encoding': 'gzip, deflate','Content-Type': 'application/json'}
     url = roger_env['environments'][environment]['marathon_endpoint']+'/v2/tasks?status=running'	
     resp = requests.get("{}".format(url), headers=headers)
@@ -55,17 +53,26 @@ def get_containerid(appTaskId, hostname):
 def main():
     parser = parse_args()
     args = parser.parse_args()
-    environment = "dev"   #Default env is dev
+    with open('{0}/config/roger-env.json'.format(root)) as roger_env:
+        roger_env = json.load(roger_env)
+    
+    environment = "dev"       #Default env is "dev"
+    if 'default' in roger_env:
+      environment = roger_env['default']
+    
     if args.environment is None:
       if "ROGER_ENV" in os.environ:
         env_var = os.environ.get('ROGER_ENV')
         if env_var == '':
-          print("Environment variable $ROGER_ENV is not set. Using the default as 'dev'")
+          print("Environment variable $ROGER_ENV is not set.Using the default set from roger-env.json file")
         else:
           print("Using value {} from environment variable $ROGER_ENV".format(env_var))
           environment = env_var
     else:
       environment = args.environment
+
+    if environment not in roger_env['environments'].keys():
+      sys.exit('Environment specified not found.')
 
     hostname = ''
     containerId = ''
