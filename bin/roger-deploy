@@ -72,9 +72,9 @@ class Slack:
 
 # Expected format:
 #   <host>:<port>/moz-content-agora-7da406eb9e8937875e0548ae1149/v0.46
-def getNextVersion(config, environment, application, branch, repo):
+def getNextVersion(config, roger_env, environment, application, branch, repo):
     imageRe = re.compile("^[^/].*/(.*)-[0-9a-f]+/v([0-9.]+)")
-    data = getMarathonState(config, environment)
+    data = getMarathonState(roger_env, environment)
     sha = getGitSha(repo, branch)
     currentSha = ''
     version = ''
@@ -121,8 +121,8 @@ def extractShaFromImage(image):
       return sha[3]
   return ''
 
-def getMarathonState(config, environment):
-  url = config['environments'][environment]['orchestration']+"/v2/apps"
+def getMarathonState(roger_env, environment):
+  url = roger_env['environments'][environment]['marathon_endpoint']+"/v2/apps"
   resp = requests.get(url)
   return resp.json()
 
@@ -137,7 +137,7 @@ def getGitSha(repo, branch):
 
 def parseArgs():
   parser = argparse.ArgumentParser(description='Deploy into Roger.')
-  parser.add_argument('environment', metavar='env',
+  parser.add_argument('-environment', metavar='env',
     help="Environment to deploy to. example: 'dev' or 'stage'")
   parser.add_argument('application', metavar='apps',
     help="Target to be deployed. example: 'all' or 'kairos'")
@@ -153,9 +153,6 @@ def getArgs(applicationRoot):
 
   with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
     config = json.load(config)
-
-  if args.environment not in config['environments'].keys():
-    sys.exit('Environment specified not found.')
 
   if args.application != 'all' and args.application not in config['apps'].keys():
     sys.exit('Application specified not found.')
@@ -220,6 +217,9 @@ def renderTemplate(template, version, environment, image, app_data, config):
 def main():
   applicationRoot = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
   args = getArgs(applicationRoot)
+  with open('{0}/config/roger-env.json'.format(applicationRoot)) as roger_env:
+    roger_env = json.load(roger_env)
+
   with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
     config = json.load(config)
 
@@ -240,14 +240,26 @@ def main():
   if 'repo' in config.keys():
 	common_repo = config['repo']
 
-  for app in apps:
-    deployApp(config, args.environment, app, args.branch, slack, args.config_file, common_repo)
+  environment = "dev"	#Default env is dev
+  if args.environment is None:
+    if "ROGER_ENV" in os.environ:
+      env_var = os.environ.get('ROGER_ENV')
+      if env_var == '':
+        print("Environment variable $ROGER_ENV is not set. Using the default as 'dev'")
+      else:
+        print("Using value {} from environment variable $ROGER_ENV".format(env_var))
+        environment = env_var 
+  else:
+    environment = args.environment
 
-def deployApp(config, environment, app, branch, slack, config_file, common_repo):
+  for app in apps:
+    deployApp(config, roger_env, environment, app, args.branch, slack, args.config_file, common_repo)
+
+def deployApp(config, roger_env, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
 
   applicationRoot = os.path.dirname(os.path.realpath(__file__))
-  environmentObj = config['environments'][environment]
+  environmentObj = roger_env['environments'][environment]
   data = config['apps'][app]
   repo = ''
   if common_repo != '':
@@ -273,7 +285,7 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
         os.system("git checkout {}".format(branch))
 
   if 'imageBase' in data:       #If imageBase not present for the app, then docker build,tag and push is not needed to do
-    version = getNextVersion(config, environment, app, branch, repo)
+    version = getNextVersion(config, roger_env, environment, app, branch, repo)
 
     # build/tag docker images
     if version != 'current':
@@ -332,16 +344,16 @@ def deployApp(config, environment, app, branch, slack, config_file, common_repo)
 
     if 'group' in data:
       resp = requests.put(
-        "{}/v2/groups/{}".format(environmentObj['orchestration'], appName),
+        "{}/v2/groups/{}".format(environmentObj['marathon_endpoint'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
-      print("curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/groups/{}".format(containerConfig, environmentObj['orchestration'], appName))
+      print("curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/groups/{}".format(containerConfig, environmentObj['marathon_endpoint'], appName))
     else:
       resp = requests.put(
-        "{}/v2/apps/{}".format(environmentObj['orchestration'], appName),
+        "{}/v2/apps/{}".format(environmentObj['marathon_endpoint'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
-      print("curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/apps/{}".format(containerConfig, environmentObj['orchestration'], appName))
+      print("curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/apps/{}".format(containerConfig, environmentObj['marathon_endpoint'], appName))
     marathon_message = "{0}: {1}".format(appName, resp)
     #slack.api_call(marathon_message)
     print(marathon_message)
