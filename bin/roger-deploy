@@ -240,7 +240,7 @@ def main():
   if 'repo' in config.keys():
 	common_repo = config['repo']
 
-  environment = roger_env['default']	#Default env is dev
+  environment = roger_env['default']
   if args.environment is None:
     if "ROGER_ENV" in os.environ:
       env_var = os.environ.get('ROGER_ENV')
