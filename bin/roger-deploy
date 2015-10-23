@@ -222,6 +222,9 @@ def main():
 
   with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
     config = json.load(config)
+ 
+  if 'registry' not in roger_env.keys():
+   sys.exit('Registry not found in roger-env.json file.') 
 
   #Setup for Slack-Client, token, and git user
   slack = Slack(config['notifications'], '.slack_token')
@@ -299,7 +302,7 @@ def deployApp(config, roger_env, environment, app, branch, slack, config_file, c
         os.system("{0}/bin/docker-build {1} {2}".format(applicationRoot, config_file, data['imageBase']))
 
       image = "{0}/{1}-{2}-{3}".format(
-        config['registry'], config['name'], app, version)
+        roger_env['registry'], config['name'], app, version)
       
       os.system("docker tag -f {0} {1}".format(data['imageBase'], image))
       os.system("docker push {0}".format(image))

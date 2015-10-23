@@ -1,0 +1,76 @@
+#!/usr/bin/python
+
+from __future__ import print_function
+import argparse
+from decimal import *
+from jinja2 import Environment, FileSystemLoader
+from datetime import datetime
+import subprocess
+import json
+import os
+import requests
+import sys
+import re
+
+import contextlib
+
+@contextlib.contextmanager
+def chdir(dirname):
+  '''Withable chdir function that restores directory'''
+  curdir = os.getcwd()
+  try:
+    os.chdir(dirname)
+    yield
+  finally: os.chdir(curdir)
+
+def parse_args():
+  parser = argparse.ArgumentParser(description='Deploy into Roger.')
+  parser.add_argument('app_name', metavar='app_name',
+    help="Target to be deployed. example: 'agora' or 'grafana'")
+  parser.add_argument('directory', metavar='directory',
+    help="Working directory. example: '/home/vagrant'")
+  parser.add_argument('-branch', metavar='branch',
+    help="Branch to be deployed. example: 'production' or 'master'")
+  parser.add_argument('config_file', metavar='config_file',
+    help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
+  return parser
+
+def main():
+  parser = parse_args()
+  args = parser.parse_args()
+  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+  with open('{0}/config/{1}'.format(root, args.config_file)) as config:
+    config = json.load(config)
+
+  if args.app_name not in config['apps'].keys():
+    sys.exit('Application specified not found.')
+
+  common_repo = ''
+  if 'repo' in config.keys():
+        common_repo = config['repo']
+
+  data = config['apps'][args.app_name]
+  repo = ''
+  if common_repo != '':
+    repo = data['repo'] if 'repo' in data else common_repo
+  else:
+    repo = data['repo'] if 'repo' in data else args.app_name
+
+  branch = "master"	#master by default
+  if not args.branch is None:
+    branch = args.branch
+    
+  # get/update target source(s)
+  path = "{0}/{1}".format(args.directory, repo)
+  if os.path.isdir(path):
+    with chdir(path):
+      os.system("git checkout {}".format(branch))
+      os.system("git pull origin {}".format(branch))
+  else:
+    with chdir('{0}'.format(args.directory)):
+      os.system("git clone git@github.com:seomoz/{}.git".format(repo))
+      with chdir(repo):
+        os.system("git checkout {}".format(branch))
+
+if __name__ == "__main__":
+  main()

@@ -53,6 +53,7 @@ def get_containerid(appTaskId, hostname):
 def main():
     parser = parse_args()
     args = parser.parse_args()
+    root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
     with open('{0}/config/roger-env.json'.format(root)) as roger_env:
         roger_env = json.load(roger_env)
     
@@ -76,7 +77,6 @@ def main():
 
     hostname = ''
     containerId = ''
-    root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
     if args.hostname == None:
         hostname = get_hostname_from_marathon(root, environment, args.appTaskId);
     else:
