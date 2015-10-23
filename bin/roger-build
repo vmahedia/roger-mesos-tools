@@ -21,13 +21,13 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='To pull application repo from git.')
+  parser = argparse.ArgumentParser(description='To docker build,tag and push from provided directory.')
   parser.add_argument('app_name', metavar='app_name',
-    help="Application to be deployed. example: 'agora' or 'grafana'")
+    help="Application to be build. example: 'agora' or 'grafana'")
   parser.add_argument('directory', metavar='directory',
-    help="Directory where repo needs to be pulled into. example: '/home/vagrant'")
-  parser.add_argument('-branch', metavar='branch',
-    help="Git branch to be deployed. example: 'production' or 'master'")
+    help="Directory that gets docker build. example: '/home/vagrant'")
+  parser.add_argument('image_name', metavar='image_name',
+    help="Image name that includes version to be used in docker push. example: 'roger-collectd:0.20' or 'grafana:2.1.3'")
   parser.add_argument('config_file', metavar='config_file',
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
   return parser
@@ -53,10 +53,10 @@ def main():
   else:
     repo = data['repo'] if 'repo' in data else args.app_name
 
-  branch = "master"	#master by default
+  branch = "master"     #master by default
   if not args.branch is None:
     branch = args.branch
-    
+
   # get/update target source(s)
   path = "{0}/{1}".format(args.directory, repo)
   if os.path.isdir(path):
