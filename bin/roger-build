@@ -20,7 +20,7 @@ def chdir(dirname):
 def parse_args():
   parser = argparse.ArgumentParser(description='To docker build,tag and push from provided directory.')
   parser.add_argument('app_name', metavar='app_name',
-    help="Application to be build. example: 'agora' or 'grafana'")
+    help="Application to be built. example: 'agora' or 'grafana'")
   parser.add_argument('directory', metavar='directory',
     help="Directory that gets docker build. example: '/home/vagrant'")
   parser.add_argument('tag_name', metavar='tag_name',
@@ -64,7 +64,7 @@ def main():
   os.system("docker tag -f {0} {1}".format(args.tag_name, image))
   os.system("docker push {0}".format(image))
 
-  docker_message = "IMAGE {0} TAGGED AND PUSHED TO REGISTERY {1} COMPLETED".format(args.tag_name, roger_env['registry'])
+  docker_message = "IMAGE {0} TAGGED AND PUSHED TO REGISTRY {1} COMPLETED".format(args.tag_name, roger_env['registry'])
   print(docker_message)
 
 if __name__ == "__main__":

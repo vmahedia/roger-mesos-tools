@@ -307,7 +307,7 @@ def deployApp(config, roger_env, environment, app, branch, slack, config_file, c
       os.system("docker tag -f {0} {1}".format(data['imageBase'], image))
       os.system("docker push {0}".format(image))
 
-      version_message = "IMAGE TAGGED AND PUSHED TO REGISTERY COMPLETED, VERSION: {}".format(version)
+      version_message = "IMAGE TAGGED AND PUSHED TO REGISTRY COMPLETED, VERSION: {}".format(version)
       #slack.api_call(version_message)
       print(version_message)
     else:
