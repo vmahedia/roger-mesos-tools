@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import sys
 import argparse
 import shutil
@@ -29,12 +30,13 @@ def download_private_repos(projects):
     os.mkdir('git')
 
   with chdir('git'):
+    directory = os.getcwd()
     for path in projects:
       project = pattern.findall(path)[0]
       if os.path.isdir(project):
         os.chdir(project)
         os.system('git pull origin master')
-        os.chdir(root)
+        os.chdir(directory)
       else:
         os.system('git clone {}'.format(path))
 
@@ -58,7 +60,7 @@ def packagejson_swaparoo():
   for name, version in data['dependencies'].items():
     if('git' in version or 'https' in version) and 'seomoz' in version:
       data['dependencies'].pop(name, None)
-      print "popped {} as a private dependency".format(name)
+      print("popped {} as a private dependency".format(name))
       os.system('npm install {}'.format(name))
 
   # Write modified
@@ -77,35 +79,19 @@ def null_swaparoo():
   '''Does nothing, a placeholder default swaparoo'''
   yield []
 
-def docker_build(config_file,image_base):
-  '''run a `docker_build -t image_base .` in the current directory, handling any private repos'''
-  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+def docker_build(directory, repo, projects, path, image_tag):
+  '''run a `docker_build -t image_tag .` in the current directory, handling any private repos'''
+  sourcePath = "{0}/{1}/".format(directory, repo)
+  if os.path.isdir(sourcePath):
+    os.chdir(sourcePath)
+  
+  if projects != 'none':
+    download_private_repos(projects)
 
-  with open("{0}/config/{1}".format(root, config_file), 'r') as config:
-    data = json.load(config)
-    common_repo = ''
-    if 'repo' in data.keys():
-      common_repo = data['repo']
-
-    for elem in data['apps'].keys():
-      if elem in image_base:
-        sourcePath = "{}/src/{}".format(root, elem)
-        if os.path.isdir(sourcePath):
-          os.chdir("{}/src/{}".format(root, elem))
-
-          if 'privateProjects' in data['apps'][elem].keys():
-            projects = data['apps'][elem]['privateProjects']
-	    download_private_repos(projects)
-
-        if 'path' in data['apps'][elem]:
-          os.chdir(root)
-          repo = ''
-          if common_repo != '':
-            repo = data['apps'][elem]['repo'] if 'repo' in data['apps'][elem] else common_repo
-          else:
-            repo = data['apps'][elem]['repo'] if 'repo' in data['apps'][elem] else elem
-          app_path = root+"/src/{0}/{1}".format(repo, data['apps'][elem]['path'])
-          os.chdir(app_path)
+  os.chdir(sourcePath)
+  if path != 'none':
+    docker_path = sourcePath+"/{0}".format(path)
+    os.chdir(docker_path)
 
   if os.path.isfile('package.json'):
     swaparoo = packagejson_swaparoo
@@ -113,7 +99,7 @@ def docker_build(config_file,image_base):
     swaparoo = null_swaparoo
 
   with swaparoo():
-    os.system('docker build -t {} .'.format(image_base))
+    os.system('docker build -t {} .'.format(image_tag))
 
 if __name__ == "__main__":
-  docker_build(sys.argv[1],sys.argv[3] if sys.argv[2] == '-t' else sys.argv[2])
+  docker_build(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
