@@ -24,13 +24,13 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='Deploy into Roger.')
+  parser = argparse.ArgumentParser(description='To pull application repo from git.')
   parser.add_argument('app_name', metavar='app_name',
-    help="Target to be deployed. example: 'agora' or 'grafana'")
+    help="Application to be deployed. example: 'agora' or 'grafana'")
   parser.add_argument('directory', metavar='directory',
-    help="Working directory. example: '/home/vagrant'")
+    help="Directory where repo needs to be pulled into. example: '/home/vagrant'")
   parser.add_argument('-branch', metavar='branch',
-    help="Branch to be deployed. example: 'production' or 'master'")
+    help="Git branch to be deployed. example: 'production' or 'master'")
   parser.add_argument('config_file', metavar='config_file',
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
   return parser
