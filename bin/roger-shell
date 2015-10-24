@@ -57,9 +57,7 @@ def main():
     with open('{0}/config/roger-env.json'.format(root)) as roger_env:
         roger_env = json.load(roger_env)
     
-    environment = ''
-    if 'default' in roger_env:
-      environment = roger_env['default']
+    environment = roger_env.get('default', '')
     
     if args.environment is None:
       if "ROGER_ENV" in os.environ:
@@ -72,7 +70,7 @@ def main():
     else:
       environment = args.environment
 
-    if environment not in roger_env['environments'].keys():
+    if environment not in roger_env['environments']:
       sys.exit('Environment not found in roger-env.json file.')
 
     hostname = ''

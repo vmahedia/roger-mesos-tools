@@ -1,0 +1,203 @@
+#!/usr/bin/python
+
+from __future__ import print_function
+import argparse
+from jinja2 import Environment, FileSystemLoader
+from datetime import datetime
+import requests
+import json
+import os
+import sys
+
+import contextlib
+
+@contextlib.contextmanager
+def chdir(dirname):
+  '''Withable chdir function that restores directory'''
+  curdir = os.getcwd()
+  try:
+    os.chdir(dirname)
+    yield
+  finally: os.chdir(curdir)
+
+def parse_args():
+  parser = argparse.ArgumentParser(description='To docker build,tag and push from provided directory.')
+  parser.add_argument('app_name', metavar='app_name',
+    help="Application to be built. example: 'agora' or 'grafana'")
+  parser.add_argument('-environment', metavar='environment',
+    help="Environment to deploy to. example: 'dev' or 'prod'")
+  parser.add_argument('directory', metavar='directory',
+    help="Working directory where the pulled in repo exists.Template file is under this repo dir. example: '/home/vagrant'")
+  parser.add_argument('image_name', metavar='image_name',
+    help="Image name that includes version to be used in docker push. example: 'roger-collectd:0.20' or 'grafana:2.1.3'")
+  parser.add_argument('config_file', metavar='config_file',
+    help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
+  return parser
+
+def loadSecretsJson(environment, jsonFileName):
+  path = 'secretenvs/' + environment + '/' + jsonFileName
+  try:
+    with open(path) as f:
+      return json.load(f)
+  except IOError:
+    print("Couldn't load secrets file environment %s\n" % path, file=sys.stderr)
+    return {}
+
+def mergeSecrets(jsonStr, secretsObj):
+  '''Given a JSON stirng and an object of secret environment variables, replaces
+  parses the JSON and merges ['env'] with the secret variables. Returns back
+  a JSON string. Raises an error if there are any SECRET env variables still.'''
+  outputObj = json.loads(jsonStr)
+  if secretsObj:
+    outputObj['env'].update(secretsObj)
+    jsonStr = json.dumps(outputObj, indent=4)
+  for k, v in outputObj['env'].iteritems():
+    if v == 'SECRET':
+      raise StandardError('env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?' % k)
+  return jsonStr
+
+def renderTemplate(template, environment, image, app_data, config):
+    output = ''
+    variables = {}
+    variables['environment'] = environment
+    variables['image'] = image
+
+    #Adding Global and environment variables for all apps
+    if 'vars' in config:
+      if 'global' in config['vars']:
+        for global_var in config['vars']['global']:
+          variables[global_var] = config['vars']['global'][global_var]
+
+      if 'environment' in config['vars']:
+        if environment in config['vars']['environment']:
+          for env_var in config['vars']['environment'][environment]:
+            variables[env_var] = config['vars']['environment'][environment][env_var]
+
+    #Adding Global and environment variables for specific app.
+    #If the same variable is already present in "variables" dictonary,it will get overriden
+    if 'vars' in app_data:
+      if 'global' in app_data['vars']:
+        for global_var in app_data['vars']['global']:
+          variables[global_var] = app_data['vars']['global'][global_var]
+
+      if 'environment' in app_data['vars']:
+        if environment in app_data['vars']['environment']:
+          for env_var in app_data['vars']['environment'][environment]:
+            variables[env_var] = app_data['vars']['environment'][environment][env_var]
+
+    output = template.render(variables)
+    return output
+
+def main():
+  parser = parse_args()
+  args = parser.parse_args()
+  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+  with open('{0}/config/{1}'.format(root, args.config_file)) as config:
+    config = json.load(config)
+
+  with open('{0}/config/roger-env.json'.format(root)) as roger_env:
+    roger_env = json.load(roger_env)
+
+  if 'registry' not in roger_env.keys():
+   sys.exit('Registry not found in roger-env.json file.')
+
+  if args.app_name not in config['apps'].keys():
+    sys.exit('Application specified not found.')
+
+  environment = roger_env.get('default', '')
+  if args.environment is None:
+    if "ROGER_ENV" in os.environ:
+      env_var = os.environ.get('ROGER_ENV')
+      if env_var == '':
+        print("Environment variable $ROGER_ENV is not set. Using the default set from roger-env.json file")
+      else:
+        print("Using value {} from environment variable $ROGER_ENV".format(env_var))
+        environment = env_var
+  else:
+    environment = args.environment
+
+  if environment not in roger_env['environments']:
+    sys.exit('Environment not found in roger-env.json file.')
+
+  common_repo = config.get('repo', '')
+  data = config['apps'][args.app_name]
+  repo = ''
+  if common_repo != '':
+    repo = data.get('repo', common_repo)
+  else:
+    repo = data.get('repo', args.app_name)
+
+  comp_dir = '' 
+  if "ROGER_COMPONENTS_DIR" in os.environ:
+    comp_dir = os.environ.get('ROGER_COMPONENTS_DIR')
+  if comp_dir == '':
+    sys.exit("Environment variable $ROGER_COMPONENTS_DIR is not set")
+  
+  templ_dir = ''
+  if "ROGER_TEMPLATES_DIR" in os.environ:
+    templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
+  if templ_dir == '':
+    sys.exit("Environment variable $ROGER_TEMPLATES_DIR is not set")
+
+  secrets_dir = ''
+  if "ROGER_SECRETS_DIR" in os.environ:
+    secrets_dir = os.environ.get('ROGER_SECRETS_DIR')
+  if secrets_dir == '':
+    sys.exit("Environment variable $ROGER_SECRETS_DIR is not set")
+
+  # template marathon files
+  for container in data['containers']:
+    containerConfig = "{0}-{1}.json".format(config['name'], container)
+    template = ''
+    if 'template_path' not in data:
+      env = Environment(loader=FileSystemLoader("{}".format(templ_dir)))
+    else:
+      #applicationRoot = os.path.dirname(os.path.realpath(__file__))
+      #app_path = applicationRoot+"/src/{0}/{1}".format(repo, data['config_path'])
+      app_path = "{0}/{1}/{2}".format(args.directory, repo, data['template_path'])
+      env = Environment(loader=FileSystemLoader("{}".format(app_path)))
+
+    template = env.get_template(containerConfig)
+
+    output = renderTemplate(template, environment, args.image_name, data, config)
+    #Adding check so that not all apps try to mergeSecrets 
+    outputObj = json.loads(output)
+    if 'env' in outputObj:
+      if "SECRET" in outputObj['env']:
+        output = mergeSecrets(output, loadSecretsJson(environment, containerConfig))
+
+    try:
+      os.system("rm -rf {0}".format(comp_dir))   #Need to remove an already existing components directory,else it doesn't create seperate sub-dirs for environments
+      os.mkdir("{0}".format(comp_dir))
+      os.mkdir("{0}/{1}".format(comp_dir, environment));
+    except:
+      pass
+    with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
+      fh.write(output)
+
+  # push to roger marathon framework
+  for container in data['containers']:
+    containerConfig = "{0}-{1}.json".format(config['name'], container)
+    data = open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig)).read()
+
+    print("TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container))
+    appName = json.loads(data)['id']
+
+    resp = "Test"
+    if 'group' in data:
+      #resp = requests.put(
+        "{}/v2/groups/{}".format(environmentObj['marathon_endpoint'], appName),
+        data=data,
+        headers = {'Content-type': 'application/json'})
+      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{} {}/v2/groups/{}".format(comp_dir, containerConfig, environmentObj['marathon_endpoint'], appName))
+    else:
+      #resp = requests.put(
+        "{}/v2/apps/{}".format(environmentObj['marathon_endpoint'], appName),
+        data=data,
+        headers = {'Content-type': 'application/json'})
+      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{} {}/v2/apps/{}".format(comp_dir, containerConfig, environmentObj['marathon_endpoint'], appName))
+    marathon_message = "{0}: {1}".format(appName, resp)
+    print(marathon_message) 
+
+if __name__ == "__main__":
+  main()

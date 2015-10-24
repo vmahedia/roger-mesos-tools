@@ -36,7 +36,7 @@ def main():
   with open('{0}/config/{1}'.format(root, args.config_file)) as config:
     config = json.load(config)
 
-  if args.app_name not in config['apps'].keys():
+  if args.app_name not in config['apps']:
     sys.exit('Application specified not found.')
 
   common_repo = config.get('repo', '')

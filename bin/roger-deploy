@@ -154,7 +154,7 @@ def getArgs(applicationRoot):
   with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
     config = json.load(config)
 
-  if args.application != 'all' and args.application not in config['apps'].keys():
+  if args.application != 'all' and args.application not in config['apps']:
     sys.exit('Application specified not found.')
 
   return args
@@ -223,7 +223,7 @@ def main():
   with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
     config = json.load(config)
  
-  if 'registry' not in roger_env.keys():
+  if 'registry' not in roger_env:
    sys.exit('Registry not found in roger-env.json file.') 
 
   #Setup for Slack-Client, token, and git user
@@ -239,13 +239,9 @@ def main():
     apps = [args.application]
 
   os.chdir(applicationRoot)
-  common_repo = ''
-  if 'repo' in config.keys():
-	common_repo = config['repo']
+  common_repo = config.get('repo', '')
 
-  environment = ''
-  if 'default' in roger_env:
-    environment = roger_env['default']
+  environment = roger_env.get('default', '')
 
   if args.environment is None:
     if "ROGER_ENV" in os.environ:
@@ -258,7 +254,7 @@ def main():
   else:
     environment = args.environment
 
-  if environment not in roger_env['environments'].keys():
+  if environment not in roger_env['environments']:
     sys.exit('Environment not found in roger-env.json file.')
 
   for app in apps:
