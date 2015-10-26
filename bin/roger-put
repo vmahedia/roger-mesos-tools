@@ -24,7 +24,7 @@ def parse_args():
   parser = argparse.ArgumentParser(description='To docker build,tag and push from provided directory.')
   parser.add_argument('app_name', metavar='app_name',
     help="Application to be built. example: 'agora' or 'grafana'")
-  parser.add_argument('-environment', metavar='environment',
+  parser.add_argument('-env', metavar='env',
     help="Environment to deploy to. example: 'dev' or 'prod'")
   parser.add_argument('directory', metavar='directory',
     help="Working directory where the pulled in repo exists.Template file is under this repo dir. example: '/home/vagrant'")
@@ -105,7 +105,7 @@ def main():
     sys.exit('Application specified not found.')
 
   environment = roger_env.get('default', '')
-  if args.environment is None:
+  if args.env is None:
     if "ROGER_ENV" in os.environ:
       env_var = os.environ.get('ROGER_ENV')
       if env_var == '':
@@ -114,7 +114,7 @@ def main():
         print("Using value {} from environment variable $ROGER_ENV".format(env_var))
         environment = env_var
   else:
-    environment = args.environment
+    environment = args.env
 
   if environment not in roger_env['environments']:
     sys.exit('Environment not found in roger-env.json file.')
