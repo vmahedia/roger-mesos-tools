@@ -57,7 +57,7 @@ def main():
   docker_path = data.get('path', 'none')
 
   # get/update target source(s)
-  os.system("{0}/bin/docker-build {1} {2} {3} {4} {5}".format(root, os.path.abspath(args.directory), repo, projects, docker_path, args.tag_name))
+  os.system("{0}/bin/docker-build '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, os.path.abspath(args.directory), repo, projects, docker_path, args.tag_name))
 
   image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
 

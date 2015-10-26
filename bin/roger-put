@@ -29,7 +29,7 @@ def parse_args():
   parser.add_argument('directory', metavar='directory',
     help="Working directory where the pulled in repo exists.Template file is under this repo dir. example: '/home/vagrant'")
   parser.add_argument('image_name', metavar='image_name',
-    help="Image name that includes version to be used in docker push. example: 'roger-collectd:0.20' or 'grafana:2.1.3'")
+    help="Image name that includes version to be used in docker push. example: 'roger-collectd-v0.20' or 'elasticsearch-v0.07'")
   parser.add_argument('config_file', metavar='config_file',
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
   return parser
@@ -119,6 +119,7 @@ def main():
   if environment not in roger_env['environments']:
     sys.exit('Environment not found in roger-env.json file.')
 
+  environmentObj = roger_env['environments'][environment]
   common_repo = config.get('repo', '')
   data = config['apps'][args.app_name]
   repo = ''
@@ -158,8 +159,8 @@ def main():
       env = Environment(loader=FileSystemLoader("{}".format(app_path)))
 
     template = env.get_template(containerConfig)
-
-    output = renderTemplate(template, environment, args.image_name, data, config)
+    image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
+    output = renderTemplate(template, environment, image_path, data, config)
     #Adding check so that not all apps try to mergeSecrets 
     outputObj = json.loads(output)
     if 'env' in outputObj:
@@ -185,16 +186,20 @@ def main():
 
     resp = "Test"
     if 'group' in data:
-      #resp = requests.put(
+      '''
+      resp = requests.put(
         "{}/v2/groups/{}".format(environmentObj['marathon_endpoint'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
+      '''
       print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{} {}/v2/groups/{}".format(comp_dir, containerConfig, environmentObj['marathon_endpoint'], appName))
     else:
-      #resp = requests.put(
+      #'''
+      resp = requests.put(
         "{}/v2/apps/{}".format(environmentObj['marathon_endpoint'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
+      #'''
       print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{} {}/v2/apps/{}".format(comp_dir, containerConfig, environmentObj['marathon_endpoint'], appName))
     marathon_message = "{0}: {1}".format(appName, resp)
     print(marathon_message) 
