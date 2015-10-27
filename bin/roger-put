@@ -128,12 +128,12 @@ def main():
   else:
     repo = data.get('repo', args.app_name)
 
-  comp_dir = '' 
+  comp_dir = ''
   if "ROGER_COMPONENTS_DIR" in os.environ:
     comp_dir = os.environ.get('ROGER_COMPONENTS_DIR')
   if comp_dir == '':
     sys.exit("Environment variable $ROGER_COMPONENTS_DIR is not set")
-  
+
   templ_dir = ''
   if "ROGER_TEMPLATES_DIR" in os.environ:
     templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
@@ -161,7 +161,7 @@ def main():
     template = env.get_template(containerConfig)
     image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
     output = renderTemplate(template, environment, image_path, data, config)
-    #Adding check so that not all apps try to mergeSecrets 
+    #Adding check so that not all apps try to mergeSecrets
     outputObj = json.loads(output)
     if 'env' in outputObj:
       if "SECRET" in outputObj['env']:
@@ -184,15 +184,15 @@ def main():
     print("TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container))
     appName = json.loads(data)['id']
 
-    resp = "Test"
-    if 'group' in data:
-      '''
+    resp = ""
+    if 'groups' in data:
+      #'''
       resp = requests.put(
         "{}/v2/groups/{}".format(environmentObj['marathon_endpoint'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
-      '''
-      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{} {}/v2/groups/{}".format(comp_dir, containerConfig, environmentObj['marathon_endpoint'], appName))
+      #'''
+      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/groups/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
     else:
       #'''
       resp = requests.put(
@@ -200,9 +200,9 @@ def main():
         data=data,
         headers = {'Content-type': 'application/json'})
       #'''
-      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{} {}/v2/apps/{}".format(comp_dir, containerConfig, environmentObj['marathon_endpoint'], appName))
+      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/apps/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
     marathon_message = "{0}: {1}".format(appName, resp)
-    print(marathon_message) 
+    print(marathon_message)
 
 if __name__ == "__main__":
   main()
