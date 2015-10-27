@@ -186,20 +186,16 @@ def main():
 
     resp = ""
     if 'groups' in data:
-      #'''
       resp = requests.put(
         "{}/v2/groups/{}".format(environmentObj['marathon_endpoint'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
-      #'''
       print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/groups/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
     else:
-      #'''
       resp = requests.put(
         "{}/v2/apps/{}".format(environmentObj['marathon_endpoint'], appName),
         data=data,
         headers = {'Content-type': 'application/json'})
-      #'''
       print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/apps/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
     marathon_message = "{0}: {1}".format(appName, resp)
     print(marathon_message)
