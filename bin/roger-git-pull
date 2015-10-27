@@ -50,6 +50,13 @@ def main():
   branch = "master"	#master by default
   if not args.branch is None:
     branch = args.branch
+
+  if not os.path.exists(args.directory):
+    try:
+        os.makedirs(args.directory)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
     
   # get/update target source(s)
   path = "{0}/{1}".format(args.directory, repo)

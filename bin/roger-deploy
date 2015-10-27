@@ -139,89 +139,30 @@ def parseArgs():
   parser = argparse.ArgumentParser(description='Deploy into Roger.')
   parser.add_argument('-environment', metavar='env',
     help="Environment to deploy to. example: 'dev' or 'stage'")
-  parser.add_argument('application', metavar='apps',
+  parser.add_argument('application', metavar='application',
     help="Target to be deployed. example: 'all' or 'kairos'")
-  parser.add_argument('branch', metavar='branch',
-    help="Branch to be deployed. example: 'production' or 'master'")
+  parser.add_argument('-branch', metavar='branch',
+    help="Branch to be deployed.Defaults to master. example: 'production' or 'master'")
+  parser.add_argument('-skip_build', metavar='skip_build',
+    help="Flag that skips roger-build when set to true. Defaults to false.'")
   parser.add_argument('config_file', metavar='config_file',
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
   return parser
 
-def getArgs(applicationRoot):
-  parser = parseArgs()
-  args = parser.parse_args()
-
-  with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
-    config = json.load(config)
-
-  if args.application != 'all' and args.application not in config['apps']:
-    sys.exit('Application specified not found.')
-
-  return args
-
-def loadSecretsJson(environment, jsonFileName):
-  path = 'secretenvs/' + environment + '/' + jsonFileName
-  try:
-    with open(path) as f:
-      return json.load(f)
-  except IOError:
-    print("Couldn't load secrets file environment %s\n" % path, file=sys.stderr)
-    return {}
-
-def mergeSecrets(jsonStr, secretsObj):
-  '''Given a JSON stirng and an object of secret environment variables, replaces
-  parses the JSON and merges ['env'] with the secret variables. Returns back
-  a JSON string. Raises an error if there are any SECRET env variables still.'''
-  outputObj = json.loads(jsonStr)
-  if secretsObj:
-    outputObj['env'].update(secretsObj)
-    jsonStr = json.dumps(outputObj, indent=4)
-  for k, v in outputObj['env'].iteritems():
-    if v == 'SECRET':
-      raise StandardError('env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?' % k)
-  return jsonStr
-
-def renderTemplate(template, version, environment, image, app_data, config):
-    output = ''
-    variables = {}
-    variables['version'] = version
-    variables['environment'] = environment
-    variables['image'] = image
-
-    #Adding Global and environment variables for all apps
-    if 'vars' in config:
-      if 'global' in config['vars']:
-        for global_var in config['vars']['global']:
-          variables[global_var] = config['vars']['global'][global_var]
-
-      if 'environment' in config['vars']:
-        if environment in config['vars']['environment']:
-          for env_var in config['vars']['environment'][environment]:
-            variables[env_var] = config['vars']['environment'][environment][env_var]
-
-    #Adding Global and environment variables for specific app.
-    #If the same variable is already present in "variables" dictonary,it will get overriden
-    if 'vars' in app_data:
-      if 'global' in app_data['vars']:
-        for global_var in app_data['vars']['global']:
-          variables[global_var] = app_data['vars']['global'][global_var]
-
-      if 'environment' in app_data['vars']:
-        if environment in app_data['vars']['environment']:
-          for env_var in app_data['vars']['environment'][environment]:
-            variables[env_var] = app_data['vars']['environment'][environment][env_var]
-
-    output = template.render(variables)
-    return output
-
 def main():
   applicationRoot = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-  args = getArgs(applicationRoot)
+  print("Application Root:"+applicationRoot) 
+  parser = parseArgs()
+  args = parser.parse_args()
+  
   with open('{0}/config/roger-env.json'.format(applicationRoot)) as roger_env:
     roger_env = json.load(roger_env)
 
   with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
     config = json.load(config)
+
+  if args.application not in config['apps']:
+    sys.exit('Application specified not found.')
  
   if 'registry' not in roger_env:
    sys.exit('Registry not found in roger-env.json file.') 
@@ -240,8 +181,14 @@ def main():
 
   os.chdir(applicationRoot)
   common_repo = config.get('repo', '')
-
   environment = roger_env.get('default', '')
+
+  work_dir = ''
+  if "ROGER_DEPLOY_SOURCE_DIR" in os.environ:
+    work_dir = os.environ.get('ROGER_DEPLOY_SOURCE_DIR')
+  if work_dir == '':
+    sys.exit("Environment variable $ROGER_DEPLOY_SOURCE_DIR is not set")
+  print("Work dir:"+work_dir)
 
   if args.environment is None:
     if "ROGER_ENV" in os.environ:
@@ -257,10 +204,14 @@ def main():
   if environment not in roger_env['environments']:
     sys.exit('Environment not found in roger-env.json file.')
 
-  for app in apps:
-    deployApp(config, roger_env, environment, app, args.branch, slack, args.config_file, common_repo)
+  branch = "master"     #master by default
+  if not args.branch is None:
+    branch = args.branch
 
-def deployApp(config, roger_env, environment, app, branch, slack, config_file, common_repo):
+  for app in apps:
+    deployApp(args, config, roger_env, work_dir, environment, app, branch, slack, args.config_file, common_repo)
+
+def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
 
   applicationRoot = os.path.dirname(os.path.realpath(__file__))
@@ -268,27 +219,29 @@ def deployApp(config, roger_env, environment, app, branch, slack, config_file, c
   data = config['apps'][app]
   repo = ''
   if common_repo != '':
-    repo = data['repo'] if 'repo' in data else common_repo
+    repo = data.get('repo', common_repo)
   else:
-    repo = data['repo'] if 'repo' in data else app
+    repo = data.get('repo', args.app_name)
 
-  print("rm -rf src/{}".format(repo))
-  os.system("rm -rf src/{}".format(repo))
+  #print("rm -rf {0}/{1}".format(work_dir, repo))
+  #os.system("rm -rf {0}/{1}".format(work_dir, repo))
   version = ''
   image = ''
 
   # get/update target source(s)
-  path = "src/{}".format(repo)
-  if os.path.isdir(path):
-    with chdir(path):
-      os.system("git checkout {}".format(branch))
-      os.system("git pull origin {}".format(branch))
-  else:
-    with chdir('src'):
-      os.system("git clone git@github.com:seomoz/{}.git".format(repo))
-      with chdir(repo):
-        os.system("git checkout {}".format(branch))
+  #os.system("{0}/bin/roger-git-pull {1} {2} {3} -branch {4}".format(applicationRoot, app, work_dir, config_file, branch))
 
+  skip_build = "false"
+  if not args.skip_build is None:
+    skip_build = args.skip_build
+
+  if skip_build != "true":
+    #Docker build,tag and push
+    version = getNextVersion(config, roger_env, environment, app, branch, repo)
+    print("Version is:"+version)
+    #os.system("{0}/bin/roger-build {1} {2} {3} {4}".format(applicationRoot, app work_dir tag_name config_file))
+ 
+  '''
   if 'imageBase' in data:       #If imageBase not present for the app, then docker build,tag and push is not needed to do
     version = getNextVersion(config, roger_env, environment, app, branch, repo)
 
@@ -308,65 +261,15 @@ def deployApp(config, roger_env, environment, app, branch, slack, config_file, c
       print(version_message)
     else:
       version = getCurrentVersion(config, environment, app)
+  '''
 
-  # template marathon files
-  for container in data['containers']:
-    containerConfig = "{0}-{1}.json".format(config['name'], container)
-    template = ''
-    if 'config_path' not in data:
-      env = Environment(loader=FileSystemLoader("templates/"))
-    else:
-      applicationRoot = os.path.dirname(os.path.realpath(__file__))
-      app_path = applicationRoot+"/src/{0}/{1}".format(repo, data['config_path'])
-      env = Environment(loader=FileSystemLoader("{}".format(app_path)))
-    
-    template = env.get_template(containerConfig)
-
-    output = renderTemplate(template, version, environment, image, data, config)
-    #Adding check so that not all apps try to mergeSecrets 
-    outputObj = json.loads(output)
-    if 'env' in outputObj:
-      if "SECRET" in outputObj['env']:
-        output = mergeSecrets(output, loadSecretsJson(environment, containerConfig))
-
-    try:
-      os.system("rm -rf components/")	#Need to remove an already existing components directory,else it doesn't create seperate sub-dirs for environments
-      os.mkdir("components")
-      os.mkdir("components/{0}".format(environment));
-    except:
-      pass
-    with open("components/{0}/{1}".format(environment, containerConfig), 'wb') as fh:
-      fh.write(output)
-
-  
-  # push to roger
-  for container in data['containers']:
-    containerConfig = "{0}-{1}.json".format(config['name'], container)
-    data = open("components/{0}/{1}".format(environment, containerConfig)).read()
-
-    print("TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container))
-    appName = json.loads(data)['id']
-
-    if 'group' in data:
-      resp = requests.put(
-        "{}/v2/groups/{}".format(environmentObj['marathon_endpoint'], appName),
-        data=data,
-        headers = {'Content-type': 'application/json'})
-      print("curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/groups/{}".format(containerConfig, environmentObj['marathon_endpoint'], appName))
-    else:
-      resp = requests.put(
-        "{}/v2/apps/{}".format(environmentObj['marathon_endpoint'], appName),
-        data=data,
-        headers = {'Content-type': 'application/json'})
-      print("curl -X PUT -H 'Content-type: application/json' --data-binary @components/{} {}/v2/apps/{}".format(containerConfig, environmentObj['marathon_endpoint'], appName))
-    marathon_message = "{0}: {1}".format(appName, resp)
-    #slack.api_call(marathon_message)
-    print(marathon_message)
+  #Deploying the app to marathon
+  #os.system("roger-put app_name directory image_name config_file")
 
   deployTime = datetime.now() - startTime
   git_username = subprocess.check_output("git config user.name", shell=True)
-  deployMessage = "{0}'s deploy for {1} / {2} / {3} ({5}) completed in {4} seconds. Marathon says: {6}".format(
-    git_username.rstrip(), app, environment, branch, deployTime.total_seconds(), version, marathon_message)
+  deployMessage = "{0}'s deploy for {1} / {2} / {3} ({5}) completed in {4} seconds.".format(
+    git_username.rstrip(), app, environment, branch, deployTime.total_seconds(), version)
   slack.api_call(deployMessage)
   print(deployMessage)
 
