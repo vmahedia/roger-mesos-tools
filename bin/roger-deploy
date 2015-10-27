@@ -188,7 +188,6 @@ def main():
     work_dir = os.environ.get('ROGER_DEPLOY_SOURCE_DIR')
   if work_dir == '':
     sys.exit("Environment variable $ROGER_DEPLOY_SOURCE_DIR is not set")
-  print("Work dir:"+work_dir)
 
   if args.environment is None:
     if "ROGER_ENV" in os.environ:
@@ -225,7 +224,7 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
 
   #print("rm -rf {0}/{1}".format(work_dir, repo))
   #os.system("rm -rf {0}/{1}".format(work_dir, repo))
-  version = ''
+  image_name = ''
   image = ''
 
   # get/update target source(s)
@@ -237,39 +236,17 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
 
   if skip_build != "true":
     #Docker build,tag and push
-    version = getNextVersion(config, roger_env, environment, app, branch, repo)
-    print("Version is:"+version)
-    #os.system("{0}/bin/roger-build {1} {2} {3} {4}".format(applicationRoot, app work_dir tag_name config_file))
+    image_name = getNextVersion(config, roger_env, environment, app, branch, repo)
+    print("Version is:"+image_name)
+    #os.system("{0}/bin/roger-build {1} {2} {3} {4}".format(applicationRoot, app, work_dir, image_name, config_file))
  
-  '''
-  if 'imageBase' in data:       #If imageBase not present for the app, then docker build,tag and push is not needed to do
-    version = getNextVersion(config, roger_env, environment, app, branch, repo)
-
-    # build/tag docker images
-    if version != 'current':
-      with chdir(path):
-        os.system("{0}/bin/docker-build {1} {2}".format(applicationRoot, config_file, data['imageBase']))
-
-      image = "{0}/{1}-{2}-{3}".format(
-        roger_env['registry'], config['name'], app, version)
-      
-      os.system("docker tag -f {0} {1}".format(data['imageBase'], image))
-      os.system("docker push {0}".format(image))
-
-      version_message = "IMAGE TAGGED AND PUSHED TO REGISTRY COMPLETED, VERSION: {}".format(version)
-      #slack.api_call(version_message)
-      print(version_message)
-    else:
-      version = getCurrentVersion(config, environment, app)
-  '''
-
   #Deploying the app to marathon
-  #os.system("roger-put app_name directory image_name config_file")
+  os.system("{0}/bin/roger-put {1} {2} {3} {4} -env {5}".format(applicationRoot, app, work_dir, image_name, config_file, environment))
 
   deployTime = datetime.now() - startTime
   git_username = subprocess.check_output("git config user.name", shell=True)
   deployMessage = "{0}'s deploy for {1} / {2} / {3} ({5}) completed in {4} seconds.".format(
-    git_username.rstrip(), app, environment, branch, deployTime.total_seconds(), version)
+    git_username.rstrip(), app, environment, branch, deployTime.total_seconds(), image_name)
   slack.api_call(deployMessage)
   print(deployMessage)
 

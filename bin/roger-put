@@ -92,6 +92,7 @@ def main():
   parser = parse_args()
   args = parser.parse_args()
   root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+  cur_file_path = os.path.dirname(os.path.realpath(__file__))
   with open('{0}/config/{1}'.format(root, args.config_file)) as config:
     config = json.load(config)
 
@@ -133,7 +134,7 @@ def main():
     comp_dir = os.environ.get('ROGER_COMPONENTS_DIR')
   if comp_dir == '':
     sys.exit("Environment variable $ROGER_COMPONENTS_DIR is not set")
-
+ 
   templ_dir = ''
   if "ROGER_TEMPLATES_DIR" in os.environ:
     templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
@@ -150,11 +151,10 @@ def main():
   for container in data['containers']:
     containerConfig = "{0}-{1}.json".format(config['name'], container)
     template = ''
+    os.chdir(cur_file_path)	#Required for when work_dir,component_dir,template_dir or secret_env_dir is something like '.' or './temp" 
     if 'template_path' not in data:
       env = Environment(loader=FileSystemLoader("{}".format(templ_dir)))
     else:
-      #applicationRoot = os.path.dirname(os.path.realpath(__file__))
-      #app_path = applicationRoot+"/src/{0}/{1}".format(repo, data['config_path'])
       app_path = "{0}/{1}/{2}".format(args.directory, repo, data['template_path'])
       env = Environment(loader=FileSystemLoader("{}".format(app_path)))
 
