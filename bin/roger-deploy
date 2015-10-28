@@ -221,13 +221,13 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
   else:
     repo = data.get('repo', args.app_name)
 
-  print("rm -rf {0}/{1}".format(work_dir, repo))
-  os.system("rm -rf {0}/{1}".format(work_dir, repo))
+  print("rm -rf {0}/{1}".format(os.path.abspath(work_dir), repo))
+  os.system("rm -rf {0}/{1}".format(os.path.abspath(work_dir), repo))
   image_name = ''
   image = ''
 
   # get/update target source(s)
-  os.system("{0}/bin/roger-git-pull {1} {2} {3} --branch {4}".format(applicationRoot, app, work_dir, config_file, branch))
+  os.system("{0}/bin/roger-git-pull {1} {2} {3} --branch {4}".format(applicationRoot, app, os.path.abspath(work_dir), config_file, branch))
 
   skip_build = "false"
   if not args.skip_build is None:
@@ -237,11 +237,11 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
   if skip_build != "true":
     #Docker build,tag and push
     image_name = getNextVersion(config, roger_env, environment, app, branch, repo)
-    os.system("{0}/bin/roger-build {1} {2} {3} {4}".format(applicationRoot, app, work_dir, image_name, config_file))
+    os.system("{0}/bin/roger-build {1} {2} {3} {4}".format(applicationRoot, app, os.path.abspath(work_dir), image_name, config_file))
   print("Version is:"+image_name) 
 
   #Deploying the app to marathon
-  os.system("{0}/bin/roger-put {1} {2} \"{3}\" {4} --env {5}".format(applicationRoot, app, work_dir, image_name, config_file, environment))
+  os.system("{0}/bin/roger-put {1} {2} \"{3}\" {4} --env {5}".format(applicationRoot, app, os.path.abspath(work_dir), image_name, config_file, environment))
 
   deployTime = datetime.now() - startTime
   git_username = subprocess.check_output("git config user.name", shell=True)

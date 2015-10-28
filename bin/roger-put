@@ -134,6 +134,7 @@ def main():
     comp_dir = os.environ.get('ROGER_COMPONENTS_DIR')
   if comp_dir == '':
     sys.exit("Environment variable $ROGER_COMPONENTS_DIR is not set")
+  comp_dir = os.path.abspath(comp_dir)
  
   templ_dir = ''
   if "ROGER_TEMPLATES_DIR" in os.environ:
@@ -146,6 +147,7 @@ def main():
     secrets_dir = os.environ.get('ROGER_SECRETS_DIR')
   if secrets_dir == '':
     sys.exit("Environment variable $ROGER_SECRETS_DIR is not set")
+  secrets_dir = os.path.abspath(secrets_dir)
 
   # template marathon files
   for container in data['containers']:
@@ -155,7 +157,7 @@ def main():
     if 'template_path' not in data:
       env = Environment(loader=FileSystemLoader("{}".format(templ_dir)))
     else:
-      app_path = "{0}/{1}/{2}".format(args.directory, repo, data['template_path'])
+      app_path = "{0}/{1}/{2}".format(os.path.abspath(args.directory), repo, data['template_path'])
       env = Environment(loader=FileSystemLoader("{}".format(app_path)))
 
     template = env.get_template(containerConfig)
