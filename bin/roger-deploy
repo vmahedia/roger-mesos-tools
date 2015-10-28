@@ -221,8 +221,8 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
   else:
     repo = data.get('repo', args.app_name)
 
-  #print("rm -rf {0}/{1}".format(work_dir, repo))
-  #os.system("rm -rf {0}/{1}".format(work_dir, repo))
+  print("rm -rf {0}/{1}".format(work_dir, repo))
+  os.system("rm -rf {0}/{1}".format(work_dir, repo))
   image_name = ''
   image = ''
 
