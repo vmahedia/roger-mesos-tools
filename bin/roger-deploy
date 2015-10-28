@@ -98,8 +98,8 @@ def getNextVersion(config, roger_env, environment, application, branch, repo):
 
 # Expected format:
 #   <host>:<port>/moz-<project>-<service>-<sha>/v0.46
-def getCurrentVersion(config, environment, application):
-  data = data = getMarathonState(config, environment)
+def getCurrentVersion(roger_env, environment, application):
+  data = getMarathonState(roger_env, environment)
 
   for app in data['apps']:
     if app['container'] != None:
@@ -137,13 +137,13 @@ def getGitSha(repo, branch):
 
 def parseArgs():
   parser = argparse.ArgumentParser(description='Deploy into Roger.')
-  parser.add_argument('-environment', metavar='env',
+  parser.add_argument('-e', '--environment', metavar='env',
     help="Environment to deploy to. example: 'dev' or 'stage'")
   parser.add_argument('application', metavar='application',
     help="Target to be deployed. example: 'all' or 'kairos'")
-  parser.add_argument('-branch', metavar='branch',
+  parser.add_argument('-b', '--branch', metavar='branch',
     help="Branch to be deployed.Defaults to master. example: 'production' or 'master'")
-  parser.add_argument('-skip_build', metavar='skip_build',
+  parser.add_argument('-s', '--skip_build', metavar='skip_build',
     help="Flag that skips roger-build when set to true. Defaults to false.'")
   parser.add_argument('config_file', metavar='config_file',
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
@@ -151,7 +151,6 @@ def parseArgs():
 
 def main():
   applicationRoot = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-  print("Application Root:"+applicationRoot) 
   parser = parseArgs()
   args = parser.parse_args()
   
@@ -228,20 +227,21 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
   image = ''
 
   # get/update target source(s)
-  #os.system("{0}/bin/roger-git-pull {1} {2} {3} -branch {4}".format(applicationRoot, app, work_dir, config_file, branch))
+  os.system("{0}/bin/roger-git-pull {1} {2} {3} --branch {4}".format(applicationRoot, app, work_dir, config_file, branch))
 
   skip_build = "false"
   if not args.skip_build is None:
     skip_build = args.skip_build
 
+  image_name = getCurrentVersion(roger_env, environment, app)
   if skip_build != "true":
     #Docker build,tag and push
     image_name = getNextVersion(config, roger_env, environment, app, branch, repo)
-    print("Version is:"+image_name)
-    #os.system("{0}/bin/roger-build {1} {2} {3} {4}".format(applicationRoot, app, work_dir, image_name, config_file))
- 
+    os.system("{0}/bin/roger-build {1} {2} {3} {4}".format(applicationRoot, app, work_dir, image_name, config_file))
+  print("Version is:"+image_name) 
+
   #Deploying the app to marathon
-  os.system("{0}/bin/roger-put {1} {2} {3} {4} -env {5}".format(applicationRoot, app, work_dir, image_name, config_file, environment))
+  os.system("{0}/bin/roger-put {1} {2} \"{3}\" {4} --env {5}".format(applicationRoot, app, work_dir, image_name, config_file, environment))
 
   deployTime = datetime.now() - startTime
   git_username = subprocess.check_output("git config user.name", shell=True)

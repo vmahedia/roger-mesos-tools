@@ -57,15 +57,25 @@ def main():
   docker_path = data.get('path', 'none')
 
   # get/update target source(s)
-  os.system("{0}/bin/docker-build '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, os.path.abspath(args.directory), repo, projects, docker_path, args.tag_name))
+  file_exists = True
+  file_path = ''
+  if docker_path != 'none':
+    file_path = "{0}/{1}/{2}".format(os.path.abspath(args.directory), repo, docker_path)
+  else:
+    file_path = "{0}/{1}".format(os.path.abspath(args.directory), repo)
 
-  image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
+  file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
-  os.system("docker tag -f {0} {1}".format(args.tag_name, image))
-  os.system("docker push {0}".format(image))
+  if file_exists:
+    os.system("{0}/bin/docker-build '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, os.path.abspath(args.directory), repo, projects, docker_path, args.tag_name))
 
-  docker_message = "IMAGE {0} TAGGED AND PUSHED TO REGISTRY {1} COMPLETED".format(args.tag_name, roger_env['registry'])
-  print(docker_message)
+    image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
+    os.system("docker tag -f {0} {1}".format(args.tag_name, image))
+    os.system("docker push {0}".format(image))
+    docker_message = "IMAGE {0} TAGGED AND PUSHED TO REGISTRY {1} COMPLETED".format(args.tag_name, roger_env['registry'])
+    print(docker_message)
+  else:
+    sys.exit("Dockerfile does not exists in {0} dir:".format(file_path))
 
 if __name__ == "__main__":
   main()

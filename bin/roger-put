@@ -24,7 +24,7 @@ def parse_args():
   parser = argparse.ArgumentParser(description='To docker build,tag and push from provided directory.')
   parser.add_argument('app_name', metavar='app_name',
     help="Application to be built. example: 'agora' or 'grafana'")
-  parser.add_argument('-env', metavar='env',
+  parser.add_argument('-e', '--env', metavar='env',
     help="Environment to deploy to. example: 'dev' or 'prod'")
   parser.add_argument('directory', metavar='directory',
     help="Working directory where the pulled in repo exists.Template file is under this repo dir. example: '/home/vagrant'")
