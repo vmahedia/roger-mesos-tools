@@ -13,7 +13,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Get an Interactive Bash session into your container.')
     parser.add_argument('appTaskId', metavar='appTaskId', help="Application Task Id to uniquely \
 	 identify a container Id. example: 'content.56847afe9799")
-    parser.add_argument('-environment', metavar='env', help="Environment to deploy to. \
+    parser.add_argument('-e', '--env', metavar='env', help="Environment to deploy to. \
 	 example: 'dev' or 'stage'")
     parser.add_argument('-H','--hostname', metavar='hostname', help="Hostname to search.\
 	  example: 'daldevmesos01' or 'daldevmesos04'")
@@ -59,7 +59,7 @@ def main():
     
     environment = roger_env.get('default', '')
     
-    if args.environment is None:
+    if args.env is None:
       if "ROGER_ENV" in os.environ:
         env_var = os.environ.get('ROGER_ENV')
         if env_var == '':
@@ -68,7 +68,7 @@ def main():
           print("Using value {} from environment variable $ROGER_ENV".format(env_var))
           environment = env_var
     else:
-      environment = args.environment
+      environment = args.env
 
     if environment not in roger_env['environments']:
       sys.exit('Environment not found in roger-env.json file.')
@@ -76,7 +76,7 @@ def main():
     hostname = ''
     containerId = ''
     if args.hostname == None:
-        hostname = get_hostname_from_marathon(root, environment, args.appTaskId);
+        hostname = get_hostname_from_marathon(root, environment, roger_env, args.appTaskId);
     else:
         hostname = args.hostname;
 
