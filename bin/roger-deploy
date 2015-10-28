@@ -73,10 +73,10 @@ class Slack:
 
 # Expected format:
 #   <host>:<port>/moz-content-agora-7da406eb9e8937875e0548ae1149/v0.46
-def getNextVersion(config, roger_env, environment, application, branch, repo):
+def getNextVersion(config, roger_env, environment, application, branch, work_dir, repo):
     imageRe = re.compile("^[^/].*/(.*)-[0-9a-f]+/v([0-9.]+)")
     data = getMarathonState(roger_env, environment)
-    sha = getGitSha(repo, branch)
+    sha = getGitSha(work_dir, repo, branch)
     currentSha = ''
     version = ''
 
@@ -127,8 +127,8 @@ def getMarathonState(roger_env, environment):
   resp = requests.get(url)
   return resp.json()
 
-def getGitSha(repo, branch):
-  with chdir('src/' + repo):
+def getGitSha(work_dir, repo, branch):
+  with chdir("{0}/{1}".format(work_dir, repo)):
     proc = subprocess.Popen(
         ["git rev-parse origin/{} --verify HEAD".format(branch)],
         stdout=subprocess.PIPE, shell=True)
@@ -232,14 +232,13 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   os.system("{0}/bin/roger-git-pull {1} {2} {3} --branch {4}".format(applicationRoot, app, os.path.abspath(work_dir), config_file, branch))
 
   skip_build = "false"
-  print(args)
   if not args.skip_build is None:
     skip_build = args.skip_build
 
   image_name = getCurrentVersion(roger_env, environment, app)
   if skip_build != "true":
     #Docker build,tag and push
-    image_name = getNextVersion(config, roger_env, environment, app, branch, repo)
+    image_name = getNextVersion(config, roger_env, environment, app, branch, work_dir, repo)
     os.system("{0}/bin/roger-build {1} {2} {3} {4}".format(applicationRoot, app, os.path.abspath(work_dir), image_name, config_file))
   print("Version is:"+image_name) 
 
