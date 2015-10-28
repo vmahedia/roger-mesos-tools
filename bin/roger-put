@@ -170,9 +170,12 @@ def main():
         output = mergeSecrets(output, loadSecretsJson(environment, containerConfig))
 
     try:
-      os.system("rm -rf {0}".format(comp_dir))   #Need to remove an already existing components directory,else it doesn't create seperate sub-dirs for environments
-      os.mkdir("{0}".format(comp_dir))
-      os.mkdir("{0}/{1}".format(comp_dir, environment));
+      comp_exists = os.path.exists("{0}".format(comp_dir))
+      if comp_exists == False:
+        os.mkdir("{0}".format(comp_dir))
+      comp_env_exists = os.path.exists("{0}/{1}".format(comp_dir, environment))
+      if comp_env_exists == False:
+        os.mkdir("{0}/{1}".format(comp_dir, environment))
     except:
       pass
     with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:

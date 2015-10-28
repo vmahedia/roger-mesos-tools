@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+from tempfile import mkdtemp
 import argparse
 from decimal import *
 from jinja2 import Environment, FileSystemLoader
@@ -143,7 +144,7 @@ def parseArgs():
     help="Target to be deployed. example: 'all' or 'kairos'")
   parser.add_argument('-b', '--branch', metavar='branch',
     help="Branch to be deployed.Defaults to master. example: 'production' or 'master'")
-  parser.add_argument('-s', '--skip_build', metavar='skip_build',
+  parser.add_argument('-s', '--skipbuild', action="store_true",
     help="Flag that skips roger-build when set to true. Defaults to false.'")
   parser.add_argument('config_file', metavar='config_file',
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
@@ -183,10 +184,13 @@ def main():
   environment = roger_env.get('default', '')
 
   work_dir = ''
+  tmp_dir_created = False
   if "ROGER_DEPLOY_SOURCE_DIR" in os.environ:
     work_dir = os.environ.get('ROGER_DEPLOY_SOURCE_DIR')
   if work_dir == '':
-    sys.exit("Environment variable $ROGER_DEPLOY_SOURCE_DIR is not set")
+    work_dir = mkdtemp()
+    tmp_dir_created = True
+    print("Environment variable $ROGER_DEPLOY_SOURCE_DIR is not set. Created a temporary dir: {0}".format(work_dir))
 
   if args.environment is None:
     if "ROGER_ENV" in os.environ:
@@ -207,9 +211,9 @@ def main():
     branch = args.branch
 
   for app in apps:
-    deployApp(args, config, roger_env, work_dir, environment, app, branch, slack, args.config_file, common_repo)
+    deployApp(args, config, roger_env, work_dir, tmp_dir_created, environment, app, branch, slack, args.config_file, common_repo)
 
-def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack, config_file, common_repo):
+def deployApp(args, config, roger_env, work_dir, tmp_dir_created, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
 
   applicationRoot = os.path.dirname(os.path.realpath(__file__))
@@ -221,8 +225,6 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
   else:
     repo = data.get('repo', args.app_name)
 
-  print("rm -rf {0}/{1}".format(os.path.abspath(work_dir), repo))
-  os.system("rm -rf {0}/{1}".format(os.path.abspath(work_dir), repo))
   image_name = ''
   image = ''
 
@@ -230,8 +232,8 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
   os.system("{0}/bin/roger-git-pull {1} {2} {3} --branch {4}".format(applicationRoot, app, os.path.abspath(work_dir), config_file, branch))
 
   skip_build = "false"
-  if not args.skip_build is None:
-    skip_build = args.skip_build
+  if not args.skipbuild is None:
+    skip_build = args.skipbuild
 
   image_name = getCurrentVersion(roger_env, environment, app)
   if skip_build != "true":
@@ -242,6 +244,10 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
 
   #Deploying the app to marathon
   os.system("{0}/bin/roger-put {1} {2} \"{3}\" {4} --env {5}".format(applicationRoot, app, os.path.abspath(work_dir), image_name, config_file, environment))
+
+  if tmp_dir_created == True:
+    os.system("rm -rf {0}".format(work_dir))
+    print("Deleting temporary dir:{0}".format(work_dir))
 
   deployTime = datetime.now() - startTime
   git_username = subprocess.check_output("git config user.name", shell=True)

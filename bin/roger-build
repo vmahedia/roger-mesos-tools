@@ -75,7 +75,7 @@ def main():
     docker_message = "IMAGE {0} TAGGED AND PUSHED TO REGISTRY {1} COMPLETED".format(args.tag_name, roger_env['registry'])
     print(docker_message)
   else:
-    sys.exit("Dockerfile does not exists in {0} dir:".format(file_path))
+    print("Dockerfile does not exists in {0} dir:".format(file_path))
 
 if __name__ == "__main__":
   main()
