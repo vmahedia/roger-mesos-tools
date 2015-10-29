@@ -21,7 +21,7 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='To docker build,tag and push from provided directory.')
+  parser = argparse.ArgumentParser(description='To deploy an app to Marathon framework.')
   parser.add_argument('app_name', metavar='app_name',
     help="Application to be built. example: 'agora' or 'grafana'")
   parser.add_argument('-e', '--env', metavar='env',
