@@ -32,6 +32,7 @@ def parse_args():
     help="Image name that includes version to be used in docker push. example: 'roger-collectd-v0.20' or 'elasticsearch-v0.07'")
   parser.add_argument('config_file', metavar='config_file',
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
+  parser.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
   return parser
 
 def loadSecretsJson(environment, jsonFileName):
@@ -135,7 +136,7 @@ def main():
   if comp_dir == '':
     sys.exit("Environment variable $ROGER_COMPONENTS_DIR is not set")
   comp_dir = os.path.abspath(comp_dir)
- 
+
   templ_dir = ''
   if "ROGER_TEMPLATES_DIR" in os.environ:
     templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
@@ -153,7 +154,7 @@ def main():
   for container in data['containers']:
     containerConfig = "{0}-{1}.json".format(config['name'], container)
     template = ''
-    os.chdir(cur_file_path)	#Required for when work_dir,component_dir,template_dir or secret_env_dir is something like '.' or './temp" 
+    os.chdir(cur_file_path)	#Required for when work_dir,component_dir,template_dir or secret_env_dir is something like '.' or './temp"
     if 'template_path' not in data:
       env = Environment(loader=FileSystemLoader("{}".format(templ_dir)))
     else:
@@ -181,29 +182,33 @@ def main():
     with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
       fh.write(output)
 
-  # push to roger marathon framework
-  for container in data['containers']:
-    containerConfig = "{0}-{1}.json".format(config['name'], container)
-    data = open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig)).read()
+  config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
+  if args.skip_push:
+      print("Skipped pushing to {} environment. The rendered config file is at: {}".format(environment, config_file_path))
+  else:
+      # push to roger marathon framework
+      for container in data['containers']:
+        containerConfig = "{0}-{1}.json".format(config['name'], container)
+        data = open(config_file_path).read()
 
-    print("TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container))
-    appName = json.loads(data)['id']
+        print("TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container))
+        appName = json.loads(data)['id']
 
-    resp = ""
-    if 'groups' in data:
-      resp = requests.put(
-        "{}/v2/groups/{}".format(environmentObj['marathon_endpoint'], appName),
-        data=data,
-        headers = {'Content-type': 'application/json'})
-      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/groups/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
-    else:
-      resp = requests.put(
-        "{}/v2/apps/{}".format(environmentObj['marathon_endpoint'], appName),
-        data=data,
-        headers = {'Content-type': 'application/json'})
-      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/apps/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
-    marathon_message = "{0}: {1}".format(appName, resp)
-    print(marathon_message)
+        resp = ""
+        if 'groups' in data:
+          resp = requests.put(
+            "{}/v2/groups/{}".format(environmentObj['marathon_endpoint'], appName),
+            data=data,
+            headers = {'Content-type': 'application/json'})
+          print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/groups/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
+        else:
+          resp = requests.put(
+            "{}/v2/apps/{}".format(environmentObj['marathon_endpoint'], appName),
+            data=data,
+            headers = {'Content-type': 'application/json'})
+          print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/apps/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
+        marathon_message = "{0}: {1}".format(appName, resp)
+        print(marathon_message)
 
 if __name__ == "__main__":
   main()
