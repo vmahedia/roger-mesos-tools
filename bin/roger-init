@@ -94,31 +94,6 @@ def createContainerTags():
 
 def createMarathonConfig(templ_dir, filename, app_id):
   json_dict, env = {}, {}
-  '''
-  {
-  "container": {
-    "type": "DOCKER",
-    "docker": {
-      "image": "{{ image }}",
-      "network": "BRIDGE",
-      "portMappings": [
-        {
-          "containerPort": 8125,
-          "hostPort": 0,
-          "servicePort": 0,
-          "protocol": "udp"
-        },
-        {
-          "containerPort": 8126,
-          "hostPort": 0,
-          "servicePort": 0,
-          "protocol": "tcp"
-        }
-      ]
-    },
-    "ports": [ 0, 0 ]
-  },
-  '''
   json_dict['container'] = createContainerTags()
   env['ENV_VAR1'] = "value1"
   env['ENV_VAR2'] = "value2"
@@ -145,6 +120,7 @@ def main():
   if file_exists:
     print("File {0} already exists in {1}/config/".format(args.filename, root))
   else:
+    print("Sample {0} application file {1} created under {2}/config/".format(args.app, args.filename, root))
     createAppConfig(root, args.filename, args.app, args.name)
   
   marathon_filename = "{0}-{1}.json".format(args.name, args.app)
@@ -152,6 +128,7 @@ def main():
   if file_exists:
     print("File {0} already exists in {1}".format(marathon_filename, templ_dir))
   else:
+    print("Sample Marathon file {0} created under {1}".format(marathon_filename, templ_dir))
     createMarathonConfig(templ_dir, marathon_filename, args.id)
 
 if __name__ == "__main__":
