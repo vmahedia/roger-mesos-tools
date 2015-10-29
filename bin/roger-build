@@ -67,10 +67,12 @@ def main():
   file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
   if file_exists:
-    os.system("{0}/bin/docker-build '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, os.path.abspath(args.directory), repo, projects, docker_path, args.tag_name))
+    if 'imageBase' not in data:
+      sys.exit("No imageBase tag found for the app {0} in the config_file {1}".format(args.app_name, args.config_file)) 
 
+    os.system("{0}/bin/docker-build '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, os.path.abspath(args.directory), repo, projects, docker_path, data['imageBase']))
     image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
-    os.system("docker tag -f {0} {1}".format(args.tag_name, image))
+    os.system("docker tag -f {0} {1}".format(data['imageBase'], image))
     os.system("docker push {0}".format(image))
     docker_message = "IMAGE {0} TAGGED AND PUSHED TO REGISTRY {1} COMPLETED".format(args.tag_name, roger_env['registry'])
     print(docker_message)
