@@ -23,15 +23,15 @@ def chdir(dirname):
 def parse_args():
   parser = argparse.ArgumentParser(description='To deploy an app to Marathon framework.')
   parser.add_argument('app_name', metavar='app_name',
-    help="Application to be built. example: 'agora' or 'grafana'")
+    help="Application to be built. Example: 'agora' or 'grafana'")
   parser.add_argument('-e', '--env', metavar='env',
-    help="Environment to deploy to. example: 'dev' or 'prod'")
+    help="Environment to deploy to. Example: 'dev' or 'prod'")
   parser.add_argument('directory', metavar='directory',
-    help="Working directory where the pulled in repo exists.Template file is under this repo dir. example: '/home/vagrant'")
+    help="Working directory where the pulled in repo exists. Template file is under this repo dir. Example: '/home/vagrant'")
   parser.add_argument('image_name', metavar='image_name',
-    help="Image name that includes version to be used in docker push. example: 'roger-collectd-v0.20' or 'elasticsearch-v0.07'")
+    help="Image name that includes version to be used in docker push. Example: 'roger-collectd-v0.20' or 'elasticsearch-v0.07'")
   parser.add_argument('config_file', metavar='config_file',
-    help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
+    help="Configuration file to be used for the project. Example: 'content.json' or 'kwe.json'")
   parser.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
   return parser
 

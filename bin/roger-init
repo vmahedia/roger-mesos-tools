@@ -18,13 +18,13 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='To create sample marathon and application config files.')
-  parser.add_argument('app', metavar='app',
-    help="Name of application to be built. example: 'agora' or 'grafana'")
+  parser = argparse.ArgumentParser(description='Creates an initial marathon template and an application config file.')
+  parser.add_argument('app_name', metavar='app_name',
+    help="Application name. Example: 'agora' or 'grafana'")
   parser.add_argument('id', metavar='id',
-    help="Application id used for Marathon. example: 'roger-collectd' or 'roger-statsd'")
-  parser.add_argument('name', metavar='name',
-    help="Project name. example: 'moz-kwe' or ' moz-content")
+    help="Application id that uniquely identifies it (is used for Marathon id). Example: 'roger-collectd' or 'roger-statsd'")
+  parser.add_argument('project_name', metavar='project_name',
+    help="Project name. Example: 'moz-kwe' or 'moz-content'")
   parser.add_argument('filename', metavar='filename',
     help="Configuration file name to be used for the project. example: 'content.json' or 'kwe.json'")
   return parser
@@ -47,7 +47,7 @@ def createVariableTags():
   environment['stage'] = stage_dict
   environment['prod'] = prod_dict
   variables['global'] = global_dict
-  variables['environment'] = environment 
+  variables['environment'] = environment
   return variables
 
 def createAppTags(app_name):
@@ -59,7 +59,7 @@ def createAppTags(app_name):
   details['imageBase'] = "{0}-base".format(app_name)
   container_list = ['{0}'.format(app_name)]
   details['containers'] = container_list
-  app_dict['{0}'.format(app_name)] = details 
+  app_dict['{0}'.format(app_name)] = details
   return app_dict
 
 def createAppConfig(root, filename, app_name, project_name):
@@ -73,7 +73,7 @@ def createAppConfig(root, filename, app_name, project_name):
   json_dict['apps'] = app_dict
   json_output = json.dumps(json_dict, indent=2)
   path = "{0}/config".format(root)
-  writeJson(json_output, path, filename)  
+  writeJson(json_output, path, filename)
 
 def createPortMappings():
   port_dict = {}
@@ -113,17 +113,17 @@ def main():
   if "ROGER_TEMPLATES_DIR" in os.environ:
     templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
   if templ_dir == '':
-    sys.exit("Environment variable $ROGER_TEMPLATES_DIR is not set")
+    sys.exit("Environment variable ROGER_TEMPLATES_DIR is not set")
   templ_dir = os.path.abspath(templ_dir)
   file_exists = os.path.exists("{0}/config/{1}".format(root, args.filename))
 
   if file_exists:
     print("File {0} already exists in {1}/config/".format(args.filename, root))
   else:
-    print("Sample {0} application file {1} created under {2}/config/".format(args.app, args.filename, root))
-    createAppConfig(root, args.filename, args.app, args.name)
-  
-  marathon_filename = "{0}-{1}.json".format(args.name, args.app)
+    print("Sample {0} application file {1} created under {2}/config/".format(args.app_name, args.filename, root))
+    createAppConfig(root, args.filename, args.app_name, args.project_name)
+
+  marathon_filename = "{0}-{1}.json".format(args.project_name, args.app_name)
   file_exists = os.path.exists("{0}/{1}".format(templ_dir, marathon_filename))
   if file_exists:
     print("File {0} already exists in {1}".format(marathon_filename, templ_dir))

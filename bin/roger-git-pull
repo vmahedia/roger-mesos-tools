@@ -18,11 +18,11 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='To pull application repo from git.')
+  parser = argparse.ArgumentParser(description='Pulls application repo from git.')
   parser.add_argument('app_name', metavar='app_name',
-    help="Application to be deployed. example: 'agora' or 'grafana'")
+    help="Application to be pulled. Example: 'agora' or 'grafana'")
   parser.add_argument('directory', metavar='directory',
-    help="Directory where repo needs to be pulled into. example: '/home/vagrant'")
+    help="Directory where repo needs to be pulled into. Example: '/home/vagrant/work_dir'")
   parser.add_argument('-b', '--branch', metavar='branch',
     help="Git branch to be deployed. example: 'production' or 'master'")
   parser.add_argument('config_file', metavar='config_file',
@@ -57,7 +57,7 @@ def main():
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise
-    
+
   # get/update target source(s)
   path = "{0}/{1}".format(args.directory, repo)
   if os.path.isdir(path):
