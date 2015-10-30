@@ -24,7 +24,7 @@ def parse_args():
   parser.add_argument('directory', metavar='directory',
     help="Directory where repo needs to be pulled into. Example: '/home/vagrant/work_dir'")
   parser.add_argument('-b', '--branch', metavar='branch',
-    help="Git branch to be deployed. example: 'production' or 'master'")
+    help="Git branch to be deployed. Example: 'production' or 'master'. Defaults to master.")
   parser.add_argument('config_file', metavar='config_file',
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
   return parser
