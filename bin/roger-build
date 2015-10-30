@@ -22,7 +22,7 @@ def parse_args():
   parser.add_argument('app_name', metavar='app_name',
     help="Application name to be built. Example: 'agora' or 'grafana'")
   parser.add_argument('directory', metavar='directory',
-    help="The working directory where the repository is checked out. Example: '/home/vagrant/roger'")
+    help="The working directory where the repository is checked out. Example: '/home/vagrant/work_dir'")
   parser.add_argument('tag_name', metavar='tag_name',
     help="Image name to be tagged including version (if needed). Example: 'roger-collectd:0.20' or 'grafana-v2.1.3'")
   parser.add_argument('config_file', metavar='config_file',
