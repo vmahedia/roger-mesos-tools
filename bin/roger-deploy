@@ -137,11 +137,11 @@ def getGitSha(work_dir, repo, branch):
     return out[0].split('\n')[0]
 
 def parseArgs():
-  parser = argparse.ArgumentParser(description='Deploy into Roger.')
+  parser = argparse.ArgumentParser(description='Pulls code from repo, builds and then deploys into Roger.')
   parser.add_argument('-e', '--environment', metavar='env',
     help="Environment to deploy to. example: 'dev' or 'stage'")
   parser.add_argument('application', metavar='application',
-    help="Target to be deployed. example: 'all' or 'kairos'")
+    help="Application to be deployed. example: 'all' or 'kairos'")
   parser.add_argument('-b', '--branch', metavar='branch',
     help="Branch to be deployed.Defaults to master. example: 'production' or 'master'")
   parser.add_argument('-s', '--skip-build', action="store_true",
@@ -154,7 +154,7 @@ def main():
   applicationRoot = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
   parser = parseArgs()
   args = parser.parse_args()
-  
+
   with open('{0}/config/roger-env.json'.format(applicationRoot)) as roger_env:
     roger_env = json.load(roger_env)
 
@@ -163,9 +163,9 @@ def main():
 
   if args.application not in config['apps']:
     sys.exit('Application specified not found.')
- 
+
   if 'registry' not in roger_env:
-   sys.exit('Registry not found in roger-env.json file.') 
+   sys.exit('Registry not found in roger-env.json file.')
 
   #Setup for Slack-Client, token, and git user
   slack = Slack(config['notifications'], '.slack_token')
@@ -199,7 +199,7 @@ def main():
         print("Environment variable $ROGER_ENV is not set. Using the default set from roger-env.json file")
       else:
         print("Using value {} from environment variable $ROGER_ENV".format(env_var))
-        environment = env_var 
+        environment = env_var
   else:
     environment = args.environment
 
@@ -239,8 +239,8 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   if skip_build != "true":
     #Docker build,tag and push
     image_name = getNextVersion(config, roger_env, environment, app, branch, work_dir, repo)
-    os.system("{0}/bin/roger-build {1} {2} {3} {4}".format(applicationRoot, app, os.path.abspath(work_dir), image_name, config_file))
-  print("Version is:"+image_name) 
+    os.system("{0}/bin/roger-build --push {1} {2} {3} {4}".format(applicationRoot, app, os.path.abspath(work_dir), image_name, config_file))
+  print("Version is:"+image_name)
 
   #Deploying the app to marathon
   os.system("{0}/bin/roger-put {1} {2} \"{3}\" {4} --env {5}".format(applicationRoot, app, os.path.abspath(work_dir), image_name, config_file, environment))
