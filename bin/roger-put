@@ -27,7 +27,7 @@ def parse_args():
   parser.add_argument('-e', '--env', metavar='env',
     help="Environment to deploy to. Example: 'dev' or 'prod'")
   parser.add_argument('directory', metavar='directory',
-    help="Working directory where the pulled in repo exists. Template file is under this repo dir. Example: '/home/vagrant'")
+    help="Working directory where the pulled in repo exists. Template file is under this repo dir. Example: '/home/vagrant/work_dir'")
   parser.add_argument('image_name', metavar='image_name',
     help="Image name that includes version to be used in docker push. Example: 'roger-collectd-v0.20' or 'elasticsearch-v0.07'")
   parser.add_argument('config_file', metavar='config_file',
