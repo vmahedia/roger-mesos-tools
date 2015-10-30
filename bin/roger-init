@@ -56,7 +56,6 @@ def createAppTags(app_name):
   details['template_path'] = "marathon_template_path"
   details['path'] = "dockerfile_path"
   details['vars'] = createVariableTags()
-  details['imageBase'] = "{0}-base".format(app_name)
   container_list = ['{0}'.format(app_name)]
   details['containers'] = container_list
   app_dict['{0}'.format(app_name)] = details
