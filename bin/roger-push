@@ -92,12 +92,18 @@ def renderTemplate(template, environment, image, app_data, config):
 def main():
   parser = parse_args()
   args = parser.parse_args()
-  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+  config_dir = ''
+  if "ROGER_CONFIG_DIR" in os.environ:
+    config_dir = os.environ.get('ROGER_CONFIG_DIR')
+  if config_dir == '':
+    sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
+  config_dir = os.path.abspath(config_dir)
+  
   cur_file_path = os.path.dirname(os.path.realpath(__file__))
-  with open('{0}/config/{1}'.format(root, args.config_file)) as config:
+  with open('{0}/{1}'.format(config_dir, args.config_file)) as config:
     config = json.load(config)
 
-  with open('{0}/config/roger-env.json'.format(root)) as roger_env:
+  with open('{0}/roger-env.json'.format(config_dir)) as roger_env:
     roger_env = json.load(roger_env)
 
   if 'registry' not in roger_env.keys():

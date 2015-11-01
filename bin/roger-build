@@ -33,11 +33,15 @@ def parse_args():
 def main():
   parser = parse_args()
   args = parser.parse_args()
-  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-  with open('{0}/config/{1}'.format(root, args.config_file)) as config:
+  if "ROGER_CONFIG_DIR" in os.environ:
+    config_dir = os.environ.get('ROGER_CONFIG_DIR')
+  if config_dir == '':
+    sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
+  config_dir = os.path.abspath(config_dir)
+  with open('{0}/{1}'.format(config_dir, args.config_file)) as config:
     config = json.load(config)
 
-  with open('{0}/config/roger-env.json'.format(root)) as roger_env:
+  with open('{0}/roger-env.json'.format(config_dir)) as roger_env:
     roger_env = json.load(roger_env)
 
   if 'registry' not in roger_env:
@@ -68,7 +72,7 @@ def main():
   file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
   if file_exists:
-    os.system("{0}/bin/docker-build '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, os.path.abspath(args.directory), repo, projects, docker_path, args.tag_name))
+    os.system("./docker-build '{0}' '{1}' '{2}' '{3}' '{4}'".format(os.path.abspath(args.directory), repo, projects, docker_path, args.tag_name))
     image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
     os.system("docker tag -f {0} {1}".format(args.tag_name, image))
     build_message = "Image {0} built".format(args.tag_name)

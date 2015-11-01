@@ -207,14 +207,19 @@ def parseArgs():
   return parser
 
 def main():
-  applicationRoot = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+  if "ROGER_CONFIG_DIR" in os.environ:
+    config_dir = os.environ.get('ROGER_CONFIG_DIR')
+  if config_dir == '':
+    sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
+  config_dir = os.path.abspath(config_dir)
+
   parser = parseArgs()
   args = parser.parse_args()
 
-  with open('{0}/config/roger-env.json'.format(applicationRoot)) as roger_env:
+  with open('{0}/roger-env.json'.format(config_dir)) as roger_env:
     roger_env = json.load(roger_env)
 
-  with open('{0}/config/{1}'.format(applicationRoot, args.config_file)) as config:
+  with open('{0}/{1}'.format(config_dir, args.config_file)) as config:
     config = json.load(config)
 
   if args.application not in config['apps']:
@@ -226,16 +231,11 @@ def main():
   #Setup for Slack-Client, token, and git user
   slack = Slack(config['notifications'], '.slack_token')
 
-  os.chdir(applicationRoot)
-  if not os.path.isdir('src'):
-    os.mkdir('src')
-
   if args.application == 'all':
     apps = config['apps'].keys()
   else:
     apps = [args.application]
 
-  os.chdir(applicationRoot)
   common_repo = config.get('repo', '')
   environment = roger_env.get('default', '')
 
@@ -271,8 +271,6 @@ def main():
 
 def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
-
-  applicationRoot = os.path.dirname(os.path.realpath(__file__))
   environmentObj = roger_env['environments'][environment]
   data = config['apps'][app]
   repo = ''
@@ -285,7 +283,7 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   image = ''
 
   # get/update target source(s)
-  #os.system("{0}/bin/roger-git-pull {1} {2} {3} --branch {4}".format(applicationRoot, app, os.path.abspath(work_dir), config_file, branch))
+  os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
 
   skip_build = False
   if not args.skip_build is None:
@@ -306,11 +304,11 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
     image_name = getNextVersion(config, roger_env, app, branch, work_dir, repo, args)
     image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
     print("Bumped up image to version:{0}".format(image_name))
-    #os.system("{0}/bin/roger-build --push {1} {2} {3} {4}".format(applicationRoot, app, os.path.abspath(work_dir), image_name, config_file))
+    os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
   print("Version is:"+image_name)
 
   #Deploying the app to marathon
-  #os.system("{0}/bin/roger-put {1} {2} \"{3}\" {4} --env {5}".format(applicationRoot, app, os.path.abspath(work_dir), image_name, config_file, environment))
+  os.system("roger-push {0} {1} \"{2}\" {3} --env {4}".format(app, os.path.abspath(work_dir), image_name, config_file, environment))
 
   if rm_work_dir == True:
     os.system("rm -rf {0}".format(work_dir))

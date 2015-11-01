@@ -61,8 +61,8 @@ def createAppTags(app_name):
   app_dict['{0}'.format(app_name)] = details
   return app_dict
 
-def createAppConfig(root, filename, app_name, project_name):
-  path = "{0}/config".format(root)
+def createAppConfig(config_dir, filename, app_name, project_name):
+  path = "{0}".format(config_dir)
   json_dict, app_dict = {}, {}
   json_dict['name'] = project_name
   json_dict['notifications'] = createSlackTags()
@@ -71,7 +71,7 @@ def createAppConfig(root, filename, app_name, project_name):
   app_dict = createAppTags(app_name)
   json_dict['apps'] = app_dict
   json_output = json.dumps(json_dict, indent=2)
-  path = "{0}/config".format(root)
+  path = "{0}".format(config_dir)
   writeJson(json_output, path, filename)
 
 def createPortMappings():
@@ -107,20 +107,26 @@ def createMarathonConfig(templ_dir, filename, app_id):
 def main():
   parser = parse_args()
   args = parser.parse_args()
-  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+  if "ROGER_CONFIG_DIR" in os.environ:
+    config_dir = os.environ.get('ROGER_CONFIG_DIR')
+  if config_dir == '':
+    sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
+  config_dir = os.path.abspath(config_dir)
+  print(config_dir)
+
   templ_dir = ''
   if "ROGER_TEMPLATES_DIR" in os.environ:
     templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
   if templ_dir == '':
     sys.exit("Environment variable ROGER_TEMPLATES_DIR is not set")
   templ_dir = os.path.abspath(templ_dir)
-  file_exists = os.path.exists("{0}/config/{1}".format(root, args.filename))
+  file_exists = os.path.exists("{0}/{1}".format(config_dir, args.filename))
 
   if file_exists:
-    print("File {0} already exists in {1}/config/".format(args.filename, root))
+    print("File {0} already exists in {1}/".format(args.filename, config_dir))
   else:
-    print("Sample {0} application file {1} created under {2}/config/".format(args.app_name, args.filename, root))
-    createAppConfig(root, args.filename, args.app_name, args.project_name)
+    print("Sample {0} application file {1} created under {2}/".format(args.app_name, args.filename, config_dir))
+    createAppConfig(config_dir, args.filename, args.app_name, args.project_name)
 
   marathon_filename = "{0}-{1}.json".format(args.project_name, args.app_name)
   file_exists = os.path.exists("{0}/{1}".format(templ_dir, marathon_filename))
