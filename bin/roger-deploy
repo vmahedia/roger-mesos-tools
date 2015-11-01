@@ -75,7 +75,7 @@ class Slack:
 #   <host>:<port>/moz-content-agora-7da406eb9e8937875e0548ae1149/v0.46
 def getNextVersion(config, roger_env, application, branch, work_dir, repo, args):
   sha = getGitSha(work_dir, repo, branch)
-  docker_search = subprocess.check_output("docker search {0}/{1}-{2}-".format(roger_env['registry'], config['name'], application), shell=True)
+  docker_search = subprocess.check_output("docker search {0}/{1}-{2}".format(roger_env['registry'], config['name'], application), shell=True)
   image_list = []
   version = ''
   envs = ['prod', 'stage', 'dev', 'test']
@@ -99,35 +99,31 @@ def getNextVersion(config, roger_env, application, branch, work_dir, repo, args)
   return version
 
 def findLatestImage(image_list):
-  max_major = max_minor = max_patch = 0
-  temp_list = []
-  for image in image_list:
-    version = image.split('/v')[1]
-    ver_tuple = splitVersion(version)
-    temp_list.append(ver_tuple[0])
-  max_major = max(temp_list)
-  temp_list = []
-  for image in image_list:
-    version = image.split('/v')[1]
-    ver_tuple = splitVersion(version)
-    if ver_tuple[0] == max_major:
-      temp_list.append(ver_tuple[1])
-  max_minor = max(temp_list)
-  temp_list = []
-  for image in image_list:
-    version = image.split('/v')[1]
-    ver_tuple = splitVersion(version)
-    if (ver_tuple[0] == max_major) and (ver_tuple[1] == max_minor):
-      temp_list.append(ver_tuple[2])
-  max_patch = max(temp_list)
-  for image in image_list:
-    version = image.split('/v')[1]
-    ver_tuple = splitVersion(version)
-    if ver_tuple == (max_major, max_minor, max_patch):
-      latest_image = image
-      break
+  max_image = image_list[0]
+  for i in range(1, len(image_list)):
+    max_image = findNewerImage(image_list[i], max_image)
+    
+  return max_image 
 
-  return latest_image 
+def findNewerImage(image1, image2):	#Takes two images and return the one that is the newest or higher version
+  version1 = image1.split('/v')[1]
+  version2 = image2.split('/v')[1]
+  ver_tuple1 = splitVersion(version1)
+  ver_tuple2 = splitVersion(version2)
+  if ver_tuple1[0] > ver_tuple2[0]:
+    return image1
+  elif ver_tuple2[0] > ver_tuple1[0]:
+    return image2
+  else:
+    if ver_tuple1[1] > ver_tuple2[1]:
+      return image1
+    elif ver_tuple2[1] > ver_tuple1[1]:
+      return image2
+    else:
+      if ver_tuple1[2] >= ver_tuple1[2]:
+        return image1
+      else:
+        return image2
 
 def incrementVersion(sha, image_list, args):
   latest = findLatestImage(image_list)
