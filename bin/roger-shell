@@ -53,9 +53,10 @@ def get_containerid(appTaskId, hostname):
 def main():
     parser = parse_args()
     args = parser.parse_args()
+    config_dir = ''
     if "ROGER_CONFIG_DIR" in os.environ:
       config_dir = os.environ.get('ROGER_CONFIG_DIR')
-    if config_dir == '':
+    if config_dir.strip() == '':
       sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
     config_dir = os.path.abspath(config_dir)
 
@@ -67,7 +68,7 @@ def main():
     if args.env is None:
       if "ROGER_ENV" in os.environ:
         env_var = os.environ.get('ROGER_ENV')
-        if env_var == '':
+        if env_var.strip() == '':
           print("Environment variable $ROGER_ENV is not set.Using the default set from roger-env.json file")
         else:
           print("Using value {} from environment variable $ROGER_ENV".format(env_var))

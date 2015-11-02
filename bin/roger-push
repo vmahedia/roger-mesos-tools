@@ -95,7 +95,7 @@ def main():
   config_dir = ''
   if "ROGER_CONFIG_DIR" in os.environ:
     config_dir = os.environ.get('ROGER_CONFIG_DIR')
-  if config_dir == '':
+  if config_dir.strip() == '':
     sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
   config_dir = os.path.abspath(config_dir)
   
@@ -116,7 +116,7 @@ def main():
   if args.env is None:
     if "ROGER_ENV" in os.environ:
       env_var = os.environ.get('ROGER_ENV')
-      if env_var == '':
+      if env_var.strip() == '':
         print("Environment variable $ROGER_ENV is not set. Using the default set from roger-env.json file")
       else:
         print("Using value {} from environment variable $ROGER_ENV".format(env_var))
@@ -139,20 +139,20 @@ def main():
   comp_dir = ''
   if "ROGER_COMPONENTS_DIR" in os.environ:
     comp_dir = os.environ.get('ROGER_COMPONENTS_DIR')
-  if comp_dir == '':
+  if comp_dir.strip() == '':
     sys.exit("Environment variable $ROGER_COMPONENTS_DIR is not set")
   comp_dir = os.path.abspath(comp_dir)
 
   templ_dir = ''
   if "ROGER_TEMPLATES_DIR" in os.environ:
     templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
-  if templ_dir == '':
+  if templ_dir.strip() == '':
     sys.exit("Environment variable $ROGER_TEMPLATES_DIR is not set")
 
   secrets_dir = ''
   if "ROGER_SECRETS_DIR" in os.environ:
     secrets_dir = os.environ.get('ROGER_SECRETS_DIR')
-  if secrets_dir == '':
+  if secrets_dir.strip() == '':
     sys.exit("Environment variable $ROGER_SECRETS_DIR is not set")
   secrets_dir = os.path.abspath(secrets_dir)
 
