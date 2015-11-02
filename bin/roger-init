@@ -18,15 +18,11 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='Creates an initial marathon template and an application config file.')
+  parser = argparse.ArgumentParser(description='Creates an initial application template and a project config file.')
   parser.add_argument('app_name', metavar='app_name',
-    help="Application name. Example: 'agora' or 'grafana'")
-  parser.add_argument('id', metavar='id',
-    help="Application id that uniquely identifies it (is used for Marathon id). Example: 'roger-collectd' or 'roger-statsd'")
+    help="An application name unique within a project (or team). Examples: 'grafana', 'agora', 'crux:web'")
   parser.add_argument('project_name', metavar='project_name',
-    help="Project name. Example: 'moz-kwe' or 'moz-content'")
-  parser.add_argument('filename', metavar='filename',
-    help="Configuration file name to be used for the project. example: 'content.json' or 'kwe.json'")
+    help="A project (or team) name. Examples: 'roger', 'content', 'kwe'")
   return parser
 
 def writeJson(json, path, filename):
@@ -121,21 +117,23 @@ def main():
   if templ_dir.strip() == '':
     sys.exit("Environment variable ROGER_TEMPLATES_DIR is not set")
   templ_dir = os.path.abspath(templ_dir)
-  file_exists = os.path.exists("{0}/{1}".format(config_dir, args.filename))
+  config_file = "{0}.json".format(args.project_name)
+  file_exists = os.path.exists("{0}/{1}".format(config_dir, config_file))
 
   if file_exists:
-    print("File {0} already exists in {1}/".format(args.filename, config_dir))
+    print("File {0} already exists in {1}/".format(config_file, config_dir))
   else:
-    print("Sample {0} application file {1} created under {2}/".format(args.app_name, args.filename, config_dir))
-    createAppConfig(config_dir, args.filename, args.app_name, args.project_name)
+    print("Sample {0} application file {1} created under {2}/".format(args.app_name, config_file, config_dir))
+    createAppConfig(config_dir, config_file, args.app_name, args.project_name)
 
-  marathon_filename = "{0}-{1}.json".format(args.project_name, args.app_name)
+  marathon_filename = "moz-{0}-{1}.json".format(args.project_name, args.app_name)
   file_exists = os.path.exists("{0}/{1}".format(templ_dir, marathon_filename))
   if file_exists:
     print("File {0} already exists in {1}".format(marathon_filename, templ_dir))
   else:
+    app_id = "moz-{0}-{1}".format(args.project_name, args.app_name)
+    createMarathonConfig(templ_dir, marathon_filename, app_id)
     print("Sample Marathon file {0} created under {1}".format(marathon_filename, templ_dir))
-    createMarathonConfig(templ_dir, marathon_filename, args.id)
 
 if __name__ == "__main__":
   main()
