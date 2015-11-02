@@ -76,7 +76,7 @@ class Slack:
 def getNextVersion(config, roger_env, application, branch, work_dir, repo, args):
   sha = getGitSha(work_dir, repo, branch)
   docker_search = subprocess.check_output("docker search {0}/{1}-{2}".format(roger_env['registry'], config['name'], application), shell=True)
-  image_list = []
+  image_version_list = []
   version = ''
   envs = ['prod', 'stage', 'dev', 'test']
   for line in docker_search.split('\n'):
@@ -89,46 +89,18 @@ def getNextVersion(config, roger_env, application, branch, work_dir, repo, args)
           skip_image = True
           break
       if skip_image == False:
-        image_list.append(matchObj.group())
+        image_version_list.append(matchObj.group().split('/v')[1])
 
-  if len(image_list) == 0:	#Create initial version
+  if len(image_version_list) == 0:	#Create initial version
     version = "{0}/v0.1.0".format(sha)
     print("No version currently exist in the Docker Registry.Deploying version:{0}".format(version))
   else:
-    version = incrementVersion(sha, image_list, args)
+    version = incrementVersion(sha, image_version_list, args)
   return version
 
-def findLatestImage(image_list):
-  max_image = image_list[0]
-  for i in range(1, len(image_list)):
-    max_image = findNewerImage(image_list[i], max_image)
-    
-  return max_image 
-
-def findNewerImage(image1, image2):	#Takes two images and return the one that is the newest or higher version
-  version1 = image1.split('/v')[1]
-  version2 = image2.split('/v')[1]
-  ver_tuple1 = splitVersion(version1)
-  ver_tuple2 = splitVersion(version2)
-  if ver_tuple1[0] > ver_tuple2[0]:
-    return image1
-  elif ver_tuple2[0] > ver_tuple1[0]:
-    return image2
-  else:
-    if ver_tuple1[1] > ver_tuple2[1]:
-      return image1
-    elif ver_tuple2[1] > ver_tuple1[1]:
-      return image2
-    else:
-      if ver_tuple1[2] >= ver_tuple1[2]:
-        return image1
-      else:
-        return image2
-
-def incrementVersion(sha, image_list, args):
-  latest = findLatestImage(image_list)
-  version = latest.split('/v')[1]
-  ver_tuple = splitVersion(version)
+def incrementVersion(sha, image_version_list, args):
+  latest = max(image_version_list, key=splitVersion)
+  ver_tuple = splitVersion(latest)
   latest_version = ''
   if args.incr_major:
     latest_version = "{0}/v{1}.0.0".format(sha, (int(ver_tuple[0])+1))
