@@ -22,7 +22,7 @@ def parse_args():
   parser.add_argument('app_name', metavar='app_name',
     help="An application name unique within a project (or team). Examples: 'grafana', 'agora', 'crux:web'")
   parser.add_argument('project_name', metavar='project_name',
-    help="A project (or team) name. Examples: 'roger', 'content', 'kwe'")
+    help="A project (or team) name. Examples: 'moz-roger', 'moz-content', 'moz-kwe'")
   return parser
 
 def writeJson(json, path, filename):
@@ -123,15 +123,15 @@ def main():
   if file_exists:
     print("File {0} already exists in {1}/".format(config_file, config_dir))
   else:
-    print("Sample {0} application file {1} created under {2}/".format(args.app_name, config_file, config_dir))
     createAppConfig(config_dir, config_file, args.app_name, args.project_name)
+    print("Sample {0} application file {1} created under {2}/".format(args.app_name, config_file, config_dir))
 
-  marathon_filename = "moz-{0}-{1}.json".format(args.project_name, args.app_name)
+  marathon_filename = "{0}-{1}.json".format(args.project_name, args.app_name)
   file_exists = os.path.exists("{0}/{1}".format(templ_dir, marathon_filename))
   if file_exists:
     print("File {0} already exists in {1}".format(marathon_filename, templ_dir))
   else:
-    app_id = "moz-{0}-{1}".format(args.project_name, args.app_name)
+    app_id = "{0}-{1}".format(args.project_name, args.app_name)
     createMarathonConfig(templ_dir, marathon_filename, app_id)
     print("Sample Marathon file {0} created under {1}".format(marathon_filename, templ_dir))
 
