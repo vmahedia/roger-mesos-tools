@@ -107,7 +107,7 @@ def main():
     roger_env = json.load(roger_env)
 
   if 'registry' not in roger_env.keys():
-   sys.exit('Registry not found in roger-env.json file.')
+    sys.exit('Registry not found in roger-env.json file.')
 
   if args.app_name not in config['apps'].keys():
     sys.exit('Application specified not found.')
@@ -208,10 +208,12 @@ def main():
             headers = {'Content-type': 'application/json'})
           print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/groups/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
         else:
+          '''
           resp = requests.put(
             "{}/v2/apps/{}".format(environmentObj['marathon_endpoint'], appName),
             data=data,
             headers = {'Content-type': 'application/json'})
+          '''
           print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/apps/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
         marathon_message = "{0}: {1}".format(appName, resp)
         print(marathon_message)

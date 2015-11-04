@@ -120,7 +120,7 @@ def splitVersion(version):
 
 # Expected format:
 #   <host>:<port>/moz-<project>-<service>-<sha>/v0.46
-def getCurrentVersion(roger_env, environment, application):
+def getCurrentMarathonVersion(roger_env, environment, application):
   data = getMarathonState(roger_env, environment)
   for app in data['apps']:
     if app['container'] != None:
@@ -142,8 +142,20 @@ def extractShaFromImage(image):
       return sha[3]
   return ''
 
+def getCurrentChronosVersion(roger_env, environment, application):
+  data = getChronosState(roger_env, environment)
+  for app in data:
+    if 'name' in app:
+      if application in app['name'] and 'container' in app:
+        return app['container']['image']
+
 def getMarathonState(roger_env, environment):
   url = roger_env['environments'][environment]['marathon_endpoint']+"/v2/apps"
+  resp = requests.get(url)
+  return resp.json()
+
+def getChronosState(roger_env, environment):
+  url = roger_env['environments'][environment]['chronos_endpoint']+"/scheduler/jobs"
   resp = requests.get(url)
   return resp.json()
 
@@ -195,7 +207,7 @@ def main():
     sys.exit('Application specified not found.')
 
   if 'registry' not in roger_env:
-   sys.exit('Registry not found in roger-env.json file.')
+    sys.exit('Registry not found in roger-env.json file.')
 
   #Setup for Slack-Client, token, and git user
   slack = Slack(config['notifications'], '.slack_token')
@@ -229,6 +241,9 @@ def main():
     environment = args.environment
 
   if environment not in roger_env['environments']:
+    if rm_work_dir == True:
+      os.system("rm -rf {0}".format(work_dir))
+      print("Deleting temporary dir:{0}".format(work_dir))
     sys.exit('Environment not found in roger-env.json file.')
 
   branch = "master"     #master by default
@@ -242,6 +257,10 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   startTime = datetime.now()
   environmentObj = roger_env['environments'][environment]
   data = config['apps'][app]
+  framework = "marathon"  #Default framework is Marathon
+  if 'framework' in data:
+    framework = data['framework']
+
   repo = ''
   if common_repo != '':
     repo = data.get('repo', common_repo)
@@ -252,7 +271,7 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   image = ''
 
   # get/update target source(s)
-  os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
+  #os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
 
   skip_build = False
   if not args.skip_build is None:
@@ -263,17 +282,21 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   image_name = "{0}-{1}-{2}/v0.1.0".format(config['name'], app, image_git_sha)
   
   if skip_build == True:
-    curr_image_ver = getCurrentVersion(roger_env, environment, app)
-    print(curr_image_ver)
+    curr_image_ver = getCurrentMarathonVersion(roger_env, environment, app)
+    if framework.lower() == "chronos":
+      curr_image_ver = getCurrentChronosVersion(roger_env, environment, app)
+    print("Current image version from {0} is :{1}".format(framework, curr_image_ver))
     if not curr_image_ver is None:
       image_name = "{0}-{1}-{2}".format(config['name'], app, curr_image_ver)
-      print("Image current version from Marathon endpoint is:{0}".format(image_name))
+      print("Image current version from {0} endpoint is:{1}".format(framework, image_name))
+    else:
+      print("Using base version for image:{0}".format(image_name))
   else:
     #Docker build,tag and push
     image_name = getNextVersion(config, roger_env, app, branch, work_dir, repo, args)
     image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
     print("Bumped up image to version:{0}".format(image_name))
-    os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
+    #os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
   print("Version is:"+image_name)
 
   #Deploying the app to marathon
