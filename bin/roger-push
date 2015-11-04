@@ -196,16 +196,21 @@ def main():
   if args.skip_push:
       print("Skipped pushing to {} environment. The rendered config file is at: {}".format(environment, config_file_path))
   else:
-      # push to roger marathon framework
+      # push to roger framework
       for container in data['containers']:
         containerConfig = "{0}-{1}.json".format(config['name'], container)
         data = open(config_file_path).read()
 
         print("TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container))
-        appName = json.loads(data)['id']
+        appName = ''
+        if framework.lower() == "marathon":
+          appName = json.loads(data)['id']
+        
+        #Default endpoint and deploy_url uses Marathon framework
         endpoint = environmentObj['marathon_endpoint']
         deploy_url = "{}/v2/apps/{}".format(endpoint, appName)
-        if framework.lower() == "chronos"
+
+        if framework.lower() == "chronos":
           endpoint = environmentObj['chronos_endpoint']
           deploy_url = "{}/scheduler/iso8601".format(endpoint)
         resp = ""
@@ -220,7 +225,7 @@ def main():
             deploy_url,
             data=data,
             headers = {'Content-type': 'application/json'})
-          print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/apps/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
+          print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}".format(comp_dir, environment, containerConfig, deploy_url))
         marathon_message = "{0}: {1}".format(appName, resp)
         print(marathon_message)
 

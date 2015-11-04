@@ -265,13 +265,13 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   if common_repo != '':
     repo = data.get('repo', common_repo)
   else:
-    repo = data.get('repo', args.app_name)
+    repo = data.get('repo', args.application)
 
   image_name = ''
   image = ''
 
   # get/update target source(s)
-  #os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
+  os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
 
   skip_build = False
   if not args.skip_build is None:
@@ -285,7 +285,7 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
     curr_image_ver = getCurrentMarathonVersion(roger_env, environment, app)
     if framework.lower() == "chronos":
       curr_image_ver = getCurrentChronosVersion(roger_env, environment, app)
-    print("Current image version from {0} is :{1}".format(framework, curr_image_ver))
+    print("Current image version deployed on {0} is :{1}".format(framework, curr_image_ver))
     if not curr_image_ver is None:
       image_name = "{0}-{1}-{2}".format(config['name'], app, curr_image_ver)
       print("Image current version from {0} endpoint is:{1}".format(framework, image_name))
@@ -296,7 +296,7 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
     image_name = getNextVersion(config, roger_env, app, branch, work_dir, repo, args)
     image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
     print("Bumped up image to version:{0}".format(image_name))
-    #os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
+    os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
   print("Version is:"+image_name)
 
   #Deploying the app to marathon
