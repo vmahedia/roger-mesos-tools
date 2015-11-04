@@ -271,7 +271,14 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   image = ''
 
   # get/update target source(s)
-  os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
+  try:
+    os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
+  except (IOError) as e:
+    print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
+    if rm_work_dir == True:
+      os.system("rm -rf {0}".format(work_dir))
+      print("Deleting temporary dir:{0}".format(work_dir))
+    sys.exit('Exiting')
 
   skip_build = False
   if not args.skip_build is None:
@@ -296,11 +303,25 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
     image_name = getNextVersion(config, roger_env, app, branch, work_dir, repo, args)
     image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
     print("Bumped up image to version:{0}".format(image_name))
-    os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
+    try:
+      os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
+    except (IOError) as e:
+      print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
+      if rm_work_dir == True:
+        os.system("rm -rf {0}".format(work_dir))
+        print("Deleting temporary dir:{0}".format(work_dir))
+      sys.exit('Exiting')
   print("Version is:"+image_name)
 
   #Deploying the app to marathon
-  os.system("roger-push {0} {1} \"{2}\" {3} --env {4}".format(app, os.path.abspath(work_dir), image_name, config_file, environment))
+  try:
+    os.system("roger-push {0} {1} \"{2}\" {3} --env {4}".format(app, os.path.abspath(work_dir), image_name, config_file, environment))
+  except (IOError) as e:
+    print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
+    if rm_work_dir == True:
+      os.system("rm -rf {0}".format(work_dir))
+      print("Deleting temporary dir:{0}".format(work_dir))
+    sys.exit('Exiting')
 
   if rm_work_dir == True:
     os.system("rm -rf {0}".format(work_dir))

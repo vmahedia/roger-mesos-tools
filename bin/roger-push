@@ -201,7 +201,7 @@ def main():
         containerConfig = "{0}-{1}.json".format(config['name'], container)
         data = open(config_file_path).read()
 
-        print("TRIGGERING MARATHON APPLICATION UPDATE FOR: {}".format(container))
+        print("TRIGGERING {0} APPLICATION UPDATE FOR: {1}".format(framework.upper(), container))
         appName = ''
         if framework.lower() == "marathon":
           appName = json.loads(data)['id']
