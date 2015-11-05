@@ -124,16 +124,22 @@ def getCurrentMarathonVersion(roger_env, environment, application):
   data = getMarathonState(roger_env, environment)
   for app in data['apps']:
     if app['container'] != None:
-      if application in app['container']['docker']['image']:
-        return extractFullShaAndVersion(app['container']['docker']['image'])
+      docker_image = app['container']['docker']['image']
+      if application in docker_image:
+        if len(docker_image.split('/v')) == 2:
+          #Image format expected moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
+          return extractFullShaAndVersion(docker_image)
+        else:	
+          #Docker images of the format: grafana/grafana:2.1.3 or postgres:9.4.1 
+          return docker_image
 
 # Expected format:
-#   <host>:<port>/moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
+#   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
 def extractFullShaAndVersion(image):
   return image.split('-')[3]
 
 # Expected format:
-#   <host>:<port>/moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
+#   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
 def extractShaFromImage(image):
   sha = image.split('/')
   if sha != None and sha[1] != None:
@@ -147,7 +153,13 @@ def getCurrentChronosVersion(roger_env, environment, application):
   for app in data:
     if 'name' in app:
       if application in app['name'] and 'container' in app:
-        return app['container']['image']
+        docker_image = app['container']['image']
+        if len(docker_image.split('/v')) == 2:
+          #Image format expected moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
+          return extractFullShaAndVersion(docker_image)
+        else:
+          #Docker images of the format: grafana/grafana:2.1.3 or postgres:9.4.1
+          return docker_image 
 
 def getMarathonState(roger_env, environment):
   url = roger_env['environments'][environment]['marathon_endpoint']+"/v2/apps"
