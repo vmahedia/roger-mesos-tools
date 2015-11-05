@@ -22,7 +22,7 @@ def parse_args():
   parser.add_argument('app_name', metavar='app_name',
     help="An application name unique within a project (or team). Examples: 'grafana', 'agora', 'crux:web'")
   parser.add_argument('project_name', metavar='project_name',
-    help="A project (or team) name. Examples: 'moz-roger', 'moz-content', 'moz-kwe'")
+    help="A project (or team) name. Examples: 'roger', 'content', 'kwe'")
   return parser
 
 def writeJson(json, path, filename):
