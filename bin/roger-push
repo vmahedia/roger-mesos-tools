@@ -192,13 +192,13 @@ def main():
     with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
       fh.write(output)
 
-  config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
   if args.skip_push:
       print("Skipped pushing to {} environment. The rendered config file is at: {}".format(environment, config_file_path))
   else:
       # push to roger framework
       for container in data['containers']:
         containerConfig = "{0}-{1}.json".format(config['name'], container)
+        config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
         data = open(config_file_path).read()
 
         print("TRIGGERING {0} APPLICATION UPDATE FOR: {1}".format(framework.upper(), container))
