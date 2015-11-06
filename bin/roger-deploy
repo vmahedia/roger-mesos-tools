@@ -12,6 +12,7 @@ import os
 import requests
 import sys
 import re
+import shutil
 
 import contextlib
 
@@ -254,7 +255,7 @@ def main():
 
   if environment not in roger_env['environments']:
     if rm_work_dir == True:
-      os.system("rm -rf {0}".format(work_dir))
+      shutil.rmtree(work_dir)
       print("Deleting temporary dir:{0}".format(work_dir))
     sys.exit('Environment not found in roger-env.json file.')
 
@@ -288,7 +289,7 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     if rm_work_dir == True:
-      os.system("rm -rf {0}".format(work_dir))
+      shutil.rmtree(work_dir)
       print("Deleting temporary dir:{0}".format(work_dir))
     sys.exit('Exiting')
 
@@ -320,7 +321,7 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
     except (IOError) as e:
       print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
       if rm_work_dir == True:
-        os.system("rm -rf {0}".format(work_dir))
+        shutil.rmtree(work_dir)
         print("Deleting temporary dir:{0}".format(work_dir))
       sys.exit('Exiting')
   print("Version is:"+image_name)
@@ -331,14 +332,14 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     if rm_work_dir == True:
-      os.system("rm -rf {0}".format(work_dir))
+      shutil.rmtree(work_dir)
       print("Deleting temporary dir:{0}".format(work_dir))
     sys.exit('Exiting')
 
   if rm_work_dir == True:
     exists = os.path.exists(os.path.abspath(work_dir))
     if exists:
-      os.system("rm -rf {0}".format(work_dir))
+      shutil.rmtree(work_dir) 
       print("Deleting temporary dir:{0}".format(work_dir))
 
   deployTime = datetime.now() - startTime

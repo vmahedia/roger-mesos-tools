@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import sys
+import shutil
 
 import contextlib
 
@@ -22,7 +23,7 @@ def tempDirCheck(work_dir):
   if work_dir.endswith("tmpworkdir"):
     exists = os.path.exists(os.path.abspath(work_dir))
     if exists:
-      os.system("rm -rf {0}".format(work_dir))
+      shutil.rmtree(work_dir)
       print("Deleting temporary dir:{0}".format(work_dir))
 
 def parse_args():
