@@ -193,7 +193,7 @@ def main():
       fh.write(output)
 
   if args.skip_push:
-      print("Skipped pushing to {} environment. The rendered config file is at: {}".format(environment, config_file_path))
+      print("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(framework, comp_dir, environment))
   else:
       # push to roger framework
       for container in data['containers']:
