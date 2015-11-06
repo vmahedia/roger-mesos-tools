@@ -25,6 +25,14 @@ def chdir(dirname):
     yield
   finally: os.chdir(curdir)
 
+#To remove a temporary directory created by roger-deploy if this script exits
+def tempDirCheck(rm_work_dir, work_dir):
+  if rm_work_dir == True:
+    exists = os.path.exists(os.path.abspath(work_dir))
+    if exists:
+      shutil.rmtree(work_dir)
+      print("Deleting temporary dir:{0}".format(work_dir))
+
 class Slack:
   def __init__(self, config, token_file):
     self.disabled = True
@@ -238,7 +246,7 @@ def main():
   if "ROGER_DEPLOY_SOURCE_DIR" in os.environ:
     work_dir = os.environ.get('ROGER_DEPLOY_SOURCE_DIR')
   if work_dir.strip() == '':
-    work_dir = mkdtemp(suffix='tmpworkdir')
+    work_dir = mkdtemp()
     rm_work_dir = True
     print("Environment variable $ROGER_DEPLOY_SOURCE_DIR is not set. Created a temporary dir: {0}".format(work_dir))
 
@@ -254,9 +262,7 @@ def main():
     environment = args.environment
 
   if environment not in roger_env['environments']:
-    if rm_work_dir == True:
-      shutil.rmtree(work_dir)
-      print("Deleting temporary dir:{0}".format(work_dir))
+    tempDirCheck(rm_work_dir, work_dir)
     sys.exit('Environment not found in roger-env.json file.')
 
   branch = "master"     #master by default
@@ -285,12 +291,13 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
 
   # get/update target source(s)
   try:
-    os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
+    exit_code = os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
+    if exit_code != 0:
+      tempDirCheck(rm_work_dir, work_dir)
+      sys.exit('Exiting')
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-    if rm_work_dir == True:
-      shutil.rmtree(work_dir)
-      print("Deleting temporary dir:{0}".format(work_dir))
+    tempDirCheck(rm_work_dir, work_dir)
     sys.exit('Exiting')
 
   skip_build = False
@@ -317,23 +324,25 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
     image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
     print("Bumped up image to version:{0}".format(image_name))
     try:
-      os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
+      exit_code = os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
+      if exit_code != 0:
+        tempDirCheck(rm_work_dir, work_dir)
+        sys.exit('Exiting')
     except (IOError) as e:
       print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-      if rm_work_dir == True:
-        shutil.rmtree(work_dir)
-        print("Deleting temporary dir:{0}".format(work_dir))
+      tempDirCheck(rm_work_dir, work_dir)
       sys.exit('Exiting')
   print("Version is:"+image_name)
 
   #Deploying the app to marathon
   try:
-    os.system("roger-push {0} {1} \"{2}\" {3} --env {4}".format(app, os.path.abspath(work_dir), image_name, config_file, environment))
+    exit_code = os.system("roger-push {0} {1} \"{2}\" {3} --env {4}".format(app, os.path.abspath(work_dir), image_name, config_file, environment))
+    if exit_code != 0:
+      tempDirCheck(rm_work_dir, work_dir)
+      sys.exit('Exiting')
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-    if rm_work_dir == True:
-      shutil.rmtree(work_dir)
-      print("Deleting temporary dir:{0}".format(work_dir))
+    tempDirCheck(rm_work_dir, work_dir)
     sys.exit('Exiting')
 
   if rm_work_dir == True:

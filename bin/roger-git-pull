@@ -5,7 +5,6 @@ import argparse
 import json
 import os
 import sys
-import shutil
 
 import contextlib
 
@@ -30,14 +29,6 @@ def parse_args():
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
   return parser
 
-#To remove a temporary directory created by roger-deploy if this script exits
-def tempDirCheck(work_dir):
-  if work_dir.endswith("tmpworkdir"):
-    exists = os.path.exists(os.path.abspath(work_dir))
-    if exists:
-      shutil.rmtree(work_dir)
-      print("Deleting temporary dir:{0}".format(work_dir))
-
 def main():
   parser = parse_args()
   args = parser.parse_args()
@@ -45,14 +36,12 @@ def main():
   if "ROGER_CONFIG_DIR" in os.environ:
     config_dir = os.environ.get('ROGER_CONFIG_DIR')
   if config_dir.strip() == '':
-    tempDirCheck(args.directory)
     sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
   config_dir = os.path.abspath(config_dir)
   with open('{0}/{1}'.format(config_dir, args.config_file)) as config:
     config = json.load(config)
 
   if args.app_name not in config['apps']:
-    tempDirCheck(args.directory)
     sys.exit('Application specified not found.')
 
   common_repo = config.get('repo', '')

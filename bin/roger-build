@@ -5,7 +5,6 @@ import argparse
 import json
 import os
 import sys
-import shutil
 
 import contextlib
 
@@ -17,14 +16,6 @@ def chdir(dirname):
     os.chdir(dirname)
     yield
   finally: os.chdir(curdir)
-
-#To remove a temporary directory created by roger-deploy if this script exits
-def tempDirCheck(work_dir):
-  if work_dir.endswith("tmpworkdir"):
-    exists = os.path.exists(os.path.abspath(work_dir))
-    if exists:
-      shutil.rmtree(work_dir)
-      print("Deleting temporary dir:{0}".format(work_dir))
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Builds the docker application and optionally pushes it to the docker registry.')
@@ -46,7 +37,6 @@ def main():
   if "ROGER_CONFIG_DIR" in os.environ:
     config_dir = os.environ.get('ROGER_CONFIG_DIR')
   if config_dir.strip() == '':
-    tempDirCheck(args.directory)
     sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
   config_dir = os.path.abspath(config_dir)
   with open('{0}/{1}'.format(config_dir, args.config_file)) as config:
@@ -56,11 +46,9 @@ def main():
     roger_env = json.load(roger_env)
 
   if 'registry' not in roger_env:
-    tempDirCheck(args.directory)
     sys.exit('Registry not found in roger-env.json file.')
 
   if args.app_name not in config['apps']:
-    tempDirCheck(args.directory)
     sys.exit('Application specified not found.')
 
   common_repo = config.get('repo', '')
