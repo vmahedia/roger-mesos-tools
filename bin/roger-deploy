@@ -237,7 +237,7 @@ def main():
   if "ROGER_DEPLOY_SOURCE_DIR" in os.environ:
     work_dir = os.environ.get('ROGER_DEPLOY_SOURCE_DIR')
   if work_dir.strip() == '':
-    work_dir = mkdtemp()
+    work_dir = mkdtemp(suffix='tmpworkdir')
     rm_work_dir = True
     print("Environment variable $ROGER_DEPLOY_SOURCE_DIR is not set. Created a temporary dir: {0}".format(work_dir))
 
@@ -336,8 +336,10 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
     sys.exit('Exiting')
 
   if rm_work_dir == True:
-    os.system("rm -rf {0}".format(work_dir))
-    print("Deleting temporary dir:{0}".format(work_dir))
+    exists = os.path.exists(os.path.abspath(work_dir))
+    if exists:
+      os.system("rm -rf {0}".format(work_dir))
+      print("Deleting temporary dir:{0}".format(work_dir))
 
   deployTime = datetime.now() - startTime
   git_username = subprocess.check_output("git config user.name", shell=True)
