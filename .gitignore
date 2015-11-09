@@ -3,4 +3,5 @@
 secretenvs
 components
 src
+*.pyc
 .slack_token

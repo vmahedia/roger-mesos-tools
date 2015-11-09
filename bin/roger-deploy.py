@@ -291,7 +291,7 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
 
   # get/update target source(s)
   try:
-    exit_code = os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
+    exit_code = os.system("roger-git-pull.py {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
     if exit_code != 0:
       tempDirCheck(rm_work_dir, work_dir)
       sys.exit('Exiting')
@@ -324,7 +324,7 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
     image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
     print("Bumped up image to version:{0}".format(image_name))
     try:
-      exit_code = os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
+      exit_code = os.system("roger-build.py --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
       if exit_code != 0:
         tempDirCheck(rm_work_dir, work_dir)
         sys.exit('Exiting')
@@ -336,7 +336,7 @@ def deployApp(args, config, roger_env, work_dir, rm_work_dir, environment, app, 
 
   #Deploying the app to marathon
   try:
-    exit_code = os.system("roger-push {0} {1} \"{2}\" {3} --env {4}".format(app, os.path.abspath(work_dir), image_name, config_file, environment))
+    exit_code = os.system("roger-push.py {0} {1} \"{2}\" {3} --env {4}".format(app, os.path.abspath(work_dir), image_name, config_file, environment))
     if exit_code != 0:
       tempDirCheck(rm_work_dir, work_dir)
       sys.exit('Exiting')
