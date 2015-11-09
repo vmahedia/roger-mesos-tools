@@ -4,7 +4,8 @@ from __future__ import print_function
 import unittest
 import os
 import sys
-roger_deploy = __import__('roger-deploy')
+import imp
+roger_deploy = imp.load_source('roger_deploy', '/vagrant/bin/roger-deploy')
 
 #Test basic functionalities of roger-deploy script
 class TestJournal(unittest.TestCase):

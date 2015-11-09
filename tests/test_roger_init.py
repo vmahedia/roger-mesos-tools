@@ -4,7 +4,8 @@ from __future__ import print_function
 import unittest
 import os
 import sys
-roger_init = __import__('roger-init')
+import imp
+roger_init = imp.load_source('roger_init', '/vagrant/bin/roger-init')
 
 #Test basic functionalities of roger-init script
 class TestJournal(unittest.TestCase):

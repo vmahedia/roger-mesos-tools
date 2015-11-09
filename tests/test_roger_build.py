@@ -4,7 +4,8 @@ from __future__ import print_function
 import unittest
 import os
 import sys
-roger_build = __import__('roger-build')
+import imp
+roger_build = imp.load_source('roger_build', '/vagrant/bin/roger-build')
 
 #Test basic functionalities of roger-build script
 class TestJournal(unittest.TestCase):

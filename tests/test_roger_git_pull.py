@@ -4,7 +4,8 @@ from __future__ import print_function
 import unittest
 import os
 import sys
-roger_git_pull = __import__('roger-git-pull')
+import imp
+roger_git_pull = imp.load_source('roger_git_pull', '/vagrant/bin/roger-git-pull')
 
 #Test basic functionalities of roger-git-pull script
 class TestJournal(unittest.TestCase):
