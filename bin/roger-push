@@ -8,6 +8,8 @@ import requests
 import json
 import os
 import sys
+import traceback
+import logging
 
 import contextlib
 
@@ -187,8 +189,8 @@ def main():
       comp_env_exists = os.path.exists("{0}/{1}".format(comp_dir, environment))
       if comp_env_exists == False:
         os.makedirs("{0}/{1}".format(comp_dir, environment))
-    except:
-      pass
+    except Exception as e:
+      logging.error(traceback.format_exc())
     with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
       fh.write(output)
 
