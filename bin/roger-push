@@ -8,6 +8,7 @@ import requests
 import json
 import os
 import sys
+import shutil
 
 import contextlib
 
@@ -183,10 +184,10 @@ def main():
     try:
       comp_exists = os.path.exists("{0}".format(comp_dir))
       if comp_exists == False:
-        os.mkdir("{0}".format(comp_dir))
+        os.makedirs("{0}".format(comp_dir))
       comp_env_exists = os.path.exists("{0}/{1}".format(comp_dir, environment))
       if comp_env_exists == False:
-        os.mkdir("{0}/{1}".format(comp_dir, environment))
+        os.makedirs("{0}/{1}".format(comp_dir, environment))
     except:
       pass
     with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
