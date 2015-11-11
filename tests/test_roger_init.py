@@ -8,7 +8,7 @@ import imp
 roger_init = imp.load_source('roger_init', '/vagrant/bin/roger-init')
 
 #Test basic functionalities of roger-init script
-class TestJournal(unittest.TestCase):
+class TestInit(unittest.TestCase):
 
   def setUp(self):
     pass

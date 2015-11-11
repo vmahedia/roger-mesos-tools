@@ -8,7 +8,7 @@ import imp
 roger_build = imp.load_source('roger_build', '/vagrant/bin/roger-build')
 
 #Test basic functionalities of roger-build script
-class TestJournal(unittest.TestCase):
+class TestBuild(unittest.TestCase):
 
   def setUp(self):
     pass

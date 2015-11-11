@@ -8,7 +8,7 @@ import imp
 roger_push = imp.load_source('roger_push', '/vagrant/bin/roger-push')
 
 #Test basic functionalities of roger-push script
-class TestJournal(unittest.TestCase):
+class TestPush(unittest.TestCase):
 
   def setUp(self):
     pass
