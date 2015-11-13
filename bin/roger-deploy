@@ -26,7 +26,7 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 #To remove a temporary directory created by roger-deploy if this script exits
-def tempDirCheck(work_dir):
+def removeDirTree(work_dir):
   exists = os.path.exists(os.path.abspath(work_dir))
   if exists:
     shutil.rmtree(work_dir)
@@ -256,7 +256,7 @@ def main():
     environment = args.environment
 
   if environment not in roger_env['environments']:
-    tempDirCheck(work_dir)
+    removeDirTree(work_dir)
     sys.exit('Environment not found in roger-env.json file.')
 
   branch = "master"     #master by default
@@ -287,11 +287,11 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
   try:
     exit_code = os.system("roger-git-pull {0} {1} {2} --branch {3}".format(app, os.path.abspath(work_dir), config_file, branch))
     if exit_code != 0:
-      tempDirCheck(work_dir)
+      removeDirTree(work_dir)
       sys.exit('Exiting')
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-    tempDirCheck(work_dir)
+    removeDirTree(work_dir)
     sys.exit('Exiting')
 
   skip_build = False
@@ -320,11 +320,11 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
     try:
       exit_code = os.system("roger-build --push {0} {1} {2} {3}".format(app, os.path.abspath(work_dir), image_name, config_file))
       if exit_code != 0:
-        tempDirCheck(work_dir)
+        removeDirTree(work_dir)
         sys.exit('Exiting')
     except (IOError) as e:
       print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-      tempDirCheck(work_dir)
+      removeDirTree(work_dir)
       sys.exit('Exiting')
   print("Version is:"+image_name)
 
@@ -332,11 +332,11 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
   try:
     exit_code = os.system("roger-push {0} {1} \"{2}\" {3} --env {4}".format(app, os.path.abspath(work_dir), image_name, config_file, environment))
     if exit_code != 0:
-      tempDirCheck(work_dir)
+      removeDirTree(work_dir)
       sys.exit('Exiting')
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-    tempDirCheck(work_dir)
+    removeDirTree(work_dir)
     sys.exit('Exiting')
 
   exists = os.path.exists(os.path.abspath(work_dir))
