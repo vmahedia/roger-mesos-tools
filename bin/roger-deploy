@@ -231,7 +231,7 @@ def main():
     sys.exit('Registry not found in roger-env.json file.')
 
   #Setup for Slack-Client, token, and git user
-  slack = Slack(config['notifications'], '.slack_token')
+  slack = Slack(config['notifications'], '.roger_cli.conf.d/.slack_token')
 
   if args.application == 'all':
     apps = config['apps'].keys()
@@ -243,12 +243,9 @@ def main():
 
   work_dir = ''
   rm_work_dir = False
-  if "ROGER_DEPLOY_SOURCE_DIR" in os.environ:
-    work_dir = os.environ.get('ROGER_DEPLOY_SOURCE_DIR')
-  if work_dir.strip() == '':
-    work_dir = mkdtemp()
-    rm_work_dir = True
-    print("Environment variable $ROGER_DEPLOY_SOURCE_DIR is not set. Created a temporary dir: {0}".format(work_dir))
+  work_dir = mkdtemp()
+  rm_work_dir = True
+  print("Created a temporary dir: {0}".format(work_dir))
 
   if args.environment is None:
     if "ROGER_ENV" in os.environ:

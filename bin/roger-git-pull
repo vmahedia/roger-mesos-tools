@@ -67,13 +67,11 @@ def main():
   path = "{0}/{1}".format(args.directory, repo)
   if os.path.isdir(path):
     with chdir(path):
-      os.system("git checkout {}".format(branch))
       os.system("git pull origin {}".format(branch))
   else:
     with chdir('{0}'.format(args.directory)):
-      os.system("git clone git@github.com:seomoz/{}.git".format(repo))
-      with chdir(repo):
-        os.system("git checkout {}".format(branch))
+      os.system("git clone --depth 1 --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
+      os.chdir(repo)
 
 if __name__ == "__main__":
   main()
