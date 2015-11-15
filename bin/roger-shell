@@ -8,6 +8,8 @@ import os
 import requests
 import subprocess
 import sys
+from settings import Settings
+from appconfig import AppConfig
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Get an Interactive Bash session into your container.')
@@ -53,16 +55,12 @@ def get_containerid(appTaskId, hostname):
 def main():
     parser = parse_args()
     args = parser.parse_args()
-    config_dir = ''
-    if "ROGER_CONFIG_DIR" in os.environ:
-      config_dir = os.environ.get('ROGER_CONFIG_DIR')
+    config_dir = settingObj.getConfigDir()
     if config_dir.strip() == '':
       sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
     config_dir = os.path.abspath(config_dir)
 
-    with open('{0}/roger-env.json'.format(config_dir)) as roger_env:
-        roger_env = json.load(roger_env)
-    
+    roger_env = appObj.getRogerEnvObject(config_dir)
     environment = roger_env.get('default', '')
     
     if args.env is None:
@@ -100,4 +98,6 @@ then will log into the first one")
         print("No Container found on host {0} with application Task Id {1}".format(hostname, args.appTaskId));
 
 if __name__ == '__main__':
+    settingObj = Settings()
+    appObj = AppConfig()
     main()

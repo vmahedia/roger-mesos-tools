@@ -5,6 +5,8 @@ import argparse
 import json
 import os
 import sys
+from settings import Settings
+from appconfig import AppConfig
 
 import contextlib
 
@@ -33,17 +35,12 @@ def parse_args():
 def main():
   parser = parse_args()
   args = parser.parse_args()
-  config_dir = ''
-  if "ROGER_CONFIG_DIR" in os.environ:
-    config_dir = os.environ.get('ROGER_CONFIG_DIR')
+  config_dir = settingObj.getConfigDir()
   if config_dir.strip() == '':
     sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
   config_dir = os.path.abspath(config_dir)
-  with open('{0}/{1}'.format(config_dir, args.config_file)) as config:
-    config = json.load(config)
-
-  with open('{0}/roger-env.json'.format(config_dir)) as roger_env:
-    roger_env = json.load(roger_env)
+  config = appObj.getConfigObject(config_dir, args.config_file)
+  roger_env = appObj.getRogerEnvObject(config_dir)
 
   if 'registry' not in roger_env:
     sys.exit('Registry not found in roger-env.json file.')
@@ -52,7 +49,7 @@ def main():
     sys.exit('Application specified not found.')
 
   common_repo = config.get('repo', '')
-  data = config['apps'][args.app_name]
+  data = appObj.getAppObject(config_dir, args.config_file, args.app_name)
   repo = ''
   if common_repo != '':
     repo = data.get('repo', common_repo)
@@ -85,4 +82,6 @@ def main():
     print("Dockerfile does not exist in {0} dir:".format(file_path))
 
 if __name__ == "__main__":
+  settingObj = Settings()
+  appObj = AppConfig()
   main()

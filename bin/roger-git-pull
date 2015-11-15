@@ -5,6 +5,8 @@ import argparse
 import json
 import os
 import sys
+from settings import Settings
+from appconfig import AppConfig
 
 import contextlib
 
@@ -32,20 +34,17 @@ def parse_args():
 def main():
   parser = parse_args()
   args = parser.parse_args()
-  config_dir = ''
-  if "ROGER_CONFIG_DIR" in os.environ:
-    config_dir = os.environ.get('ROGER_CONFIG_DIR')
+  config_dir = settingObj.getConfigDir()
   if config_dir.strip() == '':
     sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
   config_dir = os.path.abspath(config_dir)
-  with open('{0}/{1}'.format(config_dir, args.config_file)) as config:
-    config = json.load(config)
+  config = appObj.getConfigObject(config_dir, args.config_file)
 
   if args.app_name not in config['apps']:
     sys.exit('Application specified not found.')
 
   common_repo = config.get('repo', '')
-  data = config['apps'][args.app_name]
+  data = appObj.getAppObject(config_dir, args.config_file, args.app_name)
   repo = ''
   if common_repo != '':
     repo = data.get('repo', common_repo)
@@ -74,4 +73,6 @@ def main():
       os.chdir(repo)
 
 if __name__ == "__main__":
+  settingObj = Settings()
+  appObj = AppConfig()
   main()

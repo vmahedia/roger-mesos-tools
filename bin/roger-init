@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import sys
+from settings import Settings
 
 import contextlib
 
@@ -109,16 +110,12 @@ def createMarathonConfig(templ_dir, filename, app_id):
 def main():
   parser = parse_args()
   args = parser.parse_args()
-  config_dir = ''
-  if "ROGER_CONFIG_DIR" in os.environ:
-    config_dir = os.environ.get('ROGER_CONFIG_DIR')
+  config_dir = settingObj.getConfigDir()
   if config_dir.strip() == '':
     sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
   config_dir = os.path.abspath(config_dir)
 
-  templ_dir = ''
-  if "ROGER_TEMPLATES_DIR" in os.environ:
-    templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
+  templ_dir = settingObj.getTemplatesDir()
   if templ_dir.strip() == '':
     sys.exit("Environment variable ROGER_TEMPLATES_DIR is not set")
   templ_dir = os.path.abspath(templ_dir)
@@ -140,4 +137,5 @@ def main():
     createMarathonConfig(templ_dir, marathon_filename, app_id)
 
 if __name__ == "__main__":
+  settingObj = Settings()
   main()

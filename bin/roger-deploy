@@ -13,6 +13,8 @@ import requests
 import sys
 import re
 import shutil
+from settings import Settings
+from appconfig import AppConfig
 
 import contextlib
 
@@ -207,9 +209,7 @@ def parseArgs():
   return parser
 
 def main():
-  config_dir = ''
-  if "ROGER_CONFIG_DIR" in os.environ:
-    config_dir = os.environ.get('ROGER_CONFIG_DIR')
+  config_dir = settingObj.getConfigDir()
   if config_dir.strip() == '':
     sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
   config_dir = os.path.abspath(config_dir)
@@ -217,11 +217,8 @@ def main():
   parser = parseArgs()
   args = parser.parse_args()
 
-  with open('{0}/roger-env.json'.format(config_dir)) as roger_env:
-    roger_env = json.load(roger_env)
-
-  with open('{0}/{1}'.format(config_dir, args.config_file)) as config:
-    config = json.load(config)
+  roger_env = appObj.getRogerEnvObject(config_dir)
+  config = appObj.getConfigObject(config_dir, args.config_file)
 
   if args.application not in config['apps']:
     sys.exit('Application specified not found.')
@@ -264,12 +261,12 @@ def main():
     branch = args.branch
 
   for app in apps:
-    deployApp(args, config, roger_env, work_dir, environment, app, branch, slack, args.config_file, common_repo)
+    deployApp(args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo)
 
-def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack, config_file, common_repo):
+def deployApp(args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
   environmentObj = roger_env['environments'][environment]
-  data = config['apps'][app]
+  data = appObj.getAppObject(config_dir, config_file, app)
   framework = "marathon"  #Default framework is Marathon
   if 'framework' in data:
     framework = data['framework']
@@ -353,4 +350,6 @@ def deployApp(args, config, roger_env, work_dir, environment, app, branch, slack
 
 
 if __name__ == "__main__":
+  settingObj = Settings()
+  appObj = AppConfig()
   main()

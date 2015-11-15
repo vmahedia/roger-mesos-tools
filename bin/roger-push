@@ -10,6 +10,8 @@ import os
 import sys
 import traceback
 import logging
+from settings import Settings
+from appconfig import AppConfig
 
 import contextlib
 
@@ -94,19 +96,14 @@ def renderTemplate(template, environment, image, app_data, config):
 def main():
   parser = parse_args()
   args = parser.parse_args()
-  config_dir = ''
-  if "ROGER_CONFIG_DIR" in os.environ:
-    config_dir = os.environ.get('ROGER_CONFIG_DIR')
+  config_dir = settingObj.getConfigDir()
   if config_dir.strip() == '':
     sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
   config_dir = os.path.abspath(config_dir)
   
   cur_file_path = os.path.dirname(os.path.realpath(__file__))
-  with open('{0}/{1}'.format(config_dir, args.config_file)) as config:
-    config = json.load(config)
-
-  with open('{0}/roger-env.json'.format(config_dir)) as roger_env:
-    roger_env = json.load(roger_env)
+  config = appObj.getConfigObject(config_dir, args.config_file)
+  roger_env = appObj.getRogerEnvObject(config_dir)
 
   if 'registry' not in roger_env.keys():
     sys.exit('Registry not found in roger-env.json file.')
@@ -131,7 +128,7 @@ def main():
 
   environmentObj = roger_env['environments'][environment]
   common_repo = config.get('repo', '')
-  data = config['apps'][args.app_name]
+  data = appObj.getAppObject(config_dir, args.config_file, args.app_name)
   framework = "marathon"  #Default framework is Marathon
   if 'framework' in data:
     framework = data['framework']
@@ -142,22 +139,16 @@ def main():
   else:
     repo = data.get('repo', args.app_name)
 
-  comp_dir = ''
-  if "ROGER_COMPONENTS_DIR" in os.environ:
-    comp_dir = os.environ.get('ROGER_COMPONENTS_DIR')
+  comp_dir = settingObj.getComponentsDir()
   if comp_dir.strip() == '':
     sys.exit("Environment variable $ROGER_COMPONENTS_DIR is not set")
   comp_dir = os.path.abspath(comp_dir)
 
-  templ_dir = ''
-  if "ROGER_TEMPLATES_DIR" in os.environ:
-    templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
+  templ_dir = settingObj.getTemplatesDir()
   if templ_dir.strip() == '':
     sys.exit("Environment variable $ROGER_TEMPLATES_DIR is not set")
 
-  secrets_dir = ''
-  if "ROGER_SECRETS_DIR" in os.environ:
-    secrets_dir = os.environ.get('ROGER_SECRETS_DIR')
+  secrets_dir = settingObj.getSecretsDir()
   if secrets_dir.strip() == '':
     sys.exit("Environment variable $ROGER_SECRETS_DIR is not set")
   secrets_dir = os.path.abspath(secrets_dir)
@@ -232,4 +223,6 @@ def main():
         print(marathon_message)
 
 if __name__ == "__main__":
+  settingObj = Settings()
+  appObj = AppConfig()
   main()
