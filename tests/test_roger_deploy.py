@@ -5,6 +5,7 @@ import unittest
 import argparse
 import os
 import sys
+sys.path.append('/vagrant/bin')
 import imp
 roger_deploy = imp.load_source('roger_deploy', '/vagrant/bin/roger-deploy')
 
@@ -13,7 +14,7 @@ class TestDeploy(unittest.TestCase):
 
   def setUp(self):
     parser = argparse.ArgumentParser(description='Args for test')
-    parser.add_argument('command', metavar='command', help="Command to run")
+    #parser.add_argument('command', metavar='command', help="Command to run")
     self.parser = parser
 
   def test_splitVersion(self):
@@ -37,15 +38,13 @@ class TestDeploy(unittest.TestCase):
 
   def test_tempDirCheck(self):
     work_dir = "./test_dir"
+    roger_deploy.removeDirTree(work_dir)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == False
     os.makedirs(work_dir)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == True
-    roger_deploy.tempDirCheck(False, work_dir)
-    exists = os.path.exists(os.path.abspath(work_dir))
-    assert exists == True
-    roger_deploy.tempDirCheck(True, work_dir)
+    roger_deploy.removeDirTree(work_dir)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == False
 
@@ -53,4 +52,4 @@ class TestDeploy(unittest.TestCase):
     pass  
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

@@ -1,0 +1,39 @@
+{
+  "name": "test-app",
+  "notifications": {
+    "channel": "Channel ID",
+    "method": "chat.postMessage",
+    "username": "Roger Deploy",
+    "emoji": ":rocket:"
+  },
+  "repo": "roger",
+  "vars": {
+    "global": {
+      "instances": "1",
+      "network": "BRIDGE"
+    },
+    "environment": {
+      "dev": {
+        "cpus": "1",
+        "mem": "512"
+      },
+      "stage": {
+        "cpus": "1",
+        "mem": "1024"
+      },
+      "prod": {
+        "cpus": "2",
+        "mem": "2048"
+      }
+    }
+  },
+  "apps": {
+    "test_app": {
+      "imageBase": "test_app_base",
+      "containers": [
+        "container_name1",
+        "container_name2"
+      ]
+    }
+  }
+}

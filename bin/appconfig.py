@@ -19,5 +19,7 @@ class AppConfig:
 
   def getAppObject(self, config_dir, config_file, app_name):
     config = self.getConfigObject(config_dir, config_file)
-    app_data = config['apps'][app_name]
+    app_data = ''
+    if app_name in config['apps']:
+      app_data = config['apps'][app_name]
     return app_data
