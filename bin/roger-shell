@@ -56,11 +56,7 @@ def main():
     parser = parse_args()
     args = parser.parse_args()
     config_dir = settingObj.getConfigDir()
-    if config_dir.strip() == '':
-      sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
-    config_dir = os.path.abspath(config_dir)
-
-    roger_env = appObj.getRogerEnvObject(config_dir)
+    roger_env = appObj.getRogerEnv(config_dir)
     environment = roger_env.get('default', '')
     
     if args.env is None:

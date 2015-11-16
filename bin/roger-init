@@ -114,14 +114,8 @@ def main():
   parser = parse_args()
   args = parser.parse_args()
   config_dir = settingObj.getConfigDir()
-  if config_dir.strip() == '':
-    sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
-  config_dir = os.path.abspath(config_dir)
 
   templ_dir = settingObj.getTemplatesDir()
-  if templ_dir.strip() == '':
-    sys.exit("Environment variable ROGER_TEMPLATES_DIR is not set")
-  templ_dir = os.path.abspath(templ_dir)
   config_file = "{0}.json".format(args.project_name)
   file_exists = os.path.exists("{0}/{1}".format(config_dir, config_file))
 

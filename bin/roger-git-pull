@@ -35,16 +35,13 @@ def main():
   parser = parse_args()
   args = parser.parse_args()
   config_dir = settingObj.getConfigDir()
-  if config_dir.strip() == '':
-    sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
-  config_dir = os.path.abspath(config_dir)
-  config = appObj.getConfigObject(config_dir, args.config_file)
+  config = appObj.getConfig(config_dir, args.config_file)
 
   if args.app_name not in config['apps']:
     sys.exit('Application specified not found.')
 
   common_repo = config.get('repo', '')
-  data = appObj.getAppObject(config_dir, args.config_file, args.app_name)
+  data = appObj.getAppData(config_dir, args.config_file, args.app_name)
   repo = ''
   if common_repo != '':
     repo = data.get('repo', common_repo)

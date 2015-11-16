@@ -97,13 +97,10 @@ def main():
   parser = parse_args()
   args = parser.parse_args()
   config_dir = settingObj.getConfigDir()
-  if config_dir.strip() == '':
-    sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
-  config_dir = os.path.abspath(config_dir)
   
   cur_file_path = os.path.dirname(os.path.realpath(__file__))
-  config = appObj.getConfigObject(config_dir, args.config_file)
-  roger_env = appObj.getRogerEnvObject(config_dir)
+  config = appObj.getConfig(config_dir, args.config_file)
+  roger_env = appObj.getRogerEnv(config_dir)
 
   if 'registry' not in roger_env.keys():
     sys.exit('Registry not found in roger-env.json file.')
@@ -128,7 +125,7 @@ def main():
 
   environmentObj = roger_env['environments'][environment]
   common_repo = config.get('repo', '')
-  data = appObj.getAppObject(config_dir, args.config_file, args.app_name)
+  data = appObj.getAppData(config_dir, args.config_file, args.app_name)
   framework = "marathon"  #Default framework is Marathon
   if 'framework' in data:
     framework = data['framework']
@@ -140,18 +137,8 @@ def main():
     repo = data.get('repo', args.app_name)
 
   comp_dir = settingObj.getComponentsDir()
-  if comp_dir.strip() == '':
-    sys.exit("Environment variable $ROGER_COMPONENTS_DIR is not set")
-  comp_dir = os.path.abspath(comp_dir)
-
   templ_dir = settingObj.getTemplatesDir()
-  if templ_dir.strip() == '':
-    sys.exit("Environment variable $ROGER_TEMPLATES_DIR is not set")
-
   secrets_dir = settingObj.getSecretsDir()
-  if secrets_dir.strip() == '':
-    sys.exit("Environment variable $ROGER_SECRETS_DIR is not set")
-  secrets_dir = os.path.abspath(secrets_dir)
 
   # template marathon files
   for container in data['containers']:

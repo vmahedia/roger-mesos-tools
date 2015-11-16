@@ -210,15 +210,12 @@ def parseArgs():
 
 def main():
   config_dir = settingObj.getConfigDir()
-  if config_dir.strip() == '':
-    sys.exit("Environment variable $ROGER_CONFIG_DIR is not set")
-  config_dir = os.path.abspath(config_dir)
 
   parser = parseArgs()
   args = parser.parse_args()
 
-  roger_env = appObj.getRogerEnvObject(config_dir)
-  config = appObj.getConfigObject(config_dir, args.config_file)
+  roger_env = appObj.getRogerEnv(config_dir)
+  config = appObj.getConfig(config_dir, args.config_file)
 
   if args.application not in config['apps']:
     sys.exit('Application specified not found.')
@@ -266,7 +263,7 @@ def main():
 def deployApp(args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
   environmentObj = roger_env['environments'][environment]
-  data = appObj.getAppObject(config_dir, config_file, app)
+  data = appObj.getAppData(config_dir, config_file, app)
   framework = "marathon"  #Default framework is Marathon
   if 'framework' in data:
     framework = data['framework']
