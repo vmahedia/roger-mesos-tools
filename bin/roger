@@ -116,7 +116,6 @@ def roger_help():
 def main():
   parser = parse_args()
   args = parser.parse_args()
-  print(args)
   if args.help:
     roger_help()
 
@@ -138,7 +137,6 @@ def main():
     else:
       sys.exit("The entered option doesn't exists. Exiting")
 
-  print(command)
   os.system(command)
 
 if __name__ == "__main__":
