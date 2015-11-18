@@ -89,11 +89,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'roger_deploy=roger_deploy:main',
-            'roger_build=roger_build:main',
-            'roger_push=roger_push:main',
-            'roger_init=roger_init:main',
-            'roger_git_pull=roger_git_pull:main'
+            'roger=roger:main'
         ],
     },
 )
