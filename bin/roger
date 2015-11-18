@@ -1,0 +1,145 @@
+#!/usr/bin/python
+
+from __future__ import print_function
+import os
+import argparse
+import sys
+import subprocess
+
+def parse_args():
+  parser = argparse.ArgumentParser(description='Creates an initial application template and a project config file.', add_help=False)
+  parser.add_argument('args_list', nargs='*')
+  parser.add_argument('-e', '--env', metavar='env')
+  parser.add_argument('-s', '--skip-build', action="store_true")
+  parser.add_argument('-M', '--incr-major', action="store_true")
+  parser.add_argument('-P', '--incr-patch', action="store_true")
+  parser.add_argument('-b', '--branch', metavar='branch')
+  parser.add_argument('-p', '--push', action="store_true")
+  parser.add_argument('-sp', '--skip-push', action="store_true")
+  parser.add_argument('-f', '--framework')
+  parser.add_argument('-H','--hostname', metavar='hostname')
+  parser.add_argument('-h', '--help', action="store_true")
+  return parser
+
+def deploy(args):
+  command = "roger-deploy"
+  for index in range(1,len(args.args_list)):
+    command = command + " {}".format(args.args_list[index])
+  if args.env:
+    command = command + " -e {}".format(args.env)
+  if args.branch:
+    command = command + " -b {}".format(args.branch)
+  if args.skip_build:
+    command = command + " -s"
+  if args.incr_major:
+    command = command + " -M"
+  if args.incr_patch:
+    command = command + " -p"
+
+  return command
+
+def git_pull(args):
+  command = "roger-git-pull"
+  for index in range(1,len(args.args_list)):
+    command = command + " {}".format(args.args_list[index])
+  if args.branch:
+    command = command + " -b {}".format(args.branch)
+ 
+  return command
+
+def build(args):
+  command = "roger-build"
+  for index in range(1,len(args.args_list)):
+    command = command + " {}".format(args.args_list[index])
+  if args.push:
+    command = command + " -p"
+
+  return command
+
+def push(args):
+  command = "roger-push"
+  for index in range(1,len(args.args_list)):
+    command = command + " {}".format(args.args_list[index])
+  if args.skip_push:
+    command = command + " -s"
+
+  return command
+
+def init(args):
+  command = "roger-init"
+  for index in range(1,len(args.args_list)):
+    command = command + " {}".format(args.args_list[index])
+  if args.framework:
+    command = command + " -f {}".format(args.framework)
+
+  return command 
+
+def shell(args):
+  command = "roger-shell"
+  for index in range(1,len(args.args_list)):
+    command = command + " {}".format(args.args_list[index])
+  if args.hostname:
+    command = command + " -H {}".format(args.hostname)
+
+  return command
+
+def roger_help():
+  print("\n  usage: roger [-h] arg_list\n")
+  print("If the args_list is provided then the first argument should be the command, followed by a list of other args that" \
+        " the command takes.\n")
+  print("Available commands with a short description of each are given below.\n")
+  print("  deploy : Pulls code from repo, builds and then deploys into Roger.")
+  print("  git-pull : Pulls application repo from git.")
+  print("  build : Builds the docker application and optionally pushes it to the docker registry.")
+  print("  push : To deploy an app to framework.Marathon by default")
+  print("  init : Creates an initial application template and a project config file.")
+  print("  shell : Get an Interactive Bash session into your container.")
+  print("\nUse -h with any script to see usage for it.'" \
+    "\n  Example: roger-deploy -h\n")
+  print("positional arguments:")
+  print("  args_list             If the args_list is provided then the first argument should be the command, followed by a list of other args that" \
+        " the command takes.\n")
+  print("optional arguments:")
+  print("  -e, --env             Environment to deploy to. example: 'dev' or 'stage'")
+  print("  -s, --skip-build      Flag that skips roger-build when set to true. Defaults to false. Used by roger-deploy'")
+  print("  -M, --incr-major      Increment major in version. Defaults to false. Used by roger-deploy.")
+  print("  -P, --incr-patch      Increment patch in version. Defaults to false. Used by roger-deploy.")
+  print("  -b, --branch          Git branch to be deployed. Example: 'production' or 'master'. Defaults to master.")
+  print("  -p, --push            Also push to registry. Defaults to false. Used by roger-build.")
+  print("  -sp, --skip-push      Don't push. Only generate components. Defaults to false. Used by roger-push.")
+  print("  -f, --framework       Framework to deploy to the application. Defaults to marathon.")
+  print("  -H, --hostname        Hostname to search using roger-shell. Example: 'daldevmesos01' or 'daldevmesos04'")
+  print("  -h, --help            show this help message and exit")
+  print("\nExample:")
+  print("      roger deploy grafana roger.json\n\n")
+
+def main():
+  parser = parse_args()
+  args = parser.parse_args()
+  print(args)
+  if args.help:
+    roger_help()
+
+  command = ''
+  if len(args.args_list) != 0:
+    script = args.args_list[0]
+    if script.lower() == "deploy":
+      command = deploy(args)
+    elif script.lower() == "git-pull":
+      command = git_pull(args)
+    elif script.lower() == "build":
+      command = build(args)
+    elif script.lower() == "push":
+      command = push(args)
+    elif script.lower() == "init":
+      command = init(args)
+    elif script.lower() == "shell":
+      command = shell(args)
+    else:
+      sys.exit("The entered option doesn't exists. Exiting")
+
+  print(command)
+  os.system(command)
+
+if __name__ == "__main__":
+  main()
