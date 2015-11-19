@@ -8,6 +8,7 @@ import requests
 import json
 import os
 import sys
+sys.path.append('/vagrant/bin')
 import traceback
 import logging
 from settings import Settings
