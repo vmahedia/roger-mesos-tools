@@ -6,25 +6,31 @@ import sys
 sys.path.append('/vagrant/cmds')
 import subprocess
 
-def roger_help():
-  print("\nUsage: roger [OPTIONS] | arg_list\n")
+def roger_help(commands):
+  print("\nUsage: roger [OPTIONS] COMMAND [arg...]\n")
   print("         roger -h")
   print("         roger deploy grafana roger.json -s\n")
-  print("If the args_list is provided then the first argument should be the command, followed by a list of other args that" \
+  print("The arg is a list of parameter that" \
         " the command takes.\n")
   print("Options:\n")
   print("  -h, --help            show this help message and exit")
   print("\nCommands:")
-  print("    deploy")
-  print("    git-pull")
-  print("    build")
-  print("    push")
-  print("    init")
-  print("    shell")
+  for command in commands:
+    print("    {}".format(command))
   print("\nRun 'roger COMMAND --help' for more information on a command.\n")
 
-def getCommand(args):
-  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+def getFiles(directory):
+  filenames = next(os.walk(directory))[2]
+  return filenames
+
+def getCommands(files):
+  commands = []
+  for filename in files:
+    if filename.startswith("roger-"):
+      commands.append(filename.split("roger-")[1])
+  return commands
+
+def getScriptCall(args, root):
   command = args[1]
   exists = os.path.exists("{}/cmds/roger-{}".format(root, command))
   if exists == True:
@@ -37,12 +43,19 @@ def getCommand(args):
 
 def main():
 
+  root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+  files = getFiles("{}/cmds/".format(root))
+  commands = getCommands(files)
   if len(sys.argv) > 1:
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
-      roger_help()
+      roger_help(commands)
     else:
-      command = getCommand(sys.argv)
-      os.system(command)
+      command = sys.argv[1]
+      if command in commands:
+         script_call = getScriptCall(sys.argv, root)
+         os.system(script_call)
+      else:
+        sys.exit("Command is not valid. Exiting")
   else:
     sys.exit("No arguments found. Please refer to usage: roger -h")
 
