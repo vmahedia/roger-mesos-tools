@@ -3,7 +3,6 @@
 from __future__ import print_function
 import os
 import sys
-sys.path.append('/vagrant/cmds')
 import subprocess
 
 def roger_help(commands):
@@ -31,9 +30,9 @@ def getCommands(files):
 
 def getScriptCall(args, root):
   command = args[1]
-  exists = os.path.exists("{}/cmds/roger-{}".format(root, command))
+  exists = os.path.exists("{}/cli/roger-{}".format(root, command))
   if exists == True:
-    command = "roger-{}".format(command)
+    command = "{}/cli/roger-{}".format(root, command)
     for index in range(2,len(args)):
       command = command + " {}".format(args[index])
     return command
@@ -43,7 +42,7 @@ def getScriptCall(args, root):
 def main():
 
   root = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-  files = getFiles("{}/cmds/".format(root))
+  files = getFiles("{}/cli/".format(root))
   commands = getCommands(files)
   if len(sys.argv) > 1:
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
