@@ -8,8 +8,7 @@ import subprocess
 
 def roger_help(commands):
   print("\nUsage: roger [OPTIONS] COMMAND [arg...]\n")
-  print("         roger -h")
-  print("         roger deploy grafana roger.json -s\n")
+  print("A cli to work with roger os")
   print("The arg is a list of parameter that" \
         " the command takes.\n")
   print("Options:\n")
