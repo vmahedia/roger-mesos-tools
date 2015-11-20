@@ -5,9 +5,9 @@ import unittest
 import argparse
 import os
 import sys
-sys.path.append('/vagrant/bin')
+sys.path.append('/vagrant/cli')
 import imp
-roger_deploy = imp.load_source('roger_deploy', '/vagrant/bin/roger-deploy')
+roger_deploy = imp.load_source('roger_deploy', '/vagrant/cli/roger-deploy')
 
 #Test basic functionalities of roger-deploy script
 class TestDeploy(unittest.TestCase):

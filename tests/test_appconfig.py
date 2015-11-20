@@ -6,7 +6,7 @@ import argparse
 import os
 import sys
 import imp
-sys.path.append('/vagrant/bin')
+sys.path.append('/vagrant/cli')
 from appconfig import AppConfig
 
 #Test basic functionalities of Settings class

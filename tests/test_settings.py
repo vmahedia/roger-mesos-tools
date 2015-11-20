@@ -6,7 +6,7 @@ import argparse
 import os
 import sys
 import imp
-sys.path.append('/vagrant/bin')
+sys.path.append('/vagrant/cli')
 from settings import Settings
 
 #Test basic functionalities of Settings class
@@ -74,6 +74,21 @@ class TestSettings(unittest.TestCase):
       assert ("Environment variable $ROGER_SECRETS_DIR is not set. Exiting." in e)
     if set_sect_dir.strip() != '':
       os.environ["ROGER_SECRETS_DIR"] = "{}".format(set_sect_dir)
+
+  def test_getCliDir(self):
+    set_cli_dir = ''
+    if "ROGER_CLI_ROOT_DIR" in os.environ:
+      set_cli_dir = os.environ.get('ROGER_CLI_ROOT_DIR')
+    os.environ["ROGER_CLI_ROOT_DIR"] = "/vagrant/testclidir"
+    cli_dir = settingObj.getCliDir()
+    assert cli_dir == "/vagrant/testclidir"
+    del os.environ['ROGER_CLI_ROOT_DIR']
+    try:
+      cli_dir = settingObj.getCliDir()
+    except (SystemExit) as e:
+      assert ("Environment variable $ROGER_CLI_ROOT_DIR is not set. Exiting." in e)
+    if set_cli_dir.strip() != '':
+      os.environ["ROGER_CLI_ROOT_DIR"] = "{}".format(set_cli_dir)
 
   def tearDown(self):
     pass

@@ -26,7 +26,7 @@ class TestInit(unittest.TestCase):
       set_templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
     os.environ["ROGER_TEMPLATES_DIR"] = "/vagrant/templdir"
 
-    os.system("roger-init test_app roger")
+    os.system("roger init test_app roger")
     config_file = "/vagrant/configdir/roger.json"
     template_file = "/vagrant/templdir/roger-test_app.json"
     assert os.path.exists(config_file) == True

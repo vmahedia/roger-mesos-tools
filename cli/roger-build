@@ -36,6 +36,7 @@ def main():
   parser = parse_args()
   args = parser.parse_args()
   config_dir = settingObj.getConfigDir()
+  root = settingObj.getCliDir()
   config = appObj.getConfig(config_dir, args.config_file)
   roger_env = appObj.getRogerEnv(config_dir)
 
@@ -67,7 +68,7 @@ def main():
   file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
   if file_exists:
-    os.system("docker-build '{0}' '{1}' '{2}' '{3}' '{4}'".format(os.path.abspath(args.directory), repo, projects, docker_path, args.tag_name))
+    os.system("{0}/cli/docker-build '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, os.path.abspath(args.directory), repo, projects, docker_path, args.tag_name))
     image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
     os.system("docker tag -f {0} {1}".format(args.tag_name, image))
     build_message = "Image {0} built".format(args.tag_name)

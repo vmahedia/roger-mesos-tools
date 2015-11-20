@@ -40,3 +40,12 @@ class Settings:
       sys.exit("Environment variable $ROGER_SECRETS_DIR is not set. Exiting.")
     secrets_dir = os.path.abspath(secrets_dir)
     return secrets_dir
+
+  def getCliDir(self):
+    cli_dir = ''
+    if "ROGER_CLI_ROOT_DIR" in os.environ:
+      cli_dir = os.environ.get('ROGER_CLI_ROOT_DIR')
+    if cli_dir.strip() == '':
+      sys.exit("Environment variable $ROGER_CLI_ROOT_DIR is not set. Exiting.")
+    cli_dir = os.path.abspath(cli_dir)
+    return cli_dir
