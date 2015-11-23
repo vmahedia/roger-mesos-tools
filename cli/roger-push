@@ -148,7 +148,14 @@ def main():
     if 'template_path' not in data:
       env = Environment(loader=FileSystemLoader("{}".format(templ_dir)))
     else:
-      app_path = "{0}/{1}/{2}".format(os.path.abspath(args.directory), repo, data['template_path'])
+      cur_dir = ''
+      if "PWD" in os.environ:
+        cur_dir = os.environ.get('PWD')
+      abs_path = os.path.abspath(args.directory)
+      if abs_path == args.directory:
+        app_path = "{0}/{1}/{2}".format(args.directory, repo, data['template_path'])
+      else:
+        app_path = "{0}/{1}/{2}/{3}".format(cur_dir, args.directory, repo, data['template_path'])
       env = Environment(loader=FileSystemLoader("{}".format(app_path)))
 
     template = env.get_template(containerConfig)
