@@ -196,6 +196,4 @@ def main():
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
-  marathon = Marathon()
-  chronos = Chronos()
   main()
