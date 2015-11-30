@@ -105,7 +105,7 @@ def getNextVersion(config, roger_env, application, branch, work_dir, repo, args)
 
   if len(image_version_list) == 0:	#Create initial version
     version = "{0}/v0.1.0".format(sha)
-    print("No version currently exist in the Docker Registry.Deploying version:{0}".format(version))
+    print("No version currently exist in the Docker Registry. \nDeploying version:{0}".format(version))
   else:
     version = incrementVersion(sha, image_version_list, args)
   return version
@@ -129,49 +129,6 @@ def splitVersion(version):
   minor, _, rest = rest.partition('.')
   patch, _, rest = rest.partition('.')
   return int(major), int(minor) if minor else 0, int(patch) if patch else 0
-
-# Expected format:
-#   <host>:<port>/moz-<project>-<service>-<sha>/v0.46
-def getCurrentMarathonVersion(roger_env, environment, application):
-  data = marathon.get(roger_env, environment)
-  for app in data['apps']:
-    if app['container'] != None:
-      docker_image = app['container']['docker']['image']
-      if application in docker_image:
-        if len(docker_image.split('/v')) == 2:
-          #Image format expected moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
-          return extractFullShaAndVersion(docker_image)
-        else:	
-          #Docker images of the format: grafana/grafana:2.1.3 or postgres:9.4.1 
-          return docker_image
-
-# Expected format:
-#   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
-def extractFullShaAndVersion(image):
-  return image.split('-')[3]
-
-# Expected format:
-#   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
-def extractShaFromImage(image):
-  sha = image.split('/')
-  if sha != None and sha[1] != None:
-    sha = sha[1].split('-')
-    if sha[3] != None:
-      return sha[3]
-  return ''
-
-def getCurrentChronosVersion(roger_env, environment, application):
-  data = chronos.get(roger_env, environment)
-  for app in data:
-    if 'name' in app:
-      if application in app['name'] and 'container' in app:
-        docker_image = app['container']['image']
-        if len(docker_image.split('/v')) == 2:
-          #Image format expected moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
-          return extractFullShaAndVersion(docker_image)
-        else:
-          #Docker images of the format: grafana/grafana:2.1.3 or postgres:9.4.1
-          return docker_image 
 
 def getGitSha(work_dir, repo, branch):
   with chdir("{0}/{1}".format(work_dir, repo)):
@@ -258,8 +215,11 @@ def deployApp(root, args, config, roger_env, work_dir, config_dir, environment, 
   environmentObj = roger_env['environments'][environment]
   data = appObj.getAppData(config_dir, config_file, app)
   framework = "marathon"  #Default framework is Marathon
+  frameworkObj = Marathon()
   if 'framework' in data:
     framework = data['framework']
+    if framework.lower() == "chronos":
+      frameworkObj = Chronos()
 
   repo = ''
   if common_repo != '':
@@ -290,9 +250,7 @@ def deployApp(root, args, config, roger_env, work_dir, config_dir, environment, 
   image_name = "{0}-{1}-{2}/v0.1.0".format(config['name'], app, image_git_sha)
   
   if skip_build == True:
-    curr_image_ver = getCurrentMarathonVersion(roger_env, environment, app)
-    if framework.lower() == "chronos":
-      curr_image_ver = getCurrentChronosVersion(roger_env, environment, app)
+    curr_image_ver = frameworkObj.getCurrentImageVersion(roger_env, environment, app)
     print("Current image version deployed on {0} is :{1}".format(framework, curr_image_ver))
     if not curr_image_ver is None:
       image_name = "{0}-{1}-{2}".format(config['name'], app, curr_image_ver)
@@ -315,7 +273,7 @@ def deployApp(root, args, config, roger_env, work_dir, config_dir, environment, 
       sys.exit('Exiting')
   print("Version is:"+image_name)
 
-  #Deploying the app to marathon
+  #Deploying the app to framework
   try:
     exit_code = os.system("{0}/cli/roger-push {1} {2} \"{3}\" {4} --env {5}".format(root, app, os.path.abspath(work_dir), image_name, config_file, environment))
     if exit_code != 0:
@@ -342,6 +300,4 @@ def deployApp(root, args, config, roger_env, work_dir, config_dir, environment, 
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
-  marathon = Marathon()
-  chronos = Chronos()
   main()

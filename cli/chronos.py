@@ -6,6 +6,8 @@ import sys
 import requests
 import json
 from framework import Framework
+from utils import Utils
+utils = Utils()
 
 class Chronos(Framework):
 
@@ -14,9 +16,26 @@ class Chronos(Framework):
     resp = requests.get(url)
     return resp.json()
 
-  def put(self, data, environmentObj, appName):
+  def put(self, file_path, environmentObj, container):
+    data = open(file_path).read()
+    print("TRIGGERING CHRONOS FRAMEWORK UPDATE FOR: {}".format(container))
+    print("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/scheduler/iso8601".format(file_path, environmentObj['chronos_endpoint']))
     endpoint = environmentObj['chronos_endpoint']
     deploy_url = "{}/scheduler/iso8601".format(endpoint)
-    print(deploy_url)
     resp = requests.put(deploy_url, data=data, headers = {'Content-type': 'application/json'})
+    chronos_message = "{}".format(resp)
+    print(chronos_message)
     return resp
+
+  def getCurrentImageVersion(self, roger_env, environment, application):
+    data = self.get(roger_env, environment)
+    for app in data:
+      if 'name' in app:
+        if application in app['name'] and 'container' in app:
+          docker_image = app['container']['image']
+          if len(docker_image.split('/v')) == 2:
+            #Image format expected moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
+            return utils.extractFullShaAndVersion(docker_image)
+          else:
+            #Docker images of the format: grafana/grafana:2.1.3 or postgres:9.4.1
+            return docker_image

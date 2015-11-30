@@ -13,5 +13,9 @@ class Framework(object):
     pass
 
   @abstractmethod
-  def put(self, data, environmentObj, appName):
+  def put(self, file_path, environmentObj, container):
+    pass
+
+  @abstractmethod
+  def getCurrentImageVersion(self, roger_env, environment, application):
     pass

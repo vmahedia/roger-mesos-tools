@@ -129,8 +129,11 @@ def main():
   common_repo = config.get('repo', '')
   data = appObj.getAppData(config_dir, args.config_file, args.app_name)
   framework = "marathon"  #Default framework is Marathon
+  frameworkObj = Marathon()
   if 'framework' in data:
     framework = data['framework']
+    if framework.lower() == "chronos":
+      frameworkObj = Chronos()
 
   repo = ''
   if common_repo != '':
@@ -188,28 +191,7 @@ def main():
       for container in data['containers']:
         containerConfig = "{0}-{1}.json".format(config['name'], container)
         config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
-        data = open(config_file_path).read()
-
-        print("TRIGGERING {0} APPLICATION UPDATE FOR: {1}".format(framework.upper(), container))
-        appName = ''
-        if framework.lower() == "marathon":
-          appName = json.loads(data)['id']
-        
-        resp = ""
-        if 'groups' in data:
-          resp = requests.put(
-            "{}/v2/groups/{}".format(environmentObj['marathon_endpoint'], appName),
-            data=data,
-            headers = {'Content-type': 'application/json'})
-          print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{} {}/v2/groups/{}".format(comp_dir, environment, containerConfig, environmentObj['marathon_endpoint'], appName))
-        else:
-          print("curl -X PUT -H 'Content-type: application/json' --data-binary @{}/{}/{}".format(comp_dir, environment, containerConfig))
-          if framework.lower() == "chronos":
-            resp = chronos.put(data, environmentObj, appName)
-          else:
-            resp = marathon.put(data, environmentObj, appName)
-        marathon_message = "{0}: {1}".format(appName, resp)
-        print(marathon_message)
+        frameworkObj.put(config_file_path, environmentObj, container)
 
 if __name__ == "__main__":
   settingObj = Settings()
