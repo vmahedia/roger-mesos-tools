@@ -25,23 +25,6 @@ class TestUtils(unittest.TestCase):
     assert self.utils.extractShaFromImage("") == ""
     assert self.utils.extractShaFromImage("bdsbddadhhd") == ""
 
-  '''
-  def test_getFramework(self):
-    data = self.appConfig.getAppData("/vagrant/tests/configs", "app.json", "test_app")
-    assert self.utils.getFramework(data) == "marathon"
-    data = self.appConfig.getAppData("/vagrant/tests/configs", "app.json", "test_app1")
-    assert self.utils.getFramework(data) == "chronos"
-    data = self.appConfig.getAppData("/vagrant/tests/configs", "app.json", "appdoesnotexist")
-    assert self.utils.getFramework(data) == "marathon"
-
-  def test_setgetFramework(self):
-    self.utils.setFramework("marathon")
-    data = self.appConfig.getAppData("/vagrant/tests/configs", "app.json", "test_app1")
-    assert self.utils.getFramework(data) == "marathon"
-    self.utils.setFramework("testframework")
-    assert self.utils.getFramework(data) == "testframework"
-  '''
-
   def tearDown(self):
     pass
 
