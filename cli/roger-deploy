@@ -17,6 +17,7 @@ from settings import Settings
 from appconfig import AppConfig
 from marathon import Marathon
 from chronos import Chronos
+from frameworkUtils import FrameworkUtils
 
 import contextlib
 
@@ -153,20 +154,37 @@ def parseArgs():
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
   parser.add_argument('-M', '--incr-major', action="store_true",
     help="Increment major in version. Defaults to false.'")
+  parser.add_argument('-sp', '--skip-push', action="store_true",
+    help="Flag that skips roger-push when set to true. Defaults to false.'")
   parser.add_argument('-p', '--incr-patch', action="store_true",
     help="Increment patch in version. Defaults to false.'") 
   return parser
 
-def main():
+def push(root, app, work_dir, image_name, config_file, environment):
+  try:
+    exit_code = os.system("{0}/cli/roger-push {1} {2} \"{3}\" {4} --env {5}".format(root, app, os.path.abspath(work_dir), image_name, config_file, environment))
+    return exit_code
+  except (IOError) as e:
+    print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
+    removeDirTree(work_dir)
+    sys.exit('Exiting')
+
+def pullRepo(root, app, work_dir, config_file, branch):
+  try:
+    exit_code = os.system("{0}/cli/roger-git-pull {1} {2} {3} --branch {4}".format(root, app, os.path.abspath(work_dir), config_file, branch))
+    return exit_code
+  except (IOError) as e:
+    print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
+    removeDirTree(work_dir)
+    sys.exit('Exiting')
+
+def main(object_list, args):
+  settingObj = object_list[0]
+  appObj = object_list[1] 
   config_dir = settingObj.getConfigDir()
   root = settingObj.getCliDir()
-
-  parser = parseArgs()
-  args = parser.parse_args()
-
   roger_env = appObj.getRogerEnv(config_dir)
   config = appObj.getConfig(config_dir, args.config_file)
-
   if args.application not in config['apps']:
     sys.exit('Application specified not found.')
 
@@ -208,18 +226,19 @@ def main():
     branch = args.branch
 
   for app in apps:
-    deployApp(root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo)
+    deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo)
 
-def deployApp(root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo):
+def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
+  settingObj = object_list[0]
+  appObj = object_list[1]
+  frameworkUtils = object_list[2]
   environmentObj = roger_env['environments'][environment]
   data = appObj.getAppData(config_dir, config_file, app)
   framework = "marathon"  #Default framework is Marathon
-  frameworkObj = Marathon()
-  if 'framework' in data:
-    framework = data['framework']
-    if framework.lower() == "chronos":
-      frameworkObj = Chronos()
+  frameworkObj = frameworkUtils.getFramework(data)
+  if isinstance(frameworkObj, Chronos):
+    framework = "chronos"
 
   repo = ''
   if common_repo != '':
@@ -232,7 +251,7 @@ def deployApp(root, args, config, roger_env, work_dir, config_dir, environment, 
 
   # get/update target source(s)
   try:
-    exit_code = os.system("{0}/cli/roger-git-pull {1} {2} {3} --branch {4}".format(root, app, os.path.abspath(work_dir), config_file, branch))
+    exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch)
     if exit_code != 0:
       removeDirTree(work_dir)
       sys.exit('Exiting')
@@ -244,6 +263,10 @@ def deployApp(root, args, config, roger_env, work_dir, config_dir, environment, 
   skip_build = False
   if not args.skip_build is None:
     skip_build = args.skip_build
+
+  skip_push = False
+  if not args.skip_push is None:
+    skip_push = args.skip_push
 
   #Set initial version
   image_git_sha = getGitSha(work_dir, repo, branch)
@@ -274,15 +297,18 @@ def deployApp(root, args, config, roger_env, work_dir, config_dir, environment, 
   print("Version is:"+image_name)
 
   #Deploying the app to framework
-  try:
-    exit_code = os.system("{0}/cli/roger-push {1} {2} \"{3}\" {4} --env {5}".format(root, app, os.path.abspath(work_dir), image_name, config_file, environment))
-    if exit_code != 0:
+  if skip_push == True:
+    print("Skipping push to framework as skip_push is set.")
+  else:
+    try:
+      exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment)
+      if exit_code != 0:
+        removeDirTree(work_dir)
+        sys.exit('Exiting')
+    except (IOError) as e:
+      print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
       removeDirTree(work_dir)
       sys.exit('Exiting')
-  except (IOError) as e:
-    print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-    removeDirTree(work_dir)
-    sys.exit('Exiting')
 
   exists = os.path.exists(os.path.abspath(work_dir))
   if exists:
@@ -300,4 +326,11 @@ def deployApp(root, args, config, roger_env, work_dir, config_dir, environment, 
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
-  main()
+  frameworkUtils = FrameworkUtils()
+  object_list = []
+  object_list.append(settingObj)
+  object_list.append(appObj)
+  object_list.append(frameworkUtils)
+  parser = parseArgs()
+  args = parser.parse_args()
+  main(object_list, args)

@@ -8,15 +8,24 @@ class Utils:
 
   # Expected format:
   #   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
-  def extractFullShaAndVersion(image):
-    return image.split('-')[3]
+  def extractFullShaAndVersion(self, image):
+    if not '-' in image:
+      return ''
+    tokens = image.split('-')
+    if len(tokens) != 0:
+      return tokens[-1]
+    else:
+      return ''
 
   # Expected format:
   #   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
-  def extractShaFromImage(image):
-    sha = image.split('/')
-    if sha != None and sha[1] != None:
-      sha = sha[1].split('-')
-      if sha[3] != None:
-        return sha[3]
+  def extractShaFromImage(self, image):
+    if not '/v' in image:
+      return ''
+    sha = image.split('/v')
+    if len(sha) != 0:
+      sha = sha[0].split('-')
+      if len(sha) != 0:
+        return sha[-1]
     return ''
+

@@ -34,6 +34,14 @@
         "container_name1",
         "container_name2"
       ]
+    },
+    "test_app1": {
+      "framework": "chronos",
+      "imageBase": "test_app_base",
+      "containers": [
+        "container_name1",
+        "container_name2"
+      ]
     }
   }
 }

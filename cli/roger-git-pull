@@ -31,9 +31,9 @@ def parse_args():
     help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
   return parser
 
-def main():
-  parser = parse_args()
-  args = parser.parse_args()
+def main(object_list, args):
+  settingObj = object_list[0]
+  appObj = object_list[1]
   config_dir = settingObj.getConfigDir()
   config = appObj.getConfig(config_dir, args.config_file)
 
@@ -72,4 +72,9 @@ def main():
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
-  main()
+  object_list = []
+  object_list.append(settingObj)
+  object_list.append(appObj)
+  parser = parse_args()
+  args = parser.parse_args()
+  main(object_list, args)

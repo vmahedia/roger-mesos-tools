@@ -10,7 +10,7 @@ sys.path.append('/vagrant/cli')
 from appconfig import AppConfig
 
 #Test basic functionalities of Settings class
-class TestSettings(unittest.TestCase):
+class TestAppConfig(unittest.TestCase):
 
   def setUp(self):
     pass
@@ -27,9 +27,9 @@ class TestSettings(unittest.TestCase):
     assert config['name'] == "test-app"
     assert config['repo'] == "roger"
     assert config['vars']['environment']['prod']['mem'] == "2048"
-    assert len(config['apps'].keys()) == 1
+    assert len(config['apps'].keys()) == 2
     for app in config['apps']:
-      assert app == "test_app"
+      assert app.startswith("test_app")
       assert config['apps'][app]['imageBase'] == "test_app_base"
 
   def test_getAppData(self):
