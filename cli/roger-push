@@ -41,8 +41,11 @@ def parse_args():
   parser.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
   return parser
 
-def loadSecretsJson(environment, jsonFileName):
-  path = 'secretenvs/' + environment + '/' + jsonFileName
+def loadSecretsJson(secrets_dir, jsonFileName):
+  exists = os.path.exists(secrets_dir)
+  if exists == False:
+   os.makedirs(secrets_dir)
+  path = "{}/{}".format(secrets_dir, jsonFileName)
   try:
     with open(path) as f:
       return json.load(f)
@@ -169,8 +172,8 @@ def main():
     #Adding check so that not all apps try to mergeSecrets
     outputObj = json.loads(output)
     if 'env' in outputObj:
-      if "SECRET" in outputObj['env']:
-        output = mergeSecrets(output, loadSecretsJson(environment, containerConfig))
+      if "SECRET" in outputObj['env'].values():
+        output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig))
 
     try:
       comp_exists = os.path.exists("{0}".format(comp_dir))
