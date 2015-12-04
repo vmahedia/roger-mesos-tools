@@ -133,10 +133,8 @@ def main(object_list, args):
   environmentObj = roger_env['environments'][environment]
   common_repo = config.get('repo', '')
   data = appObj.getAppData(config_dir, args.config_file, args.app_name)
-  framework = "marathon"  #Default framework is Marathon
   frameworkObj = frameworkUtils.getFramework(data)
-  if frameworkObj.getName().lower() == Chronos().getName().lower():
-    framework = "chronos"
+  framework = frameworkObj.getName()
 
   repo = ''
   if common_repo != '':
