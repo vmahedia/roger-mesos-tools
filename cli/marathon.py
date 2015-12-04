@@ -11,6 +11,9 @@ utils = Utils()
 
 class Marathon(Framework):
 
+  def getName(self):
+    return "Marathon"
+
   def get(self, roger_env, environment):
     url = roger_env['environments'][environment]['marathon_endpoint']+"/v2/apps"
     resp = requests.get(url)

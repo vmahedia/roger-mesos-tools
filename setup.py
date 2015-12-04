@@ -76,7 +76,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['argparse', 'setuptools', 'requests', 'Jinja2'],
+    install_requires=['argparse', 'setuptools', 'requests', 'mock', 'mockito', 'slackclient', 'Jinja2'],
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:

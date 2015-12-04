@@ -9,6 +9,10 @@ class Framework(object):
   __metaclass__ = ABCMeta
 
   @abstractmethod
+  def getName(self):
+    pass
+
+  @abstractmethod
   def get(self, roger_env, environment):
     pass
 

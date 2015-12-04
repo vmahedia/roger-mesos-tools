@@ -135,7 +135,7 @@ def main(object_list, args):
   data = appObj.getAppData(config_dir, args.config_file, args.app_name)
   framework = "marathon"  #Default framework is Marathon
   frameworkObj = frameworkUtils.getFramework(data)
-  if isinstance(frameworkObj, Chronos):
+  if frameworkObj.getName().lower() == Chronos().getName().lower():
     framework = "chronos"
 
   repo = ''

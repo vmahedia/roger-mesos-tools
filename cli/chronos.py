@@ -11,6 +11,9 @@ utils = Utils()
 
 class Chronos(Framework):
 
+  def getName(self):
+    return "Chronos"
+
   def get(self, roger_env, environment):
     url = roger_env['environments'][environment]['chronos_endpoint']+"/scheduler/jobs"
     resp = requests.get(url)
