@@ -72,6 +72,9 @@ def renderTemplate(template, environment, image, app_data, config):
     variables = {}
     variables['environment'] = environment
     variables['image'] = image
+    variables['environment_var_container'] = ""
+    variables['global_var_container'] = ""
+
 
     #Adding Global and environment variables for all apps
     if 'vars' in config:
@@ -96,6 +99,21 @@ def renderTemplate(template, environment, image, app_data, config):
           for env_var in app_data['vars']['environment'][environment]:
             variables[env_var] = app_data['vars']['environment'][environment][env_var]
 
+    #Adding Global and environment variables for containers.
+    if 'containers' in config:
+        if len(containers) > 0 :
+           for value in containers:
+               if type(value) == dict:
+                    val = value
+                    for vars in val.values():
+                        for each_key in vars.keys():
+                            if each_key == 'vars':
+                                for app_values in vars[each_key]:
+                                    if app_values == "environment":
+                                        variables['environment_var_container'] = vars[each_key][app_values]
+                                    if app_values == "global_var":
+                                        variables['global_var_container'] = vars[each_key][app_values]
+
     output = template.render(variables)
     return output
 
@@ -104,7 +122,7 @@ def main(object_list, args):
   appObj = object_list[1]
   frameworkUtils = object_list[2]
   config_dir = settingObj.getConfigDir()
-  
+
   cur_file_path = os.path.dirname(os.path.realpath(__file__))
   config = appObj.getConfig(config_dir, args.config_file)
   roger_env = appObj.getRogerEnv(config_dir)
