@@ -100,19 +100,24 @@ def renderTemplate(template, environment, image, app_data, config):
             variables[env_var] = app_data['vars']['environment'][environment][env_var]
 
     #Adding Global and environment variables for containers.
-    if 'containers' in config:
-        if len(containers) > 0 :
-           for value in containers:
-               if type(value) == dict:
-                    val = value
-                    for vars in val.values():
-                        for each_key in vars.keys():
-                            if each_key == 'vars':
-                                for app_values in vars[each_key]:
-                                    if app_values == "environment":
-                                        variables['environment_var_container'] = vars[each_key][app_values]
-                                    if app_values == "global_var":
-                                        variables['global_var_container'] = vars[each_key][app_values]
+
+    for every_app in config.keys():
+     if str(every_app) == "apps":
+      for app_container_values in config["apps"].values():
+          for key in app_container_values.keys():
+              if key == "containers":
+                 for value in app_container_values[key]:
+                        if type(value) == dict:
+                           for each_key in value.keys():
+                               for env in value[each_key]:
+                                    if str(env) == "vars":
+                                        for app_values in value[each_key]["vars"].keys():
+                                            if str(app_values) == "environment":
+                                               variables['environment_var_container_prod'] =  value[each_key]["vars"][app_values]["prod"]["NODE_ENV"]
+                                               variables['environment_var_container_stage'] =  value[each_key]["vars"][app_values]["stage"]["NODE_ENV"]
+                                               variables['environment_var_container_dev'] =  value[each_key]["vars"][app_values]["dev"]["NODE_ENV"]
+                                            if str(app_values) == "global_var":
+                                               variables['global_var_container'] =  value[each_key]["vars"][app_values]
 
     output = template.render(variables)
     return output
@@ -166,7 +171,13 @@ def main(object_list, args):
 
   # template marathon files
   for container in data['containers']:
-    containerConfig = "{0}-{1}.json".format(config['name'], container)
+
+    if type(container) == dict:
+       container_name = str(container.keys()[0])
+       containerConfig = "{0}-{1}.json".format(config['name'], container_name)
+    else:
+       containerConfig = "{0}-{1}.json".format(config['name'], container)
+
     template = ''
     os.chdir(cur_file_path)	#Required for when work_dir,component_dir,template_dir or secret_env_dir is something like '.' or './temp"
     if 'template_path' not in data:
@@ -208,6 +219,13 @@ def main(object_list, args):
   else:
       # push to roger framework
       for container in data['containers']:
+
+        if type(container) == dict:
+           container_name = str(container.keys()[0])
+           containerConfig = "{0}-{1}.json".format(config['name'], container_name)
+        else:
+           containerConfig = "{0}-{1}.json".format(config['name'], container)
+
         containerConfig = "{0}-{1}.json".format(config['name'], container)
         config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
         frameworkObj.put(config_file_path, environmentObj, container)
