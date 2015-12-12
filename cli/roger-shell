@@ -24,7 +24,7 @@ def parse_args():
 def get_hostname_from_marathon(environment, roger_env, appTaskId):
     hostname = ''
     headers = {'Accept': 'application/json','Accept-Encoding': 'gzip, deflate','Content-Type': 'application/json'}
-    url = roger_env['environments'][environment]['marathon_endpoint']+'/v2/tasks?status=running'	
+    url = roger_env['environments'][environment]['marathon_endpoint']+'/v2/tasks?status=running'
     resp = requests.get("{}".format(url), headers=headers)
     tasks = resp.json()['tasks']
     for task in tasks:
@@ -36,14 +36,18 @@ def get_hostname_from_marathon(environment, roger_env, appTaskId):
 def get_containerid(appTaskId, hostname):
     containerId = ''
     try:
-        containers = subprocess.check_output("docker -H tcp://{}:4243 ps -q".format(hostname), shell=True)        
+        containers = subprocess.check_output("docker -H tcp://{}:4243 ps -q".format(hostname), shell=True)
     except:
         print("No route to host. Please check hostname '{}'".format(hostname), file=sys.stderr)
         return
     for container in containers.split('\n'):
         if container.strip() != '':
-            mesosTaskId = subprocess.check_output("docker -H tcp://{0}:4243 exec {1} \
-		printenv MESOS_TASK_ID".format(hostname,container), shell=True)
+            try:
+                mesosTaskId = subprocess.check_output("docker -H tcp://{0}:4243 exec {1} \
+                printenv MESOS_TASK_ID".format(hostname,container), shell=True)
+            except Exception as e:
+                print ("Ignoring exception: {}".format(str(e)))
+                pass
             if mesosTaskId:
                 if mesosTaskId.startswith(appTaskId):
                     containerId = container.strip()
@@ -58,7 +62,7 @@ def main():
     config_dir = settingObj.getConfigDir()
     roger_env = appObj.getRogerEnv(config_dir)
     environment = roger_env.get('default', '')
-    
+
     if args.env is None:
       if "ROGER_ENV" in os.environ:
         env_var = os.environ.get('ROGER_ENV')
@@ -89,7 +93,7 @@ an optional argument. See -h for usage.".format(args.appTaskId));
         print("If there are multiple containers that pattern match the given mesos task Id, \
 then will log into the first one")
         print("Executing bash in docker container - {0} on host - {1}".format(containerId, hostname));
-        subprocess.check_call("docker -H tcp://{0}:4243 exec -it {1} bash".format(hostname, containerId), shell=True); 
+        subprocess.check_call("docker -H tcp://{0}:4243 exec -it {1} bash".format(hostname, containerId), shell=True);
     else:
         print("No Container found on host {0} with application Task Id {1}".format(hostname, args.appTaskId));
 
