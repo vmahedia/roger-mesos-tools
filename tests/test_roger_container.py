@@ -24,11 +24,11 @@ class TestPush(unittest.TestCase):
     parser.add_argument('-e', '--env', metavar='env', help="Environment to deploy to. example: 'dev' or 'stage'")
     parser.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
     self.parser = parser
-    with open('/vagrant/config/roger_container_cli.json') as config:
+    with open('/vagrant/config/roger_tests.json') as config:
       config = json.load(config)
     with open('/vagrant/config/roger-env.json') as roger:
       roger_env = json.load(roger)
-    data = config['apps']['grafana']
+    data = config['apps']['tests']
     self.config = config
     self.roger_env = roger_env
     self.data = data
@@ -48,37 +48,46 @@ class TestPush(unittest.TestCase):
     when(settings).getConfigDir().thenReturn("/vagrant/config")
     when(settings).getCliDir().thenReturn("/vagrant")
     when(appConfig).getRogerEnv("/vagrant/config").thenReturn(roger_env)
-    when(appConfig).getConfig("/vagrant/config", "roger_container_cli.json").thenReturn(config)
-    when(appConfig).getAppData("/vagrant/config", "roger_container_cli.json", "grafana").thenReturn(data)
+    when(appConfig).getConfig("/vagrant/config", "roger_tests.json").thenReturn(config)
+    when(appConfig).getAppData("/vagrant/config", "roger_tests.json", "tests").thenReturn(data)
     parser = self.parser
     args = parser.parse_args()
-    args.app_name = 'grafana'
-    args.config_file = 'roger_container_cli.json'
+    args.app_name = 'tests'
+    args.config_file = 'roger_tests.json'
     args.directory = '/vagrant/tests/testrepo'
-    args.image_name = 'moz-roger-grafana-gsadahdahsd/v0.1.0'
+    args.image_name = 'tests/v0.1.0'
     object_list = []
     object_list.append(settings)
     object_list.append(appConfig)
     object_list.append(frameworkUtils)
+
     roger_push.main(object_list, args)
 
-    with open('/vagrant/tests/components/dev/moz-roger-grafana.json') as output:
+    with open('/vagrant/tests/components/dev/moz-roger-tests.json') as output:
       output = json.load(output)
+
+
+    dict_output = eval(output["env"]["ENV_VAR_CONTAINER"])
 
     print ("Test Case 1: Executing Test to Match Environment Variable and Gloabl Variable Within a Container")
     print()
-    print ("Expected Value -> ENV_VAR_CONTAINER_PROD : production")
-    print ("Actual Value   : {}".format(str(output["env"]["ENV_VAR_CONTAINER_PROD"])))
-    print ("Expected Value -> ENV_VAR_CONTAINER_DEV : production")
-    print ("Actual Value   : {}".format(str(output["env"]["ENV_VAR_CONTAINER_DEV"])))
-    print ("Expected Value -> ENV_VAR_CONTAINER_STAGE : production")
-    print ("Actual Value   : {}".format(str(output["env"]["ENV_VAR_CONTAINER_STAGE"])))
+    print ("Expected Value -> Production Environment : production")
+    print ("Actual Value   : {}".format(str(dict_output['prod']['NODE_ENV'])))
+
+    print()
+    print ("Expected Value -> Development Environment : development")
+    print ("Actual Value   : {}".format(str(dict_output['dev']['NODE_ENV'])))
+
+    print()
+    print ("Expected Value -> Staging Environment : staging")
+    print ("Actual Value   : {}".format(str(dict_output['stage']['NODE_ENV'])))
+
     print ("Expected Value -> GLOBAL_VAR_CONTAINER : ")
     print ("Actual Value   : {}".format(str(output["env"]["GLOBAL_VAR_CONTAINER"])))
 
-    assert str(output["env"]["ENV_VAR_CONTAINER_PROD"]) == "production"
-    assert str(output["env"]["ENV_VAR_CONTAINER_DEV"]) == "production"
-    assert str(output["env"]["ENV_VAR_CONTAINER_STAGE"]) == "production"
+    assert str(dict_output['prod']['NODE_ENV']) == "production"
+    assert str(dict_output['stage']['NODE_ENV']) == "staging"
+    assert str(dict_output['dev']['NODE_ENV']) == "development"
     assert str(output["env"]["GLOBAL_VAR_CONTAINER"]) == ""
 
 

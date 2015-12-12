@@ -102,22 +102,20 @@ def renderTemplate(template, environment, image, app_data, config):
     #Adding Global and environment variables for containers.
 
     for every_app in config.keys():
-     if str(every_app) == "apps":
-      for app_container_values in config["apps"].values():
-          for key in app_container_values.keys():
-              if key == "containers":
-                 for value in app_container_values[key]:
-                        if type(value) == dict:
-                           for each_key in value.keys():
-                               for env in value[each_key]:
-                                    if str(env) == "vars":
-                                        for app_values in value[each_key]["vars"].keys():
-                                            if str(app_values) == "environment":
-                                               variables['environment_var_container_prod'] =  value[each_key]["vars"][app_values]["prod"]["NODE_ENV"]
-                                               variables['environment_var_container_stage'] =  value[each_key]["vars"][app_values]["stage"]["NODE_ENV"]
-                                               variables['environment_var_container_dev'] =  value[each_key]["vars"][app_values]["dev"]["NODE_ENV"]
-                                            if str(app_values) == "global_var":
-                                               variables['global_var_container'] =  value[each_key]["vars"][app_values]
+        if str(every_app) == "apps":
+            for app_container_values in config["apps"].values():
+                for key in app_container_values.keys():
+                    if key == "containers":
+                        for value in app_container_values[key]:
+                            if type(value) == dict:
+                                for each_key in value.keys():
+                                    for env in value[each_key]:
+                                        if str(env) == "vars":
+                                            for app_values in value[each_key]["vars"].keys():
+                                                if str(app_values) == "environment":
+                                                    variables['environment_var_container'] =  value[each_key]["vars"][app_values]
+                                                if str(app_values) == "global_var":
+                                                    variables['global_var_container'] =  value[each_key]["vars"][app_values]
 
     output = template.render(variables)
     return output

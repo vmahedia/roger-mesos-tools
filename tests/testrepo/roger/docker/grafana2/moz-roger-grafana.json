@@ -26,11 +26,6 @@
   "uris": [],
   "env": {
     "TCP_PORTS": "{ \"3000\": \"PORT0\" }",
-    "GF_SERVER_ROOT_URL": "http://grafana.roger.dal.moz.com:3000",
-    "ENV_VAR_CONTAINER_PROD": "{{ environment_var_container_prod }}",
-    "ENV_VAR_CONTAINER_DEV": "{{ environment_var_container_dev }}",
-    "ENV_VAR_CONTAINER_STAGE": "{{ environment_var_container_stage }}",
-    "GLOBAL_VAR_CONTAINER": "{{ global_var_container }}"
-
+    "GF_SERVER_ROOT_URL": "http://grafana.roger.dal.moz.com:3000"
   }
 }
