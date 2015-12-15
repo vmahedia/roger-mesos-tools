@@ -28,7 +28,7 @@ class TestPush(unittest.TestCase):
       config = json.load(config)
     with open('/vagrant/config/roger-env.json') as roger:
       roger_env = json.load(roger)
-    data = config['apps']['tests']
+    data = config['apps']['container-vars']
     self.config = config
     self.roger_env = roger_env
     self.data = data
@@ -49,10 +49,10 @@ class TestPush(unittest.TestCase):
     when(settings).getCliDir().thenReturn("/vagrant")
     when(appConfig).getRogerEnv("/vagrant/config").thenReturn(roger_env)
     when(appConfig).getConfig("/vagrant/config", "roger_tests.json").thenReturn(config)
-    when(appConfig).getAppData("/vagrant/config", "roger_tests.json", "tests").thenReturn(data)
+    when(appConfig).getAppData("/vagrant/config", "roger_tests.json", "container-vars").thenReturn(data)
     parser = self.parser
     args = parser.parse_args()
-    args.app_name = 'tests'
+    args.app_name = 'container-vars'
     args.config_file = 'roger_tests.json'
     args.directory = '/vagrant/tests/testrepo'
     args.image_name = 'tests/v0.1.0'
@@ -63,7 +63,7 @@ class TestPush(unittest.TestCase):
 
     roger_push.main(object_list, args)
 
-    with open('/vagrant/tests/components/dev/moz-roger-tests.json') as output:
+    with open('/vagrant/tests/components/dev/roger-tests-tests.json') as output:
       output = json.load(output)
 
 
