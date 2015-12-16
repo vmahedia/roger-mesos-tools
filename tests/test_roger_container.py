@@ -49,6 +49,7 @@ class TestPush(unittest.TestCase):
     when(settings).getCliDir().thenReturn("/vagrant")
     when(appConfig).getRogerEnv("/vagrant/config").thenReturn(roger_env)
     when(appConfig).getConfig("/vagrant/config", "roger_tests.json").thenReturn(config)
+
     when(appConfig).getAppData("/vagrant/config", "roger_tests.json", "container-vars").thenReturn(data)
     parser = self.parser
     args = parser.parse_args()
@@ -66,29 +67,22 @@ class TestPush(unittest.TestCase):
     with open('/vagrant/tests/components/dev/roger-tests-tests.json') as output:
       output = json.load(output)
 
+    var1 = output["env"]["VAR_1"]
+    var3 = output["env"]["VAR_3"]
+    var4 = output["env"]["VAR_4"]
 
-    dict_output = eval(output["env"]["ENV_VAR_CONTAINER"])
+    print ("Expected Value -> Var1 : environment_value_1")
+    print ("Actual Value   : {}".format(var1))
 
-    print ("Test Case 1: Executing Test to Match Environment Variable and Gloabl Variable Within a Container")
-    print()
-    print ("Expected Value -> Production Environment : production")
-    print ("Actual Value   : {}".format(str(dict_output['prod']['NODE_ENV'])))
+    print ("Expected Value -> Var3 : value_3")
+    print ("Actual Value   : {}".format(var3))
 
-    print()
-    print ("Expected Value -> Development Environment : development")
-    print ("Actual Value   : {}".format(str(dict_output['dev']['NODE_ENV'])))
+    print ("Expected Value -> Var4 : environment_value_4")
+    print ("Actual Value   : {}".format(var4))
 
-    print()
-    print ("Expected Value -> Staging Environment : staging")
-    print ("Actual Value   : {}".format(str(dict_output['stage']['NODE_ENV'])))
-
-    print ("Expected Value -> GLOBAL_VAR_CONTAINER : ")
-    print ("Actual Value   : {}".format(str(output["env"]["GLOBAL_VAR_CONTAINER"])))
-
-    assert str(dict_output['prod']['NODE_ENV']) == "production"
-    assert str(dict_output['stage']['NODE_ENV']) == "staging"
-    assert str(dict_output['dev']['NODE_ENV']) == "development"
-    assert str(output["env"]["GLOBAL_VAR_CONTAINER"]) == ""
+    assert var3 == "value_3"
+    assert var1 == "environment_value_1"
+    assert var4 == "environment_value_4"
 
 
 

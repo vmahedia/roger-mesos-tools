@@ -72,9 +72,6 @@ def renderTemplate(template, environment, image, app_data, config):
     variables = {}
     variables['environment'] = environment
     variables['image'] = image
-    variables['environment_var_container'] = ""
-    variables['global_var_container'] = ""
-
 
     #Adding Global and environment variables for all apps
     if 'vars' in config:
@@ -112,10 +109,17 @@ def renderTemplate(template, environment, image, app_data, config):
                                     for env in value[each_key]:
                                         if str(env) == "vars":
                                             for app_values in value[each_key]["vars"].keys():
+                                                dict_output = eval(str(value[each_key]["vars"][app_values]))
+                                                if str(app_values) == "global":
+                                                    for every_key in dict_output.keys():
+                                                        if every_key not in variables:
+                                                            variables[every_key] = dict_output[every_key]
+                                                # The environment variable settings will override the global values
                                                 if str(app_values) == "environment":
-                                                    variables['environment_var_container'] =  value[each_key]["vars"][app_values]
-                                                if str(app_values) == "global_var":
-                                                    variables['global_var_container'] =  value[each_key]["vars"][app_values]
+                                                    for every_key in dict_output.keys():
+                                                        dict_create = eval(str(dict_output[every_key]))
+                                                        for per_key in dict_create:
+                                                            variables[per_key] = dict_create[per_key]
 
     output = template.render(variables)
     return output
