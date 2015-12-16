@@ -189,6 +189,7 @@ def main(object_list, args):
 
     template = env.get_template(containerConfig)
     image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
+    print("Rendering content from template [{}] in dir [{}] for environment [{}]".format(containerConfig, app_path, environment))
     output = renderTemplate(template, environment, image_path, data, config)
     #Adding check so that not all apps try to mergeSecrets
     outputObj = json.loads(output)
