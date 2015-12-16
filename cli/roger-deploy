@@ -91,7 +91,9 @@ def getNextVersion(config, roger_env, application, branch, work_dir, repo, args)
   docker_search = subprocess.check_output("docker search {0}/{1}-{2}".format(roger_env['registry'], config['name'], application), shell=True)
   image_version_list = []
   version = ''
-  envs = ['prod', 'stage', 'dev', 'test']
+  envs = []
+  for each_key in roger_env["environments"].keys():
+      envs.append(each_key)
   for line in docker_search.split('\n'):
     image = line.split(' ')[0]
     matchObj = re.match("^{0}-{1}-.*/v.*".format(config['name'], application), image)
@@ -121,7 +123,7 @@ def incrementVersion(sha, image_version_list, args):
   if args.incr_patch:
     latest_version = "{0}/v{1}.{2}.{3}".format(sha, int(ver_tuple[0]), int(ver_tuple[1]), (int(ver_tuple[2])+1))
     return latest_version
-    
+
   latest_version = "{0}/v{1}.{2}.0".format(sha, int(ver_tuple[0]), (int(ver_tuple[1])+1))
   return latest_version
 
@@ -157,7 +159,7 @@ def parseArgs():
   parser.add_argument('-sp', '--skip-push', action="store_true",
     help="Flag that skips roger-push when set to true. Defaults to false.'")
   parser.add_argument('-p', '--incr-patch', action="store_true",
-    help="Increment patch in version. Defaults to false.'") 
+    help="Increment patch in version. Defaults to false.'")
   return parser
 
 def push(root, app, work_dir, image_name, config_file, environment):
@@ -180,7 +182,7 @@ def pullRepo(root, app, work_dir, config_file, branch):
 
 def main(object_list, args):
   settingObj = object_list[0]
-  appObj = object_list[1] 
+  appObj = object_list[1]
   config_dir = settingObj.getConfigDir()
   root = settingObj.getCliDir()
   roger_env = appObj.getRogerEnv(config_dir)
@@ -269,7 +271,7 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
   #Set initial version
   image_git_sha = getGitSha(work_dir, repo, branch)
   image_name = "{0}-{1}-{2}/v0.1.0".format(config['name'], app, image_git_sha)
-  
+
   if skip_build == True:
     curr_image_ver = frameworkObj.getCurrentImageVersion(roger_env, environment, app)
     print("Current image version deployed on {0} is :{1}".format(framework, curr_image_ver))
@@ -310,7 +312,7 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
 
   exists = os.path.exists(os.path.abspath(work_dir))
   if exists:
-    shutil.rmtree(work_dir) 
+    shutil.rmtree(work_dir)
     print("Deleting temporary dir:{0}".format(work_dir))
 
   deployTime = datetime.now() - startTime
