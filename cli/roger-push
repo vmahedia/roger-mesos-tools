@@ -48,10 +48,11 @@ def loadSecretsJson(secrets_dir, jsonFileName):
    os.makedirs(secrets_dir)
   path = "{}/{}".format(secrets_dir, jsonFileName)
   try:
+    print(" Loading secrets from {}".format(path))
     with open(path) as f:
       return json.load(f)
   except IOError:
-    print("Couldn't load secrets file environment %s\n" % path, file=sys.stderr)
+    print(" Couldn't load secrets file environment %s\n" % path, file=sys.stderr)
     return {}
 
 def mergeSecrets(jsonStr, secretsObj):
@@ -60,11 +61,12 @@ def mergeSecrets(jsonStr, secretsObj):
   a JSON string. Raises an error if there are any SECRET env variables still.'''
   outputObj = json.loads(jsonStr)
   if secretsObj:
+    print(" Merging secrets.")
     outputObj['env'].update(secretsObj)
     jsonStr = json.dumps(outputObj, indent=4)
   for k, v in outputObj['env'].iteritems():
     if v == 'SECRET':
-      raise StandardError('env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?' % k)
+      raise StandardError(' env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?' % k)
   return jsonStr
 
 def renderTemplate(template, environment, image, app_data, config):
