@@ -77,14 +77,8 @@ class TestPush(unittest.TestCase):
     print ("Expected Value -> Var3 : value_3")
     print ("Actual Value   : {}".format(var3))
 
-    print ("Expected Value -> Var4 : environment_value_4")
-    print ("Actual Value   : {}".format(var4))
-
     assert var3 == "value_3"
     assert var1 == "environment_value_1"
-    assert var4 == "environment_value_4"
-
-
 
   def tearDown(self):
     pass
