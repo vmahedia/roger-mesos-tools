@@ -174,8 +174,9 @@ def main(object_list, args):
 
     template = ''
     os.chdir(cur_file_path)	#Required for when work_dir,component_dir,template_dir or secret_env_dir is something like '.' or './temp"
+    app_path = ''
     if 'template_path' not in data:
-      env = Environment(loader=FileSystemLoader("{}".format(templ_dir)))
+      app_path = templ_dir
     else:
       cur_dir = ''
       if "PWD" in os.environ:
@@ -185,11 +186,14 @@ def main(object_list, args):
         app_path = "{0}/{1}/{2}".format(args.directory, repo, data['template_path'])
       else:
         app_path = "{0}/{1}/{2}/{3}".format(cur_dir, args.directory, repo, data['template_path'])
-      env = Environment(loader=FileSystemLoader("{}".format(app_path)))
 
+    if not app_path.endswith('/'):
+        app_path = app_path + '/'
+
+    env = Environment(loader=FileSystemLoader("{}".format(app_path)))
     template = env.get_template(containerConfig)
     image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
-    print("Rendering content from template [{}] in dir [{}] for environment [{}]".format(containerConfig, app_path, environment))
+    print("Rendering content from template [{}{}] for environment [{}]".format(app_path, containerConfig, environment))
     output = renderTemplate(template, environment, image_path, data, config)
     #Adding check so that not all apps try to mergeSecrets
     outputObj = json.loads(output)
