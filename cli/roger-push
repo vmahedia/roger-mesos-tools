@@ -97,11 +97,12 @@ def renderTemplate(template, environment, image, app_data, config):
             variables[env_var] = app_data['vars']['environment'][environment][env_var]
 
     #Adding Global and environment variables for containers.
-    for app_container_values in config["apps"].values():       # config["apps"].values() is a list
+    for app_container_values in config["apps"].values():
         if "containers" in app_container_values:
-            for value in app_container_values["containers"]:   #  app_container_values["containers"] is a list of values within containers. Eg [ app1,app2 ] , [ test: {vars: {gloabl{} , environment {}}}]
+            for value in app_container_values["containers"]:
+                #  app_container_values["containers"] is a list of values within containers. Eg [ app1,app2 ] , [ test: {vars: {gloabl{} , environment {}}}]
                 if type(value) == dict:
-                    for each_key in value.keys():              # We could have many apps within a container , hence looping
+                    for each_key in value.keys():
                         if "vars" in value[each_key]:
 
                             if "global" in value[each_key]["vars"]:
@@ -112,7 +113,7 @@ def renderTemplate(template, environment, image, app_data, config):
                                 if environment in value[each_key]["vars"]["environment"]:
                                     for environment_var in value[each_key]["vars"]["environment"][environment]:
                                         variables[environment_var] = value[each_key]["vars"]["environment"][environment][environment_var]
-                                        
+
     output = template.render(variables)
     return output
 
