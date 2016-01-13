@@ -49,6 +49,6 @@ class Marathon(Framework):
             #Image format expected moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
             return utils.extractFullShaAndVersion(docker_image)
           else:
-            #Docker images of the format: grafana/grafana:2.1.3 or postgres:9.4.1 
+            #Docker images of the format: grafana/grafana:2.1.3 or postgres:9.4.1
             return docker_image
 
