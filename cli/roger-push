@@ -60,19 +60,45 @@ def loadSecretsJson(secrets_dir, json_file_name):
     print(" Couldn't load secrets file environment %s\n" % path, file=sys.stderr)
     return {}
 
-def mergeSecrets(jsonStr, secretsObj):
+def replaceSecrets(output_dict, secrets_dict):
+
+  if type(output_dict) is not dict:
+    return json
+
+  for key in output_dict:
+    if output_dict[key] == "SECRET":
+      print("Key is :"+key)
+      if key in secrets_dict.keys():
+        output_dict[key] = secrets_dict[key]
+
+    if type(output_dict[key]) is list:
+      if len(output_dict[key]) != 0 and type(output_dict[key][0]) is dict:
+        temp_str = "[" + replaceSecrets(output_dict[key][0], secrets_dict) + "]"
+        output_dict[key] = temp_str
+    if type(output_dict[key]) is dict:
+      temp_str = replaceSecrets(output_dict[key], secrets_dict)
+      output_dict[key] = temp_str
+
+  output = json.dumps(output_dict, indent=4)
+  return output
+
+def mergeSecrets(json_str, secrets):
   '''Given a JSON stirng and an object of secret environment variables, replaces
   parses the JSON and merges ['env'] with the secret variables. Returns back
   a JSON string. Raises an error if there are any SECRET env variables still.'''
-  outputObj = json.loads(jsonStr)
+  output_dict = json.loads(json_str)
+  json_str = replaceSecrets(output_dict, secrets)
+  print("Output is:")
+  print(json_str)
+  '''
   if secretsObj:
     print(" Merging secrets.")
     outputObj['env'].update(secretsObj)
     jsonStr = json.dumps(outputObj, indent=4)
-  for k, v in outputObj['env'].iteritems():
-    if v == 'SECRET':
-      raise StandardError(' env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?' % k)
-  return jsonStr
+  '''
+  if '\"SECRET\"' in json_str:
+      raise StandardError(' env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?')
+  return json_str
 
 def renderTemplate(template, environment, image, app_data, config, container):
     output = ''
@@ -201,9 +227,8 @@ def main(object_list, args):
     output = renderTemplate(template, environment, image_path, data, config, container)
     #Adding check so that not all apps try to mergeSecrets
     outputObj = json.loads(output)
-    if 'env' in outputObj:
-      if "SECRET" in outputObj['env'].values():
-        output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig))
+    if 'SECRET' in output:
+      output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig))
 
     try:
       comp_exists = os.path.exists("{0}".format(comp_dir))
