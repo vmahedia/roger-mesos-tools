@@ -61,41 +61,32 @@ def loadSecretsJson(secrets_dir, json_file_name):
     return {}
 
 def replaceSecrets(output_dict, secrets_dict):
-
   if type(output_dict) is not dict:
     return json
 
   for key in output_dict:
     if output_dict[key] == "SECRET":
-      print("Key is :"+key)
       if key in secrets_dict.keys():
         output_dict[key] = secrets_dict[key]
 
     if type(output_dict[key]) is list:
       if len(output_dict[key]) != 0 and type(output_dict[key][0]) is dict:
-        temp_str = "[" + replaceSecrets(output_dict[key][0], secrets_dict) + "]"
-        output_dict[key] = temp_str
+        temp_list = []
+        temp_list.append(replaceSecrets(output_dict[key][0], secrets_dict))
+        output_dict[key] = temp_list
     if type(output_dict[key]) is dict:
-      temp_str = replaceSecrets(output_dict[key], secrets_dict)
-      output_dict[key] = temp_str
+      temp_dict = replaceSecrets(output_dict[key], secrets_dict)
+      output_dict[key] = temp_dict
 
-  output = json.dumps(output_dict, indent=4)
-  return output
+  return output_dict
 
 def mergeSecrets(json_str, secrets):
   '''Given a JSON stirng and an object of secret environment variables, replaces
   parses the JSON and merges ['env'] with the secret variables. Returns back
   a JSON string. Raises an error if there are any SECRET env variables still.'''
   output_dict = json.loads(json_str)
-  json_str = replaceSecrets(output_dict, secrets)
-  print("Output is:")
-  print(json_str)
-  '''
-  if secretsObj:
-    print(" Merging secrets.")
-    outputObj['env'].update(secretsObj)
-    jsonStr = json.dumps(outputObj, indent=4)
-  '''
+  json_str = json.dumps(replaceSecrets(output_dict, secrets), indent=4)
+
   if '\"SECRET\"' in json_str:
       raise StandardError(' env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?')
   return json_str
