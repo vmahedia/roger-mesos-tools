@@ -62,7 +62,7 @@ def loadSecretsJson(secrets_dir, json_file_name):
 
 def replaceSecrets(output_dict, secrets_dict):
   if type(output_dict) is not dict:
-    return json
+    return output_dict
 
   for key in output_dict:
     if output_dict[key] == "SECRET":
@@ -81,9 +81,9 @@ def replaceSecrets(output_dict, secrets_dict):
   return output_dict
 
 def mergeSecrets(json_str, secrets):
-  '''Given a JSON stirng and an object of secret environment variables, replaces
-  parses the JSON and merges ['env'] with the secret variables. Returns back
-  a JSON string. Raises an error if there are any SECRET env variables still.'''
+  '''Given a JSON string and an object of secret environment variables, replaces
+  parses the JSON keys with the secret variables. Returns back
+  a JSON string. Raises an error if there are any SECRET variables still exists.'''
   output_dict = json.loads(json_str)
   json_str = json.dumps(replaceSecrets(output_dict, secrets), indent=4)
 
