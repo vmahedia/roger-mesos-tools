@@ -81,6 +81,8 @@ then will log into the first one")
     command = "{} {}".format(command, containerId)
     try:
       subprocess.check_call("{}".format(command),  shell=True);
+    except (KeyboardInterrupt, SystemExit):
+      print("Exited.")
     except (subprocess.CalledProcessError) as e:
       print("The following error occurred:\n (error: %s).\n" % e, file=sys.stderr)
   else:
