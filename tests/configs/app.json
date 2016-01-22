@@ -42,6 +42,67 @@
         "container_name1",
         "container_name2"
       ]
+    },
+    "grafana_test_app": {
+       "name": "grafana_test_app",
+       "containers": [
+        {
+         "grafana": {
+            "vars": {
+              "global": {
+                 "cpus": "0.1",
+                  "mem": "128"
+              },
+              "environment": {
+                "dev": {
+                  "cpus": "0.2",
+                  "mem": "256"
+                },
+                "prod": {
+                  "cpus": "2",
+                  "mem": "2048"
+                }
+             }
+          }
+        },
+        "grafana1": {
+            "vars": {
+              "global": {
+                 "cpus": "0.1",
+                  "mem": "128"
+              },
+              "environment": {
+                "dev": {
+                  "cpus": "0.5",
+                  "mem": "512"
+                },
+                "prod": {
+                  "cpus": "2",
+                  "mem": "2048"
+                }
+             }
+          }
+        },
+        "grafana2": {
+            "vars": {
+              "global": {
+                 "cpus": "0.1",
+                  "mem": "128"
+              },
+              "environment": {
+                "dev": {
+                  "cpus": "1",
+                  "mem": "1024"
+                },
+                "prod": {
+                  "cpus": "2",
+                  "mem": "2048"
+                }
+             }
+          }
+        }
+      }
+      ]
     }
   }
 }
