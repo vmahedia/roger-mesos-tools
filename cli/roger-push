@@ -101,8 +101,6 @@ def renderTemplate(template, environment, image, app_data, config, container):
     if type(container) == dict:
       if 'vars' in container:
         container_vars = container['vars']
-        if "service" in container_vars:
-          variables['service'] = container_vars['service']
         if 'global' in container_vars:
           for global_var in container_vars['global']:
             variables[global_var] = container_vars['global'][global_var]
