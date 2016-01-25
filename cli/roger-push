@@ -70,10 +70,11 @@ def replaceSecrets(output_dict, secrets_dict):
         output_dict[key] = secrets_dict[key]
 
     if type(output_dict[key]) is list:
-      if len(output_dict[key]) != 0 and type(output_dict[key][0]) is dict:
+      for list_elem in output_dict[key]:
         temp_list = []
-        temp_list.append(replaceSecrets(output_dict[key][0], secrets_dict))
+        temp_list.append(replaceSecrets(list_elem, secrets_dict))
         output_dict[key] = temp_list
+
     if type(output_dict[key]) is dict:
       temp_dict = replaceSecrets(output_dict[key], secrets_dict)
       output_dict[key] = temp_dict
