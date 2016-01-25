@@ -46,26 +46,8 @@
     "grafana_test_app": {
        "name": "grafana_test_app",
        "containers": [
-        {
-         "grafana": {
-            "vars": {
-              "global": {
-                 "cpus": "0.1",
-                  "mem": "128"
-              },
-              "environment": {
-                "dev": {
-                  "cpus": "0.2",
-                  "mem": "256"
-                },
-                "prod": {
-                  "cpus": "2",
-                  "mem": "2048"
-                }
-             }
-          }
-        },
-        "grafana1": {
+         "grafana",
+        { "grafana1": {
             "vars": {
               "global": {
                  "cpus": "0.1",
@@ -82,8 +64,9 @@
                 }
              }
           }
+        }
         },
-        "grafana2": {
+        { "grafana2": {
             "vars": {
               "global": {
                  "cpus": "0.1",

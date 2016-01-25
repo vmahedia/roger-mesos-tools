@@ -111,8 +111,8 @@ class TestPush(unittest.TestCase):
     with open('/vagrant/tests/components/dev/test-app-grafana.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
-    assert output['cpus'] == 0.2
-    assert output['mem'] == 256
+    assert output['cpus'] == 2
+    assert output['mem'] == 1024
     with open('/vagrant/tests/components/dev/test-app-grafana1.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
