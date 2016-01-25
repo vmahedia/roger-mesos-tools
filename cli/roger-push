@@ -40,13 +40,18 @@ def parse_args():
   parser.add_argument('config_file', metavar='config_file',
     help="Configuration file to be used for the project. Example: 'content.json' or 'kwe.json'")
   parser.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
+  parser.add_argument('--secrets-file', '-S',
+    help="Specify an optional secrets file for deploy runtime variables.")
   return parser
 
-def loadSecretsJson(secrets_dir, jsonFileName):
+def loadSecretsJson(secrets_dir, json_file_name):
+  if args.secrets_file:
+    print("Using specified secrets file: {}".format(args.secrets_file))
+    json_file_name = args.secrets_file
   exists = os.path.exists(secrets_dir)
   if exists == False:
    os.makedirs(secrets_dir)
-  path = "{}/{}".format(secrets_dir, jsonFileName)
+  path = "{}/{}".format(secrets_dir, json_file_name)
   try:
     print(" Loading secrets from {}".format(path))
     with open(path) as f:
@@ -161,7 +166,7 @@ def main(object_list, args):
 
   # template marathon files
   data_containers = data['containers']
- 
+
   for container in data_containers:
     if type(container) == dict:
        container_name = str(container.keys()[0])
@@ -170,7 +175,7 @@ def main(object_list, args):
     else:
        container_name = container
        containerConfig = "{0}-{1}.json".format(config['name'], container)
-    
+
     template = ''
     os.chdir(cur_file_path) #  Required for when work_dir,component_dir,template_dir or secret_env_dir is something like '.' or './temp"
     app_path = ''

@@ -2,6 +2,7 @@
 .vagrant
 secretenvs
 components
+secrets
 src
 *.pyc
 .slack_token
