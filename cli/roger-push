@@ -69,7 +69,7 @@ def mergeSecrets(jsonStr, secretsObj):
       raise StandardError(' env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?' % k)
   return jsonStr
 
-def renderTemplate(template, environment, image, app_data, config, container_name):
+def renderTemplate(template, environment, image, app_data, config, container):
     output = ''
     variables = {}
     variables['environment'] = environment
@@ -98,22 +98,18 @@ def renderTemplate(template, environment, image, app_data, config, container_nam
           for env_var in app_data['vars']['environment'][environment]:
             variables[env_var] = app_data['vars']['environment'][environment][env_var]
 
-    data_containers = app_data['containers']
-    if type(app_data['containers']) is list:
-      if type(app_data['containers'][0]) is dict:
-        data_containers = app_data['containers'][0]
-
-        if 'vars' in data_containers[container_name]:
-          container_vars = data_containers[container_name]['vars']
-          if "service" in container_vars:
-            variables['service'] = container_vars['service']
-          if 'global' in container_vars:
-            for global_var in container_vars['global']:
-              variables[global_var] = container_vars['global'][global_var]
-          if 'environment' in container_vars:
-            if environment in container_vars['environment']:
-              for env_var in container_vars['environment'][environment]:
-                variables[env_var] = container_vars['environment'][environment][env_var]
+    if type(container) == dict:
+      if 'vars' in container:
+        container_vars = container['vars']
+        if "service" in container_vars:
+          variables['service'] = container_vars['service']
+        if 'global' in container_vars:
+          for global_var in container_vars['global']:
+            variables[global_var] = container_vars['global'][global_var]
+        if 'environment' in container_vars:
+          if environment in container_vars['environment']:
+            for env_var in container_vars['environment'][environment]:
+              variables[env_var] = container_vars['environment'][environment][env_var]
 
     output = template.render(variables)
     return output
@@ -167,18 +163,16 @@ def main(object_list, args):
 
   # template marathon files
   data_containers = data['containers']
-  if type(data['containers']) is list:
-    if type(data['containers'][0]) is dict:
-      data_containers = data['containers'][0]
  
   for container in data_containers:
     if type(container) == dict:
        container_name = str(container.keys()[0])
+       container = container[container_name]
        containerConfig = "{0}-{1}.json".format(config['name'], container_name)
     else:
        container_name = container
        containerConfig = "{0}-{1}.json".format(config['name'], container)
-
+    
     template = ''
     os.chdir(cur_file_path) #  Required for when work_dir,component_dir,template_dir or secret_env_dir is something like '.' or './temp"
     app_path = ''
@@ -201,7 +195,7 @@ def main(object_list, args):
     template = env.get_template(containerConfig)
     image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
     print("Rendering content from template [{}{}] for environment [{}]".format(app_path, containerConfig, environment))
-    output = renderTemplate(template, environment, image_path, data, config, container_name)
+    output = renderTemplate(template, environment, image_path, data, config, container)
     #Adding check so that not all apps try to mergeSecrets
     outputObj = json.loads(output)
     if 'env' in outputObj:
