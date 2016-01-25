@@ -100,19 +100,20 @@ def renderTemplate(template, environment, image, app_data, config, container_nam
 
     data_containers = app_data['containers']
     if type(app_data['containers']) is list:
-      data_containers = app_data['containers'][0]
+      if type(app_data['containers'][0]) is dict:
+        data_containers = app_data['containers'][0]
 
-    if 'vars' in data_containers[container_name]:
-      container_vars = data_containers[container_name]['vars']
-      if "service" in container_vars:
-        variables['service'] = container_vars['service']
-      if 'global' in container_vars:
-        for global_var in container_vars['global']:
-          variables[global_var] = container_vars['global'][global_var]
-      if 'environment' in container_vars:
-        if environment in container_vars['environment']:
-          for env_var in container_vars['environment'][environment]:
-            variables[env_var] = container_vars['environment'][environment][env_var]
+        if 'vars' in data_containers[container_name]:
+          container_vars = data_containers[container_name]['vars']
+          if "service" in container_vars:
+            variables['service'] = container_vars['service']
+          if 'global' in container_vars:
+            for global_var in container_vars['global']:
+              variables[global_var] = container_vars['global'][global_var]
+          if 'environment' in container_vars:
+            if environment in container_vars['environment']:
+              for env_var in container_vars['environment'][environment]:
+                variables[env_var] = container_vars['environment'][environment][env_var]
 
     output = template.render(variables)
     return output
@@ -167,7 +168,8 @@ def main(object_list, args):
   # template marathon files
   data_containers = data['containers']
   if type(data['containers']) is list:
-     data_containers = data['containers'][0]
+    if type(data['containers'][0]) is dict:
+      data_containers = data['containers'][0]
  
   for container in data_containers:
     if type(container) == dict:
