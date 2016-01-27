@@ -23,23 +23,24 @@
   "instances": 1,
   "cpus": 2,
   "mem": 1024,
-  "uris": [],
+  "uris": [ "abc", "xyz", "$ENV_VAR" ],
   "env": {
     "TCP_PORTS": "{ \"3000\": \"PORT0\" }",
     "GF_SERVER_HTTP_PORT":"80",
     "GF_DATABASE_TYPE":"postgres",
     "GF_DATABASE_HOST":"test.roger.dal.moz.com:5432",
     "GF_DATABASE_NAME":"grafana213",
-    "GF_DATABASE_USER":"grafana",
-    "GF_DATABASE_PASSWORD":"grafana",
+    "GF_DATABASE_USER":"dfsd",
+    "GF_DATABASE_PASSWORD":"sdf",
     "GF_AUTH_GOOGLE_ENABLED": "true",
-    "GF_AUTH_GOOGLE_CLIENT_ID": "887069077170-facsndmuovbmpfjs1r59h5bk51lththr.apps.googleusercontent.com",
-    "GF_AUTH_GOOGLE_CLIENT_SECRET": "Mk6X3OCLTxTj0iGCjV224GbE",
+    "GF_AUTH_GOOGLE_CLIENT_ID": "lkj;lkj",
+    "GF_AUTH_GOOGLE_CLIENT_SECRET": "sedfsdf",
     "GF_AUTH_GOOGLE_SCOPES": "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
     "GF_AUTH_GOOGLE_AUTH_URL": "https://accounts.google.com/o/oauth2/auth",
     "GF_AUTH_GOOGLE_TOKEN_URL": "https://accounts.google.com/o/oauth2/token",
     "GF_AUTH_GOOGLE_ALLOWED_DOMAINS": "moz.com",
     "GF_AUTH_GOOGLE_ALLOW_SIGN_UP": "true",
-    "GF_SERVER_ROOT_URL": "http://grafana.roger.dal.moz.com:3000"
+    "GF_SERVER_ROOT_URL": "http://grafana.roger.dal.moz.com:3000",
+    "ENV_VAR": "some env value"
   }
 }

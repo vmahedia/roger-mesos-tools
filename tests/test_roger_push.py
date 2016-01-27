@@ -23,6 +23,7 @@ class TestPush(unittest.TestCase):
     parser = argparse.ArgumentParser(description='Args for test')
     parser.add_argument('-e', '--env', metavar='env', help="Environment to deploy to. example: 'dev' or 'stage'")
     parser.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
+    parser.add_argument('--secrets-file', '-S', help="Specify an optional secrets file for deploy runtime variables.")
     self.parser = parser
     with open('/vagrant/config/roger.json') as config:
       config = json.load(config)
@@ -69,7 +70,7 @@ class TestPush(unittest.TestCase):
     roger_push.main(object_list, args)
     with open('/vagrant/tests/components/dev/moz-roger-grafana.json') as output:
       output = json.load(output)
-    assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
+    assert output['container']['docker']['image'] == "registry.roger.dal.moz.com:5000/grafana/grafana:2.1.3"
     verify(settings).getConfigDir()
     verify(settings).getComponentsDir()
     verify(settings).getTemplatesDir()
@@ -113,6 +114,7 @@ class TestPush(unittest.TestCase):
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
     assert output['cpus'] == 2
     assert output['mem'] == 1024
+    assert output['uris'] == [ "abc", "xyz", "$ENV_VAR" ]
     with open('/vagrant/tests/components/dev/test-app-grafana1.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"

@@ -44,8 +44,8 @@ def parse_args():
     help="Specify an optional secrets file for deploy runtime variables.")
   return parser
 
-def loadSecretsJson(secrets_dir, json_file_name):
-  if args.secrets_file:
+def loadSecretsJson(secrets_dir, json_file_name, args):
+  if args.secrets_file is not None:
     print("Using specified secrets file: {}".format(args.secrets_file))
     json_file_name = args.secrets_file
   exists = os.path.exists(secrets_dir)
@@ -70,8 +70,8 @@ def replaceSecrets(output_dict, secrets_dict):
         output_dict[key] = secrets_dict[key]
 
     if type(output_dict[key]) is list:
+      temp_list = []
       for list_elem in output_dict[key]:
-        temp_list = []
         temp_list.append(replaceSecrets(list_elem, secrets_dict))
         output_dict[key] = temp_list
 
@@ -89,7 +89,7 @@ def mergeSecrets(json_str, secrets):
   json_str = json.dumps(replaceSecrets(output_dict, secrets), indent=4)
 
   if '\"SECRET\"' in json_str:
-      raise StandardError(' env[%s] is still SECRET -- does your secretenvs file have all secret environment variables?')
+      raise StandardError('There are still "SECRET" values -- does your secrets file have all secret environment variables?')
   return json_str
 
 def renderTemplate(template, environment, image, app_data, config, container):
@@ -220,7 +220,7 @@ def main(object_list, args):
     #Adding check so that not all apps try to mergeSecrets
     outputObj = json.loads(output)
     if 'SECRET' in output:
-      output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig))
+      output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig, args))
 
     try:
       comp_exists = os.path.exists("{0}".format(comp_dir))

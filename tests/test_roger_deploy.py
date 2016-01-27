@@ -29,6 +29,8 @@ class TestDeploy(unittest.TestCase):
     parser.add_argument('-M', '--incr-major', action="store_true", help="Increment major in version. Defaults to false.'")
     parser.add_argument('-p', '--incr-patch', action="store_true", help="Increment patch in version. Defaults to false.'")
     parser.add_argument('-sp', '--skip-push', action="store_true", help="Flag that skips roger-push when set to true. Defaults to false.'")
+    parser.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
+    parser.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
     self.parser = parser
     with open('/vagrant/config/roger.json') as config:
       config = json.load(config)
@@ -42,7 +44,7 @@ class TestDeploy(unittest.TestCase):
   def test_splitVersion(self):
     assert roger_deploy.splitVersion("0.1.0") == (0,1,0)
     assert roger_deploy.splitVersion("2.0013") == (2,13,0)
-    
+
   def test_incrementVersion(self):
     git_sha = "dwqjdqgwd7y12edq21"
     image_version_list = ['0.001','0.2.034','1.1.2','1.002.1']
@@ -56,13 +58,14 @@ class TestDeploy(unittest.TestCase):
 
   def test_tempDirCheck(self):
     work_dir = "./test_dir"
-    roger_deploy.removeDirTree(work_dir)
+    args = self.parser.parse_args()
+    roger_deploy.removeDirTree(work_dir, args)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == False
     os.makedirs(work_dir)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == True
-    roger_deploy.removeDirTree(work_dir)
+    roger_deploy.removeDirTree(work_dir, args)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == False
 
@@ -101,7 +104,7 @@ class TestDeploy(unittest.TestCase):
     verify(marathon).getCurrentImageVersion(roger_env, 'dev', 'grafana')
 
   def tearDown(self):
-    pass  
+    pass
 
 if __name__ == '__main__':
   unittest.main()
