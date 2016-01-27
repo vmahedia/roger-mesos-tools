@@ -22,27 +22,108 @@ def chdir(dirname):
     yield
   finally: os.chdir(curdir)
 
-# Currently not used, but will be in future Swaparoos
+
+def update_id_matches(update_id):
+  if update_id is None:
+    return False
+
+  projects_update_id = None
+  try:
+    with open('.roger_docker_build_update_id', 'r') as f:
+      projects_update_id = f.read()
+  except:
+    pass
+
+  return update_id == projects_update_id
+
+def write_update_id(update_id):
+  if update_id:
+    with open('.roger_docker_build_update_id', 'w') as f:
+      f.write(update_id)
+
+
 GIT_ACCOUNT="seomoz"
-def download_private_repos(projects):
-  '''Clone (or pull if already existing) private projects to the "git" subdirectory'''
+def download_private_repos(projects, update_id=None):
+  '''Clone (or pull if already existing) private projects to the "git" subdirectory.
+  Takes an optional "update_id" (can be a very long string like a Gemfile) that we save
+  to the subdirectory. Only pulls from the subrepos if this has changed.'''
   if not os.path.isdir('git'):
     os.mkdir('git')
 
   with chdir('git'):
-    directory = os.getcwd()
-    for path in projects:
-      project = pattern.findall(path)[0]
+    for project_or_path in projects:
+      matches = pattern.findall(project_or_path)
+      if matches:
+        project, path = matches[0], project_or_path
+      else:
+        project, path = project_or_path, 'git@github.com:{}/{}'.format(GIT_ACCOUNT, project_or_path)
+
       if os.path.isdir(project):
-        os.chdir(project)
-        os.system('git pull origin master')
-        os.chdir(directory)
+        with chdir(project):
+          if not update_id_matches(update_id):
+            os.system('git fetch; git pull origin master')
+            write_update_id(update_id)
       else:
         os.system('git clone {}'.format(path))
+        with chdir(project):
+          write_update_id(update_id)
+
+
 
 ### SWAPAROOS
 ### Swaparoos swap out package.json / Gemfile etc replacing references to private Github repos with local ones
 ### They are language-specific and may work different ways
+
+# Ruby / Gemfile Swaparoo
+
+# This hack is necessary for branches to work
+# It checks out the branch in the git repo while building
+# TODO: might want to test the case that that branch exists on host but is not up-to-date... should be rare...
+GEMFILE_BRANCH_HACK = '''
+$gem2 = method(:gem)
+def gem(*args)
+  gem, ver, opts = args
+  opts = ver  if !opts && ver.is_a?(Hash)
+  if opts && opts[:git] && opts[:branch]
+    if opts[:git] =~ /(git\/[^\/]+)$/
+      if File.exists?($1) && opts[:branch] != 'master'
+        system "cd #{$1} && git checkout -f #{opts[:branch]}"
+      end
+    end
+  end
+  $gem2[*args]
+end
+
+'''
+
+@contextlib.contextmanager
+def gemfile_swaparoo():
+    '''Ruby swaparoo -- swap out Gemfile for fixed one referencing repos in local git/ directory.
+    You may need to modify your Dockerfile to add the 'git' before running bundle install'''
+    repo_re = re.compile('git@github.com:'+GIT_ACCOUNT+'/([^\'"\\r\\n]+)\\.git')
+
+    # Get original file
+    with open('Gemfile', 'r') as f: orig_gemfile = f.read()
+    with open('Gemfile.lock', 'r') as f: orig_gemfile_lock = f.read()
+
+    # Download private repos, but only if they haven't already been updated
+    # after Gemfile / Gemfile.lock have been.
+    projects = re.findall(repo_re, orig_gemfile)
+    download_private_repos(projects, orig_gemfile+orig_gemfile_lock)
+
+    # Create new Gemfile pointing to local repos
+    new_gemfile = GEMFILE_BRANCH_HACK + re.sub(repo_re, 'git/\\1', orig_gemfile)
+    with open('Gemfile', 'w+') as f: f.write(new_gemfile)
+    new_gemfile_lock = re.sub(repo_re, 'git/\\1', orig_gemfile_lock)
+    with open('Gemfile.lock', 'w+') as f: f.write(new_gemfile_lock)
+
+    # Do the docker build, then restore the original Gemfile with original timestamps
+    try:
+        yield
+    finally:
+        with open('Gemfile', 'w+') as f: f.write(orig_gemfile)
+        with open('Gemfile.lock', 'w+') as f: f.write(orig_gemfile_lock)
+
 
 
 # Basic Node swaparoo written originally by Chris Whitten.
@@ -95,6 +176,8 @@ def docker_build(directory, repo, projects, path, image_tag):
 
   if os.path.isfile('package.json'):
     swaparoo = packagejson_swaparoo
+  elif os.path.isfile('Gemfile'):
+    swaparoo = gemfile_swaparoo
   else:
     swaparoo = null_swaparoo
 
