@@ -33,7 +33,7 @@ def chdir(dirname):
 #To remove a temporary directory created by roger-deploy if this script exits
 def removeDirTree(work_dir):
   exists = os.path.exists(os.path.abspath(work_dir))
-  if exists:
+  if exists and work_dir.endswith("tmpdir"):
     shutil.rmtree(work_dir)
     print("Deleting temporary dir:{0}".format(work_dir))
 
@@ -162,6 +162,8 @@ def parseArgs():
     help="Increment patch in version. Defaults to false.'")
   parser.add_argument('-S', '--secrets-file',
     help="Specify an optional secrets file for deployment runtime variables.")
+  parser.add_argument('-d', '--directory',
+    help="Specify an optional directory to pull out the repo. This is the working directory.")
   return parser
 
 def push(root, app, work_dir, image_name, config_file, environment, secrets_file):
@@ -212,8 +214,12 @@ def main(object_list, args):
   environment = roger_env.get('default', '')
 
   work_dir = ''
-  work_dir = mkdtemp()
-  print("Created a temporary dir: {0}".format(work_dir))
+  if args.directory:
+    work_dir = args.directory
+    print("Using {0} as the working directory".format(work_dir))
+  else:
+    work_dir = mkdtemp(suffix='tmpdir')
+    print("Created a temporary dir: {0}".format(work_dir))
 
   if args.environment is None:
     if "ROGER_ENV" in os.environ:
@@ -322,7 +328,7 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
       sys.exit('Exiting')
 
   exists = os.path.exists(os.path.abspath(work_dir))
-  if exists:
+  if exists and work_dir.endswith("tmpdir"):
     shutil.rmtree(work_dir)
     print("Deleting temporary dir:{0}".format(work_dir))
 
