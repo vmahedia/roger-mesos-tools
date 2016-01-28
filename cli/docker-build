@@ -78,7 +78,9 @@ def download_private_repos(projects, update_id=None):
 
 # This hack is necessary for branches to work
 # It checks out the branch in the git repo while building
-# TODO: might want to test the case that that branch exists on host but is not up-to-date... should be rare...
+# It deletes the branch in case it exists so we will freshly take the
+# origin/ branch, although if we only use this script, the branch never
+# should exist anyway.
 GEMFILE_BRANCH_HACK = '''
 $gem2 = method(:gem)
 def gem(*args)
@@ -87,7 +89,7 @@ def gem(*args)
   if opts && opts[:git] && opts[:branch]
     if opts[:git] =~ /(git\/[^\/]+)$/
       if File.exists?($1) && opts[:branch] != 'master'
-        system "cd #{$1} && git checkout -f #{opts[:branch]}"
+        system "cd #{$1} && (git branch -D #{opts[:branch]} || true) && git checkout -f #{opts[:branch]}"
       end
     end
   end
