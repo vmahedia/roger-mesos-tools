@@ -51,6 +51,9 @@ def download_private_repos(projects, update_id=None):
     os.mkdir('git')
 
   with chdir('git'):
+    if update_id_matches(update_id):
+      return
+
     for project_or_path in projects:
       matches = pattern.findall(project_or_path)
       if matches:
@@ -60,13 +63,11 @@ def download_private_repos(projects, update_id=None):
 
       if os.path.isdir(project):
         with chdir(project):
-          if not update_id_matches(update_id):
-            os.system('git fetch; git pull origin master')
-            write_update_id(update_id)
+          os.system('git fetch; git pull origin master')
       else:
         os.system('git clone {}'.format(path))
-        with chdir(project):
-          write_update_id(update_id)
+
+    write_update_id(update_id)
 
 
 
