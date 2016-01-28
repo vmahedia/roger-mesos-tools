@@ -108,16 +108,18 @@ def gemfile_swaparoo():
     with open('Gemfile', 'r') as f: orig_gemfile = f.read()
     with open('Gemfile.lock', 'r') as f: orig_gemfile_lock = f.read()
 
-    # Download private repos, but only if they haven't already been updated
-    # after Gemfile / Gemfile.lock have been.
     projects = re.findall(repo_re, orig_gemfile)
-    download_private_repos(projects, orig_gemfile+orig_gemfile_lock)
+    if projects:
+      # Download private repos, but only if they haven't already been updated
+      # after Gemfile / Gemfile.lock have been. We do this by storing the
+      # Gemfile & Gemfile.lock in each subrepo.
+      download_private_repos(projects, orig_gemfile+orig_gemfile_lock)
 
-    # Create new Gemfile pointing to local repos
-    new_gemfile = GEMFILE_BRANCH_HACK + re.sub(repo_re, 'git/\\1', orig_gemfile)
-    with open('Gemfile', 'w+') as f: f.write(new_gemfile)
-    new_gemfile_lock = re.sub(repo_re, 'git/\\1', orig_gemfile_lock)
-    with open('Gemfile.lock', 'w+') as f: f.write(new_gemfile_lock)
+      # Create new Gemfile pointing to local repos
+      new_gemfile = GEMFILE_BRANCH_HACK + re.sub(repo_re, 'git/\\1', orig_gemfile)
+      with open('Gemfile', 'w+') as f: f.write(new_gemfile)
+      new_gemfile_lock = re.sub(repo_re, 'git/\\1', orig_gemfile_lock)
+      with open('Gemfile.lock', 'w+') as f: f.write(new_gemfile_lock)
 
     # Do the docker build, then restore the original Gemfile with original timestamps
     try:
