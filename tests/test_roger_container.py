@@ -23,8 +23,10 @@ class TestPush(unittest.TestCase):
     parser = argparse.ArgumentParser(description='Args for test')
     parser.add_argument('-e', '--env', metavar='env', help="Environment to deploy to. example: 'dev' or 'stage'")
     parser.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
+    parser.add_argument('--secrets-file', '-S',
+      help="Specify an optional secrets file for deploy runtime variables.")
     self.parser = parser
-    with open('/vagrant/tests/configs/roger_tests.json') as config:
+    with open('/vagrant/tests/configs/roger_single_container_var_tests.json') as config:
       config = json.load(config)
     with open('/vagrant/tests/configs/roger-env.json') as roger:
       roger_env = json.load(roger)
@@ -33,7 +35,7 @@ class TestPush(unittest.TestCase):
     self.roger_env = roger_env
     self.data = data
 
-  def test_rogerPush(self):
+  def test_vars_single_container(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
@@ -48,13 +50,13 @@ class TestPush(unittest.TestCase):
     when(settings).getConfigDir().thenReturn("/vagrant/tests/configs")
     when(settings).getCliDir().thenReturn("/vagrant")
     when(appConfig).getRogerEnv("/vagrant/tests/configs").thenReturn(roger_env)
-    when(appConfig).getConfig("/vagrant/tests/configs", "roger_tests.json").thenReturn(config)
+    when(appConfig).getConfig("/vagrant/tests/configs", "roger_single_container_var_tests.json").thenReturn(config)
 
-    when(appConfig).getAppData("/vagrant/tests/configs", "roger_tests.json", "container-vars").thenReturn(data)
+    when(appConfig).getAppData("/vagrant/tests/configs", "roger_single_container_var_tests.json", "container-vars").thenReturn(data)
     parser = self.parser
     args = parser.parse_args()
     args.app_name = 'container-vars'
-    args.config_file = 'roger_tests.json'
+    args.config_file = 'roger_single_container_var_tests.json'
     args.directory = '/vagrant/tests/testrepo'
     args.image_name = 'tests/v0.1.0'
     object_list = []
@@ -64,7 +66,7 @@ class TestPush(unittest.TestCase):
 
     roger_push.main(object_list, args)
 
-    with open('/vagrant/tests/components/dev/roger-tests-tests.json') as output:
+    with open('/vagrant/tests/components/dev/roger-single-container-var-tests-tests.json') as output:
       output = json.load(output)
 
     var1 = output["env"]["VAR_1"]

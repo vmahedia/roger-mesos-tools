@@ -1,5 +1,5 @@
 {
-  "name": "roger-tests",
+  "name": "roger-single-container-var",
   "notifications": {
     "channel": "C0AH0J86M",
     "method": "chat.postMessage",
