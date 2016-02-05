@@ -17,7 +17,7 @@ from mockito import mock, when, verify
 from mock import MagicMock
 
 #Test basic functionalities of roger-push script
-class TestPush(unittest.TestCase):
+class Testcontainer(unittest.TestCase):
 
   def setUp(self):
     parser = argparse.ArgumentParser(description='Args for test')
@@ -66,7 +66,7 @@ class TestPush(unittest.TestCase):
 
     roger_push.main(object_list, args)
 
-    with open('/vagrant/tests/components/dev/roger-single-container-var-tests-tests.json') as output:
+    with open('/vagrant/tests/components/dev/roger-single-container-var-tests.json') as output:
       output = json.load(output)
 
     var1 = output["env"]["VAR_1"]
