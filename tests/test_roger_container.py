@@ -24,9 +24,9 @@ class TestPush(unittest.TestCase):
     parser.add_argument('-e', '--env', metavar='env', help="Environment to deploy to. example: 'dev' or 'stage'")
     parser.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
     self.parser = parser
-    with open('/vagrant/config/roger_tests.json') as config:
+    with open('/vagrant/tests/configs/roger_tests.json') as config:
       config = json.load(config)
-    with open('/vagrant/config/roger-env.json') as roger:
+    with open('/vagrant/tests/configs/roger-env.json') as roger:
       roger_env = json.load(roger)
     data = config['apps']['container-vars']
     self.config = config
@@ -44,13 +44,13 @@ class TestPush(unittest.TestCase):
     when(frameworkUtils).getFramework(data).thenReturn(marathon)
     when(settings).getComponentsDir().thenReturn("/vagrant/tests/components")
     when(settings).getSecretsDir().thenReturn("/vagrant/tests/secrets")
-    when(settings).getTemplatesDir().thenReturn("/vagrant/templates")
-    when(settings).getConfigDir().thenReturn("/vagrant/config")
+    when(settings).getTemplatesDir().thenReturn("/vagrant/tests/templates")
+    when(settings).getConfigDir().thenReturn("/vagrant/tests/configs")
     when(settings).getCliDir().thenReturn("/vagrant")
-    when(appConfig).getRogerEnv("/vagrant/config").thenReturn(roger_env)
-    when(appConfig).getConfig("/vagrant/config", "roger_tests.json").thenReturn(config)
+    when(appConfig).getRogerEnv("/vagrant/tests/configs").thenReturn(roger_env)
+    when(appConfig).getConfig("/vagrant/tests/configs", "roger_tests.json").thenReturn(config)
 
-    when(appConfig).getAppData("/vagrant/config", "roger_tests.json", "container-vars").thenReturn(data)
+    when(appConfig).getAppData("/vagrant/tests/configs", "roger_tests.json", "container-vars").thenReturn(data)
     parser = self.parser
     args = parser.parse_args()
     args.app_name = 'container-vars'
