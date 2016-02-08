@@ -44,20 +44,30 @@ def parse_args():
     help="Specify an optional secrets file for deploy runtime variables.")
   return parser
 
-def loadSecretsJson(secrets_dir, json_file_name, args):
+def loadSecretsJson(secrets_dir, json_file_name, args, environment):
   if args.secrets_file is not None:
     print("Using specified secrets file: {}".format(args.secrets_file))
     json_file_name = args.secrets_file
   exists = os.path.exists(secrets_dir)
   if exists == False:
    os.makedirs(secrets_dir)
-  path = "{}/{}".format(secrets_dir, json_file_name)
+
+  # Two possible paths -- first without environment, second with
+  path1 = "{}/{}".format(secrets_dir, json_file_name)
+  path2 = "{}/{}/{}".format(secrets_dir, environment, json_file_name)
+  print(" Loading secrets from {} or {}".format(path1, path2))
+
   try:
-    print(" Loading secrets from {}".format(path))
-    with open(path) as f:
+    with open(path1) as f:
       return json.load(f)
   except IOError:
-    print(" Couldn't load secrets file environment %s\n" % path, file=sys.stderr)
+    pass
+
+  try:
+    with open(path2) as f:
+      return json.load(f)
+  except IOError:
+    print(" Couldn't load secrets file environment in %s or %s\n" % (path1, path2), file=sys.stderr)
     return {}
 
 def replaceSecrets(output_dict, secrets_dict):
@@ -220,7 +230,7 @@ def main(object_list, args):
     #Adding check so that not all apps try to mergeSecrets
     outputObj = json.loads(output)
     if 'SECRET' in output:
-      output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig, args))
+      output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig, args, environment))
 
     try:
       comp_exists = os.path.exists("{0}".format(comp_dir))
