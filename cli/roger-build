@@ -54,7 +54,7 @@ def main():
   else:
     repo = data.get('repo', args.app_name)
 
-  projects = data.get('privateProjects', 'none')
+  projects = data.get('privateProjects', ['none'])
   projects = ','.join(projects)
   docker_path = data.get('path', 'none')
 
