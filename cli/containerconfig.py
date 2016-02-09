@@ -25,6 +25,7 @@ class ContainerConfig:
 
   def get_containerid(self, appTaskId, hostname):
     containerId = ''
+    mesosTaskId = '' 
     try:
       containers = subprocess.check_output("docker -H tcp://{}:4243 ps -q".format(hostname), shell=True)
     except:
@@ -34,14 +35,17 @@ class ContainerConfig:
       if container.strip() != '':
         try:
           mesosTaskId = subprocess.check_output("docker -H tcp://{0}:4243 exec {1} \
-          printenv MESOS_TASK_ID".format(hostname,container), shell=True)
+          printenv MESOS_TASK_ID".format(hostname,container), stderr=subprocess.STDOUT, shell=True)
         except Exception as e:
-          print ("Ignoring exception: {}".format(str(e)))
-          pass
-        if mesosTaskId:
-          if mesosTaskId.startswith(appTaskId):
-            containerId = container.strip()
+          if ("Cannot connect to the Docker daemon" in str(e.output)):
+            print("The following error occurred: {}", str(e.output))
             break
-        else:
-          print("Mesos Task Id info fetched is empty/blank for container id - {0}".format(container))
+          else:
+            # This is the case when a container does not have a MESOS_TASK_ID in its ENV variables
+            pass
+        if mesosTaskId.startswith(appTaskId):
+          containerId = container.strip()
+          break
+        #else:
+        #  print("Mesos Task Id info fetched is empty/blank for container id - {0}".format(container))
     return containerId
