@@ -46,6 +46,4 @@ class ContainerConfig:
         if mesosTaskId.startswith(appTaskId):
           containerId = container.strip()
           break
-        #else:
-        #  print("Mesos Task Id info fetched is empty/blank for container id - {0}".format(container))
     return containerId
