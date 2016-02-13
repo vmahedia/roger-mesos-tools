@@ -78,6 +78,9 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['argparse', 'setuptools', 'requests', 'mock', 'mockito', 'slackclient', 'Jinja2'],
 
+    # Include the folders listed in the MANIFEST.in file as a part of the package
+    include_package_data = True,
+
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
@@ -93,4 +96,3 @@ setup(
         ],
     },
 )
-
