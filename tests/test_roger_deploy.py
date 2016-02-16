@@ -32,11 +32,11 @@ class TestDeploy(unittest.TestCase):
     parser.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
     parser.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
     self.parser = parser
-    with open('/vagrant/config/roger.json') as config:
+    with open('/vagrant/tests/configs/app.json') as config:
       config = json.load(config)
-    with open('/vagrant/config/roger-env.json') as roger:
+    with open('/vagrant/tests/configs/roger-env.json') as roger:
       roger_env = json.load(roger)
-    data = config['apps']['grafana']
+    data = config['apps']['grafana_test_app']
     self.config = config
     self.roger_env = roger_env
     self.data = data
@@ -79,17 +79,18 @@ class TestDeploy(unittest.TestCase):
     when(marathon).getCurrentImageVersion(roger_env, 'dev', 'grafana').thenReturn("testversion/v0.1.0")
     frameworkUtils = mock(FrameworkUtils)
     when(frameworkUtils).getFramework(data).thenReturn(marathon)
-    when(settings).getConfigDir().thenReturn("/vagrant/config")
+    when(settings).getConfigDir().thenReturn("/vagrant/tests/configs")
     when(settings).getCliDir().thenReturn("/vagrant")
-    when(appConfig).getRogerEnv("/vagrant/config").thenReturn(roger_env)
-    when(appConfig).getConfig("/vagrant/config", "roger.json").thenReturn(config)
-    when(appConfig).getAppData("/vagrant/config", "roger.json", "grafana").thenReturn(data)
+    when(appConfig).getRogerEnv("/vagrant/tests/configs").thenReturn(roger_env)
+    when(appConfig).getConfig("/vagrant/tests/configs", "app.json").thenReturn(config)
+    when(appConfig).getAppData("/vagrant/tests/configs", "app.json", "grafana_test_app").thenReturn(data)
     parser = self.parser
     args = parser.parse_args()
-    args.application = 'grafana'
-    args.config_file = 'roger.json'
+    args.application = 'grafana_test_app'
+    args.config_file = 'app.json'
     args.skip_build = True
     args.branch = None
+    os.environ["ROGER_CONFIG_DIR"] = "/vagrant/tests/configs"
     object_list = []
     object_list.append(settings)
     object_list.append(appConfig)
@@ -98,10 +99,10 @@ class TestDeploy(unittest.TestCase):
     roger_deploy.main(object_list, args)
     verify(settings).getConfigDir()
     verify(settings).getCliDir()
-    verify(appConfig).getRogerEnv("/vagrant/config")
-    verify(appConfig).getConfig("/vagrant/config", "roger.json")
+    verify(appConfig).getRogerEnv("/vagrant/tests/configs")
+    verify(appConfig).getConfig("/vagrant/tests/configs", "app.json")
     verify(frameworkUtils).getFramework(data)
-    verify(marathon).getCurrentImageVersion(roger_env, 'dev', 'grafana')
+    verify(marathon).getCurrentImageVersion(roger_env, 'dev', 'grafana_test_app')
 
   def tearDown(self):
     pass

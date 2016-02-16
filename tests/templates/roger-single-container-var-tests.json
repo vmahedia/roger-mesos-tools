@@ -22,7 +22,7 @@
     "ports": [ 0, 0 ]
   },
   "requirePorts": true,
-  "id": "moz-tests",
+  "id": "single-container-tests",
   "env": {
     "TCP_PORTS": "{ \"8126\": \"PORT1\" }",
     "VAR_1": "{{ VAR1 }}",
