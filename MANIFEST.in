@@ -1,5 +1,5 @@
 # Include the cli folder
 recursive-include cli *
 
-# Include the bin folder
+# Include the cli folder
 recursive-include bin *

@@ -1,7 +1,0 @@
-argparse
-setuptools
-requests
-mock
-mockito
-slackclient
-Jinja2

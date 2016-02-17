@@ -44,8 +44,8 @@ setup(
     description='A set of tools/scripts to interact with RogerOS via the command line',
     long_description=long_description,
     url='https://github.com/seomoz/roger-cli',
-    author='Amit Bose',
-    author_email='roger-dev@moz.com',
+    author='Sambit Mishra',
+    author_email='sambit@moz.com',
     license='MIT',
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -56,12 +56,7 @@ setup(
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
     ],
 
     keywords='sample setuptools development',
@@ -71,6 +66,8 @@ setup(
     packages=find_packages(),
     tests_require=['pytest'],
     cmdclass = {'test': PyTest},
+    # Including test_suite to executable
+    test_suite="tests",
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
