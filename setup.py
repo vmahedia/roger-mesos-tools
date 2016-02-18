@@ -44,9 +44,9 @@ setup(
     description='A set of tools/scripts to interact with RogerOS via the command line',
     long_description=long_description,
     url='https://github.com/seomoz/roger-cli',
-    author='Sambit Mishra',
-    author_email='sambit@moz.com',
-    license='MIT',
+    author='RogerOS Team',
+    author_email='rogeros-dev@moz.com',
+    license='Apache 2.0',
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Development Status :: 3 - Alpha',
