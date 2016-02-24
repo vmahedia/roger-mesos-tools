@@ -35,7 +35,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='roger-mesos-cli',
+    name='roger-mesos-tools',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -43,7 +43,7 @@ setup(
     version='0.1.0',
     description='A set of tools/scripts to interact with RogerOS via the command line',
     long_description=long_description,
-    url='https://github.com/seomoz/roger-cli',
+    url='https://github.com/seomoz/roger-mesos-tools',
     author='RogerOS Team',
     author_email='rogeros-dev@moz.com',
     license='Apache 2.0',
