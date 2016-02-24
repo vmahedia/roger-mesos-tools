@@ -122,7 +122,7 @@ def main():
   if file_exists:
     print("File {0} already exists in {1}/".format(config_file, config_dir))
   else:
-    createAppConfig(config_dir, config_file, args.app_name, args.project_name)
+    createAppConfig(config_dir, config_file, args.app_name, args.project_name, args.framework)
     print("Sample {0} application file {1} created under {2}/".format(args.app_name, config_file, config_dir))
 
   framework_filename = "{0}-{1}.json".format(args.project_name, args.app_name)
@@ -131,7 +131,8 @@ def main():
     print("File {0} already exists in {1}".format(framework_filename, templ_dir))
   else:
     app_id = "{0}-{1}".format(args.project_name, args.app_name)
-    createMarathonConfig(templ_dir, marathon_filename, app_id)
+    createMarathonConfig(templ_dir, framework_filename, app_id)
+    print("Sample Marathon file {0} created under {1}".format(framework_filename, templ_dir))
 
 if __name__ == "__main__":
   settingObj = Settings()
