@@ -1,3 +1,6 @@
 .DS_Store
+.vagrant
+dist/
+*.egg-info/
 components
 *.pyc
