@@ -16,12 +16,12 @@ class TestUtils(unittest.TestCase):
     self.appConfig = AppConfig()
 
   def test_extractFullShaAndVersion(self):
-    assert self.utils.extractFullShaAndVersion("moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46") == "7da406eb9e8937875e0548ae1149/v0.46"
+    assert self.utils.extractFullShaAndVersion("7da406eb9e8937875e0548ae1149/v0.46") == "7da406eb9e8937875e0548ae1149/v0.46"
     assert self.utils.extractFullShaAndVersion("") == ""
     assert self.utils.extractFullShaAndVersion("bdsbddadhhd") == ""
 
   def test_extractShaFromImage(self):
-    assert self.utils.extractShaFromImage("moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46") == "7da406eb9e8937875e0548ae1149"
+    assert self.utils.extractShaFromImage("7da406eb9e8937875e0548ae1149") == "7da406eb9e8937875e0548ae1149"
     assert self.utils.extractShaFromImage("") == ""
     assert self.utils.extractShaFromImage("bdsbddadhhd") == ""
 

@@ -1,17 +1,17 @@
 {
-  "registry": "registry.roger.dal.moz.com:5000",
+  "registry": "registry.com:5000",
   "environments": {
     "dev": {
-      "marathon_endpoint": "http://daldevmesoszk01:8080",
-      "chronos_endpoint": "http://daldevmesoszk01:4400"
+      "marathon_endpoint": "http://marathon_dev:8080",
+      "chronos_endpoint": "http://chronos_dev:4400"
     },
     "stage": {
-      "marathon_endpoint": "http://dalstgmesoszk01:8080",
-      "chronos_endpoint": "http://dalstgmesoszk01:4400"
+      "marathon_endpoint": "http://marathon_stage:8080",
+      "chronos_endpoint": "http://chronos_stage:4400"
     },
     "prod": {
-      "marathon_endpoint": "http://dalmesoszk01:8080",
-      "chronos_endpoint": "http://dalmesoszk01:4400"
+      "marathon_endpoint": "http://marathon_prod:8080",
+      "chronos_endpoint": "http://chronos_prod:4400"
     }
   },
   "default": "dev"

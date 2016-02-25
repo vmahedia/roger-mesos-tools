@@ -17,10 +17,10 @@ class TestAppConfig(unittest.TestCase):
 
   def test_getRogerEnv(self):
     roger_env = appObj.getRogerEnv("/vagrant/tests/configs")
-    assert roger_env['registry'] == "registry.roger.dal.moz.com:5000"
+    assert roger_env['registry'] == "registry.com:5000"
     assert roger_env['default'] == "dev"
-    assert roger_env['environments']['dev']['marathon_endpoint'] == "http://daldevmesoszk01:8080"
-    assert roger_env['environments']['prod']['chronos_endpoint'] == "http://dalmesoszk01:4400" 
+    assert roger_env['environments']['dev']['marathon_endpoint'] == "http://marathon_dev:8080"
+    assert roger_env['environments']['prod']['chronos_endpoint'] == "http://chronos_prod:4400"
 
   def test_getConfig(self):
     config = appObj.getConfig("/vagrant/tests/configs", "app.json")
