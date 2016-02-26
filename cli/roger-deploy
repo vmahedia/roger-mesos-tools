@@ -330,7 +330,13 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
   removeDirTree(work_dir, args)
 
   deployTime = datetime.now() - startTime
-  git_username = subprocess.check_output("git config user.name", shell=True)
+
+  try:
+      git_username = subprocess.check_output("git config user.name", shell=True)
+  except subprocess.CalledProcessError as e:
+      print("git config user.name not found. Setting default git_username as unknown")
+      git_username = "unknown"
+
   deployMessage = "{0}'s deploy for {1} / {2} / {3} completed in {4} seconds.".format(
     git_username.rstrip(), app, environment, branch, deployTime.total_seconds())
   slack.api_call(deployMessage)
