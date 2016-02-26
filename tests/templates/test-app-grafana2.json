@@ -28,7 +28,7 @@
     "TCP_PORTS": "{ \"3000\": \"PORT0\" }",
     "GF_SERVER_HTTP_PORT":"80",
     "GF_DATABASE_TYPE":"postgres",
-    "GF_DATABASE_HOST":"test2.com:5432",
+    "GF_DATABASE_HOST":"test2.example.com:5432",
     "GF_DATABASE_NAME":"grafana213",
     "GF_DATABASE_USER":"sdfs",
     "GF_DATABASE_PASSWORD":"akdl",

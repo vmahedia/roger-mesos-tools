@@ -17,7 +17,7 @@ class TestAppConfig(unittest.TestCase):
 
   def test_getRogerEnv(self):
     roger_env = appObj.getRogerEnv("/vagrant/tests/configs")
-    assert roger_env['registry'] == "registry.com:5000"
+    assert roger_env['registry'] == "example.com:5000"
     assert roger_env['default'] == "dev"
     assert roger_env['environments']['dev']['marathon_endpoint'] == "http://dev.example.com:8080"
     assert roger_env['environments']['prod']['chronos_endpoint'] == "http://prod.example.com:4400"
@@ -27,7 +27,7 @@ class TestAppConfig(unittest.TestCase):
     assert config['name'] == "test-app"
     assert config['repo'] == "roger"
     assert config['vars']['environment']['prod']['mem'] == "2048"
-    assert len(config['apps'].keys()) == 2
+    assert len(config['apps'].keys()) == 3
     for app in config['apps']:
       assert app.startswith("test_app")
       assert config['apps'][app]['imageBase'] == "test_app_base"
