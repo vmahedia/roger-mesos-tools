@@ -1,7 +1,7 @@
 {
   "name": "roger-single-container-var",
   "notifications": {
-    "channel": "C0AH0J86M",
+    "channel": "SAMPLE_KEY",
     "method": "chat.postMessage",
     "username": "Roger Deploy",
     "emoji": ":rocket:"
