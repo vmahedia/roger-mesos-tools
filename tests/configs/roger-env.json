@@ -2,16 +2,16 @@
   "registry": "registry.com:5000",
   "environments": {
     "dev": {
-      "marathon_endpoint": "http://dev.marathon.com:8080",
-      "chronos_endpoint": "http://dev.chronos.com:4400"
+      "marathon_endpoint": "http://example.com:8080",
+      "chronos_endpoint": "http://example.com:4400"
     },
     "stage": {
-      "marathon_endpoint": "http://stage.marathon.com:8080",
-      "chronos_endpoint": "http://stage.chronos.com:4400"
+      "marathon_endpoint": "http://example.com:8080",
+      "chronos_endpoint": "http://example.com:4400"
     },
     "prod": {
-      "marathon_endpoint": "http://prod.marathon.com:8080",
-      "chronos_endpoint": "http://prod.chronos.com:4400"
+      "marathon_endpoint": "http://example.com:8080",
+      "chronos_endpoint": "http://example.com:4400"
     }
   },
   "default": "dev"

@@ -26,6 +26,6 @@
   "uris": [],
   "env": {
     "TCP_PORTS": "{ \"3000\": \"PORT0\" }",
-    "GF_SERVER_ROOT_URL": "http://grafana.com:3000"
+    "GF_SERVER_ROOT_URL": "http://example.com:3000"
   }
 }
