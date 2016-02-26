@@ -77,18 +77,8 @@ class TestSettings(unittest.TestCase):
 
   def test_getCliDir(self):
     set_cli_dir = ''
-    if "ROGER_CLI_ROOT_DIR" in os.environ:
-      set_cli_dir = os.environ.get('ROGER_CLI_ROOT_DIR')
-    os.environ["ROGER_CLI_ROOT_DIR"] = "/vagrant/testclidir"
     cli_dir = settingObj.getCliDir()
-    assert cli_dir == "/vagrant/testclidir"
-    del os.environ['ROGER_CLI_ROOT_DIR']
-    try:
-      cli_dir = settingObj.getCliDir()
-    except (SystemExit) as e:
-      assert ("Environment variable $ROGER_CLI_ROOT_DIR is not set. Exiting." in e)
-    if set_cli_dir.strip() != '':
-      os.environ["ROGER_CLI_ROOT_DIR"] = "{}".format(set_cli_dir)
+    assert cli_dir is not None
 
   def tearDown(self):
     pass

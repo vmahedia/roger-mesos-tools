@@ -42,11 +42,8 @@ def getScriptCall(args, root):
 def main():
 
   root = ''
-  if "ROGER_CLI_ROOT_DIR" in os.environ:
-    root = os.environ.get('ROGER_CLI_ROOT_DIR')
-  if root.strip() == '':
-    sys.exit("Environment variable $ROGER_CLI_ROOT_DIR is not set. Exiting.")
-  root = os.path.abspath(root)
+  own_dir = os.path.dirname(os.path.realpath(__file__))
+  root = os.path.abspath(os.path.join(own_dir, os.pardir))
   files = getFiles("{}/cli/".format(root))
   commands = getCommands(files)
   if len(sys.argv) > 1:
