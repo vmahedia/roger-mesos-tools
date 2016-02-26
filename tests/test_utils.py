@@ -21,7 +21,6 @@ class TestUtils(unittest.TestCase):
     assert self.utils.extractFullShaAndVersion("bdsbddadhhd") == ""
 
   def test_extractShaFromImage(self):
-    #assert self.utils.extractShaFromImage("moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46") == "7da406eb9e8937875e0548ae1149"
     assert self.utils.extractShaFromImage("testproject-testapp-779824982sha123/v0.46") == "779824982sha123"
     assert self.utils.extractShaFromImage("") == ""
     assert self.utils.extractShaFromImage("bdsbddadhhd") == ""
