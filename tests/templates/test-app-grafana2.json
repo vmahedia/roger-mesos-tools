@@ -28,7 +28,7 @@
     "TCP_PORTS": "{ \"3000\": \"PORT0\" }",
     "GF_SERVER_HTTP_PORT":"80",
     "GF_DATABASE_TYPE":"postgres",
-    "GF_DATABASE_HOST":"test.roger.dal.moz.com:5432",
+    "GF_DATABASE_HOST":"test2.example.com:5432",
     "GF_DATABASE_NAME":"grafana213",
     "GF_DATABASE_USER":"sdfs",
     "GF_DATABASE_PASSWORD":"akdl",
@@ -38,8 +38,8 @@
     "GF_AUTH_GOOGLE_SCOPES": "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
     "GF_AUTH_GOOGLE_AUTH_URL": "https://accounts.google.com/o/oauth2/auth",
     "GF_AUTH_GOOGLE_TOKEN_URL": "https://accounts.google.com/o/oauth2/token",
-    "GF_AUTH_GOOGLE_ALLOWED_DOMAINS": "moz.com",
+    "GF_AUTH_GOOGLE_ALLOWED_DOMAINS": "example.com",
     "GF_AUTH_GOOGLE_ALLOW_SIGN_UP": "true",
-    "GF_SERVER_ROOT_URL": "http://grafana.roger.dal.moz.com:3000"
+    "GF_SERVER_ROOT_URL": "http://example.com:3000"
   }
 }
