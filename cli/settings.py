@@ -43,9 +43,6 @@ class Settings:
 
   def getCliDir(self):
     cli_dir = ''
-    if "ROGER_CLI_ROOT_DIR" in os.environ:
-      cli_dir = os.environ.get('ROGER_CLI_ROOT_DIR')
-    if cli_dir.strip() == '':
-      sys.exit("Environment variable $ROGER_CLI_ROOT_DIR is not set. Exiting.")
-    cli_dir = os.path.abspath(cli_dir)
+    own_dir = os.path.dirname(os.path.realpath(__file__))
+    cli_dir = os.path.abspath(os.path.join(own_dir, os.pardir))
     return cli_dir
