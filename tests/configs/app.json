@@ -44,6 +44,7 @@
       ]
     },
     "grafana_test_app": {
+      "imageBase": "test_app_base",
        "name": "grafana_test_app",
        "containers": [
          "grafana",
