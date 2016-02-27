@@ -8,9 +8,9 @@ import sys
 import json
 sys.path.append('/vagrant/cli')
 import imp
-roger_deploy = imp.load_source('roger_deploy', '/vagrant/cli/roger-deploy')
-roger_push = imp.load_source('roger_push', '/vagrant/cli/roger-push')
-roger_git_pull = imp.load_source('roger_git_pull', '/vagrant/cli/roger-git-pull')
+roger_deploy = imp.load_source('roger_deploy', '/vagrant/cli/roger-deploy.py')
+roger_push = imp.load_source('roger_push', '/vagrant/cli/roger-push.py')
+roger_git_pull = imp.load_source('roger_git_pull', '/vagrant/cli/roger-git-pull.py')
 from marathon import Marathon
 from frameworkutils import FrameworkUtils
 from appconfig import AppConfig
@@ -28,7 +28,7 @@ class TestDeploy(unittest.TestCase):
     parser.add_argument('-s', '--skip-build', action="store_true", help="Flag that skips roger-build when set to true. Defaults to false.'")
     parser.add_argument('-M', '--incr-major', action="store_true", help="Increment major in version. Defaults to false.'")
     parser.add_argument('-p', '--incr-patch', action="store_true", help="Increment patch in version. Defaults to false.'")
-    parser.add_argument('-sp', '--skip-push', action="store_true", help="Flag that skips roger-push when set to true. Defaults to false.'")
+    parser.add_argument('-sp', '--skip-push', action="store_true", help="Flag that skips roger push when set to true. Defaults to false.'")
     parser.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
     parser.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
     self.parser = parser
