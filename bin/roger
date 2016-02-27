@@ -19,7 +19,7 @@ def roger_help(commands):
         " the command takes.\n")
   print("Options:\n")
   print("  -h, --help            show this help message and exit")
-  print("  -v, --version         show version infromation and exit")
+  print("  -v, --version         show version information and exit")
   print("\nCommands:")
   for command in commands:
     print("    {}".format(command))
@@ -37,10 +37,9 @@ def getCommands(files):
   return sorted(commands)
 
 def getScriptCall(args, root):
-  command = args[1]
-  exists = os.path.exists("{}/cli/roger-{}".format(root, command))
+  command = "{}/cli/roger-{}.py".format(root, args[1])
+  exists = os.path.exists(command)
   if exists == True:
-    command = "{}/cli/roger-{}".format(root, command)
     for index in range(2,len(args)):
       command = command + " {}".format(args[index])
     return command
@@ -48,6 +47,7 @@ def getScriptCall(args, root):
     sys.exit("Command does not exists. Exiting")
 
 def main():
+
   root = ''
   own_dir = os.path.dirname(os.path.realpath(__file__))
   root = os.path.abspath(os.path.join(own_dir, os.pardir))
