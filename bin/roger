@@ -7,6 +7,11 @@ import sys
 import subprocess
 import re
 
+def roger_version(root_dir):
+  with open(os.path.join(root_dir, "cli", "VERSION")) as f:
+      version = f.read().strip()
+  print(version)
+
 def roger_help(commands):
   print("\nUsage: roger [OPTIONS] COMMAND [arg...]\n")
   print("A cli to work with roger os")
@@ -14,6 +19,7 @@ def roger_help(commands):
         " the command takes.\n")
   print("Options:\n")
   print("  -h, --help            show this help message and exit")
+  print("  -v, --version         show version infromation and exit")
   print("\nCommands:")
   for command in commands:
     print("    {}".format(command))
@@ -42,7 +48,6 @@ def getScriptCall(args, root):
     sys.exit("Command does not exists. Exiting")
 
 def main():
-
   root = ''
   own_dir = os.path.dirname(os.path.realpath(__file__))
   root = os.path.abspath(os.path.join(own_dir, os.pardir))
@@ -51,6 +56,8 @@ def main():
   if len(sys.argv) > 1:
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
       roger_help(commands)
+    elif sys.argv[1] == "-v" or sys.argv[1] == "--version":
+      roger_version(root)
     else:
       command = sys.argv[1]
       if command in commands:

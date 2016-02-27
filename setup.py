@@ -34,13 +34,16 @@ class PyTest(TestCommand):
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+with open(path.join(here, "cli", "VERSION")) as f:
+    version = f.read().strip()
+
 setup(
     name='roger-mesos-tools',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.0',
+    version=version,
     description='A set of tools/scripts to interact with RogerOS via the command line',
     long_description=long_description,
     url='https://github.com/seomoz/roger-mesos-tools',
@@ -52,7 +55,7 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: Apache 2.0 License',
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python',
