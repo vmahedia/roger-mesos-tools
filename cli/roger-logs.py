@@ -25,7 +25,7 @@ def parse_args():
   parser.add_argument('-t', '--timestamps', help="Show timestamps. Defaults to false.", action="store_true")
   parser.add_argument('-s', '--since', help="Show logs since timestamp.")
   parser.add_argument('-T', '--tail', help="Number of lines to show from the end of the logs.\
-    If a negative number is given, it shows all.")
+    If a negative number is given, it shows all.") 
   return parser
 
 def main():
