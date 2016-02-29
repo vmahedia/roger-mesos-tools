@@ -59,11 +59,11 @@ an optional argument. See -h for usage.".format(args.appTaskId));
   if containerId != '' and containerId != None:
     print("If there are multiple containers that pattern match the given mesos task Id, \
 then will log into the first one")
-    print("Executing bash in docker container - {0} on host - {1}".format(containerId, hostname));
+    print("Executing bash in docker container - {0} on host - {1} for application task id - {2}".format(containerId, hostname, args.appTaskId));
     try:
       subprocess.check_call("docker -H tcp://{0}:4243 exec -it {1} bash".format(hostname, containerId), shell=True);
     except Exception as e:
-      print("The following error occurred:\n (error: %s).\n" % e, file=sys.stderr) 
+      print("The following error occurred:\n (error: %s).\n" % e, file=sys.stderr)
   else:
     print("No Container found on host {0} with application Task Id {1}".format(hostname, args.appTaskId));
 

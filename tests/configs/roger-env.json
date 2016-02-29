@@ -1,9 +1,9 @@
 {
-  "registry": "example.com:5000",
+  "registry": "registry.roger.dal.moz.com:5000",
   "environments": {
     "dev": {
-      "marathon_endpoint": "http://dev.example.com:8080",
-      "chronos_endpoint": "http://dev.example.com:4400"
+      "marathon_endpoint": "http://daldevmesoszk01:8080",
+      "chronos_endpoint": "http://daldevmesoszk01:4400"
     },
     "stage": {
       "marathon_endpoint": "http://stage.example.com:8080",
