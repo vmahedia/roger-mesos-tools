@@ -6,7 +6,7 @@ import os
 import sys
 sys.path.append('/vagrant/cli')
 import imp
-roger_build = imp.load_source('roger_build', '/vagrant/cli/roger-build')
+roger_build = imp.load_source('roger_build', '/vagrant/cli/roger-build.py')
 
 #Test basic functionalities of roger-build script
 class TestBuild(unittest.TestCase):

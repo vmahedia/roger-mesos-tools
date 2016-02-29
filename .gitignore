@@ -3,6 +3,7 @@
 dist/
 components
 *.pyc
+configs/
 
 # The following are from https://github.com/github/gitignore/blob/master/Python.gitignore
 
