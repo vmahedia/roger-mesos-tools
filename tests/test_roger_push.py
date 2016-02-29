@@ -57,8 +57,14 @@ class TestPush(unittest.TestCase):
     when(appConfig).getRogerEnv("/vagrant/tests/configs").thenReturn(roger_env)
     when(appConfig).getConfig("/vagrant/tests/configs", "app.json").thenReturn(config)
     when(appConfig).getAppData("/vagrant/tests/configs", "app.json", "grafana_test_app").thenReturn(data)
-    parser = self.parser
-    args = parser.parse_args()
+
+    args = argparse.ArgumentParser(description='Args for test')
+    args.add_argument('-e', '--env', metavar='env', help="Environment to deploy to. example: 'dev' or 'stage'")
+    args.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
+    args.add_argument('--secrets-file', '-S', help="Specify an optional secrets file for deploy runtime variables.")
+    args.env = "dev"
+    args.secrets_file=""
+    args.skip_push=True
     args.app_name = 'grafana_test_app'
     args.config_file = 'app.json'
     args.directory = '/vagrant/tests/testrepo'
@@ -76,7 +82,6 @@ class TestPush(unittest.TestCase):
     verify(settings).getTemplatesDir()
     verify(settings).getSecretsDir()
     verify(frameworkUtils).getFramework(data)
-    verify(marathon).put('/vagrant/tests/components/dev/test-app-grafana.json', roger_env['environments']['dev'], 'grafana')
 
   def test_container_resolution(self):
     settings = mock(Settings)
@@ -98,8 +103,14 @@ class TestPush(unittest.TestCase):
     when(appConfig).getRogerEnv("/vagrant/tests/configs").thenReturn(roger_env)
     when(appConfig).getConfig("/vagrant/tests/configs", "app.json").thenReturn(config)
     when(appConfig).getAppData("/vagrant/tests/configs", "app.json", "grafana_test_app").thenReturn(data)
-    parser = self.parser
-    args = parser.parse_args()
+
+    args = argparse.ArgumentParser(description='Args for test')
+    args.add_argument('-e', '--env', metavar='env', help="Environment to deploy to. example: 'dev' or 'stage'")
+    args.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
+    args.add_argument('--secrets-file', '-S', help="Specify an optional secrets file for deploy runtime variables.")
+    args.env="dev"
+    args.secrets_file=""
+    args.skip_push=True
     args.app_name = 'grafana_test_app'
     args.config_file = 'app.json'
     args.directory = '/vagrant/tests/testrepo'

@@ -53,8 +53,16 @@ class Testcontainer(unittest.TestCase):
     when(appConfig).getConfig("/vagrant/tests/configs", "roger_single_container_var_tests.json").thenReturn(config)
 
     when(appConfig).getAppData("/vagrant/tests/configs", "roger_single_container_var_tests.json", "container-vars").thenReturn(data)
-    parser = self.parser
-    args = parser.parse_args()
+
+    args = argparse.ArgumentParser(description='Args for test')
+    args.add_argument('-e', '--env', metavar='env', help="Environment to deploy to. example: 'dev' or 'stage'")
+    args.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
+    args.add_argument('--secrets-file', '-S',
+      help="Specify an optional secrets file for deploy runtime variables.")
+    args.env = "dev"
+    args.skip_push=True
+    args.secrets_dir=""
+
     args.app_name = 'container-vars'
     args.config_file = 'roger_single_container_var_tests.json'
     args.directory = '/vagrant/tests/testrepo'

@@ -48,17 +48,40 @@ class TestDeploy(unittest.TestCase):
   def test_incrementVersion(self):
     git_sha = "dwqjdqgwd7y12edq21"
     image_version_list = ['0.001','0.2.034','1.1.2','1.002.1']
-    parser = self.parser
-    args = parser.parse_args()
-    assert roger_deploy.incrementVersion(git_sha, image_version_list, args) == 'dwqjdqgwd7y12edq21/v1.3.0'
+
+    args = argparse.ArgumentParser(description='Args for test')
+    args.add_argument('-e', '--environment', metavar='env',
+    help="Environment to deploy to. example: 'dev' or 'stage'")
+    args.add_argument('-s', '--skip-build', action="store_true", help="Flag that skips roger-build when set to true. Defaults to false.'")
+    args.add_argument('-M', '--incr-major', action="store_true", help="Increment major in version. Defaults to false.'")
+    args.add_argument('-p', '--incr-patch', action="store_true", help="Increment patch in version. Defaults to false.'")
+    args.add_argument('-sp', '--skip-push', action="store_true", help="Flag that skips roger-push when set to true. Defaults to false.'")
+    args.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
+    args.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
+    args.directory=""
+    args.secrets_file=""
     args.incr_patch = True
-    assert roger_deploy.incrementVersion(git_sha, image_version_list, args) == 'dwqjdqgwd7y12edq21/v1.2.2'
     args.incr_major = True
+
+    assert roger_deploy.incrementVersion(git_sha, image_version_list, args) == 'dwqjdqgwd7y12edq21/v2.0.0'
+    assert roger_deploy.incrementVersion(git_sha, image_version_list, args) == 'dwqjdqgwd7y12edq21/v2.0.0'
     assert roger_deploy.incrementVersion(git_sha, image_version_list, args) == 'dwqjdqgwd7y12edq21/v2.0.0'
 
   def test_tempDirCheck(self):
     work_dir = "./test_dir"
-    args = self.parser.parse_args()
+
+    args = argparse.ArgumentParser(description='Args for test')
+    args.add_argument('-e', '--environment', metavar='env',
+    help="Environment to deploy to. example: 'dev' or 'stage'")
+    args.add_argument('-s', '--skip-build', action="store_true", help="Flag that skips roger-build when set to true. Defaults to false.'")
+    args.add_argument('-M', '--incr-major', action="store_true", help="Increment major in version. Defaults to false.'")
+    args.add_argument('-p', '--incr-patch', action="store_true", help="Increment patch in version. Defaults to false.'")
+    args.add_argument('-sp', '--skip-push', action="store_true", help="Flag that skips roger-push when set to true. Defaults to false.'")
+    args.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
+    args.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
+    args.directory=""
+    args.skip_push=True
+    args.secrets_file=""
     roger_deploy.removeDirTree(work_dir, args)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == False
@@ -84,8 +107,20 @@ class TestDeploy(unittest.TestCase):
     when(appConfig).getRogerEnv("/vagrant/tests/configs").thenReturn(roger_env)
     when(appConfig).getConfig("/vagrant/tests/configs", "app.json").thenReturn(config)
     when(appConfig).getAppData("/vagrant/tests/configs", "app.json", "grafana_test_app").thenReturn(data)
-    parser = self.parser
-    args = parser.parse_args()
+
+    args = argparse.ArgumentParser(description='Args for test')
+    args.add_argument('-e', '--environment', metavar='env',
+    help="Environment to deploy to. example: 'dev' or 'stage'")
+    args.add_argument('-s', '--skip-build', action="store_true", help="Flag that skips roger-build when set to true. Defaults to false.'")
+    args.add_argument('-M', '--incr-major', action="store_true", help="Increment major in version. Defaults to false.'")
+    args.add_argument('-p', '--incr-patch', action="store_true", help="Increment patch in version. Defaults to false.'")
+    args.add_argument('-sp', '--skip-push', action="store_true", help="Flag that skips roger-push when set to true. Defaults to false.'")
+    args.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
+    args.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
+    args.directory=""
+    args.secrets_file=""
+    args.environment="dev"
+    args.skip_push=True
     args.application = 'grafana_test_app'
     args.config_file = 'app.json'
     args.skip_build = True
