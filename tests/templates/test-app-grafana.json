@@ -19,7 +19,7 @@
       ]
     }
   },
-  "id": "roger-grafana",
+  "id": "test-grafana",
   "instances": 1,
   "cpus": 2,
   "mem": 1024,

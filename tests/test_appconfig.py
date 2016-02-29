@@ -13,29 +13,29 @@ from appconfig import AppConfig
 class TestAppConfig(unittest.TestCase):
 
   def setUp(self):
-    pass
+    self.appObj = AppConfig()
 
   def test_getRogerEnv(self):
-    roger_env = appObj.getRogerEnv("/vagrant/tests/configs")
+    roger_env = self.appObj.getRogerEnv("/vagrant/tests/configs")
     assert roger_env['registry'] == "example.com:5000"
     assert roger_env['default'] == "dev"
     assert roger_env['environments']['dev']['marathon_endpoint'] == "http://dev.example.com:8080"
     assert roger_env['environments']['prod']['chronos_endpoint'] == "http://prod.example.com:4400"
 
   def test_getConfig(self):
-    config = appObj.getConfig("/vagrant/tests/configs", "app.json")
+    config = self.appObj.getConfig("/vagrant/tests/configs", "app.json")
     assert config['name'] == "test-app"
     assert config['repo'] == "roger"
     assert config['vars']['environment']['prod']['mem'] == "2048"
     assert len(config['apps'].keys()) == 3
     for app in config['apps']:
-      assert app.startswith("test_app")
+      assert "test_app" in app
       assert config['apps'][app]['imageBase'] == "test_app_base"
 
   def test_getAppData(self):
-    app_data = appObj.getAppData("/vagrant/tests/configs", "app.json", "app_name")
+    app_data = self.appObj.getAppData("/vagrant/tests/configs", "app.json", "app_name")
     assert app_data == ''
-    app_data = appObj.getAppData("/vagrant/tests/configs", "app.json", "test_app")
+    app_data = self.appObj.getAppData("/vagrant/tests/configs", "app.json", "test_app")
     assert app_data['imageBase'] == "test_app_base"
     assert len(app_data['containers']) == 2
 
@@ -43,5 +43,4 @@ class TestAppConfig(unittest.TestCase):
     pass
 
 if __name__ == "__main__":
-  appObj = AppConfig()
   unittest.main()

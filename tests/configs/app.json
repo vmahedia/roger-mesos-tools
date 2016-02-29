@@ -29,6 +29,7 @@
   },
   "apps": {
     "test_app": {
+      "name":"test_app",
       "imageBase": "test_app_base",
       "containers": [
         "container_name1",
@@ -36,6 +37,7 @@
       ]
     },
     "test_app1": {
+      "name":"test_app1",
       "framework": "chronos",
       "imageBase": "test_app_base",
       "containers": [
@@ -44,7 +46,8 @@
       ]
     },
     "grafana_test_app": {
-       "name": "grafana_test_app",
+      "imageBase": "test_app_base",
+       "name": "test_app_grafana",
        "containers": [
          "grafana",
         { "grafana1": {
