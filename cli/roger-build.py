@@ -82,11 +82,11 @@ def main():
     image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
     try:
       if abs_path == args.directory:
-        exit_code = os.system("{0}/cli/docker-build '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, args.directory, repo, projects, docker_path, image))
+        exit_code = os.system("{0}/cli/docker-build.py '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, args.directory, repo, projects, docker_path, image))
         if exit_code != 0:
           sys.exit('Docker build failed. Exiting from build.')
       else:
-        exit_code = os.system("{0}/cli/docker-build '{1}/{2}' '{3}' '{4}' '{5}' '{6}'".format(root, cur_dir, args.directory, repo, projects, docker_path, image))
+        exit_code = os.system("{0}/cli/docker-build.py '{1}/{2}' '{3}' '{4}' '{5}' '{6}'".format(root, cur_dir, args.directory, repo, projects, docker_path, image))
         if exit_code != 0:
           sys.exit('Docker build failed. Exiting from build.')
       build_message = "Image {0} built".format(image)
