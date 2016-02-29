@@ -23,9 +23,9 @@ class ContainerConfig:
 
     return hostname
 
-  def get_containerid(self, appTaskId, hostname):
+  def get_containerid_mesostaskid(self, appTaskId, hostname):
     containerId = ''
-    mesosTaskId = '' 
+    mesosTaskId = ''
     try:
       containers = subprocess.check_output("docker -H tcp://{}:4243 ps -q".format(hostname), shell=True)
     except:
@@ -46,4 +46,4 @@ class ContainerConfig:
         if mesosTaskId.startswith(appTaskId):
           containerId = container.strip()
           break
-    return containerId
+    return containerId , mesosTaskId
