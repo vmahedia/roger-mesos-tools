@@ -8,7 +8,7 @@ import shutil
 import sys
 sys.path.append('/vagrant/cli')
 import imp
-roger_git_pull = imp.load_source('roger_git_pull', '/vagrant/cli/roger-git-pull')
+roger_git_pull = imp.load_source('roger_git_pull', '/vagrant/cli/roger-git-pull.py')
 
 #Test basic functionalities of roger-git-pull script
 class TestGitPull(unittest.TestCase):

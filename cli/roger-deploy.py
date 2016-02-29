@@ -157,7 +157,7 @@ def parseArgs():
   parser.add_argument('-M', '--incr-major', action="store_true",
     help="Increment major in version. Defaults to false.'")
   parser.add_argument('-sp', '--skip-push', action="store_true",
-    help="Flag that skips roger-push when set to true. Defaults to false.'")
+    help="Flag that skips roger push when set to true. Defaults to false.'")
   parser.add_argument('-p', '--incr-patch', action="store_true",
     help="Increment patch in version. Defaults to false.'")
   parser.add_argument('-S', '--secrets-file',
@@ -173,7 +173,7 @@ def push(root, app, work_dir, image_name, config_file, environment, secrets_file
     secrets = ""
   try:
     push_command = (root, app, os.path.abspath(work_dir), image_name, config_file, environment, secrets)
-    exit_code = os.system("{0}/cli/roger-push {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
+    exit_code = os.system("{0}/cli/roger-push.py {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
     return exit_code
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
@@ -182,7 +182,7 @@ def push(root, app, work_dir, image_name, config_file, environment, secrets_file
 
 def pullRepo(root, app, work_dir, config_file, branch, args):
   try:
-    exit_code = os.system("{0}/cli/roger-git-pull {1} {2} {3} --branch {4}".format(root, app, os.path.abspath(work_dir), config_file, branch))
+    exit_code = os.system("{0}/cli/roger-git-pull.py {1} {2} {3} --branch {4}".format(root, app, os.path.abspath(work_dir), config_file, branch))
     return exit_code
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
@@ -303,7 +303,7 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
     image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
     print("Bumped up image to version:{0}".format(image_name))
     try:
-      exit_code = os.system("{0}/cli/roger-build --push {1} {2} {3} {4}".format(root, app, os.path.abspath(work_dir), image_name, config_file))
+      exit_code = os.system("{0}/cli/roger-build.py --push {1} {2} {3} {4}".format(root, app, os.path.abspath(work_dir), image_name, config_file))
       if exit_code != 0:
         removeDirTree(work_dir, args)
         sys.exit('Exiting')

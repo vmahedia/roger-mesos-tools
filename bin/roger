@@ -1,9 +1,16 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+
 import os
 import sys
 import subprocess
+import re
+
+def roger_version(root_dir):
+  with open(os.path.join(root_dir, "cli", "VERSION")) as f:
+      version = f.read().strip()
+  print(version)
 
 def roger_help(commands):
   print("\nUsage: roger [OPTIONS] COMMAND [arg...]\n")
@@ -12,6 +19,7 @@ def roger_help(commands):
         " the command takes.\n")
   print("Options:\n")
   print("  -h, --help            show this help message and exit")
+  print("  -v, --version         show version information and exit")
   print("\nCommands:")
   for command in commands:
     print("    {}".format(command))
@@ -22,17 +30,16 @@ def getFiles(directory):
   return filenames
 
 def getCommands(files):
-  commands = []
+  commands = set()
   for filename in files:
     if filename.startswith("roger-"):
-      commands.append(filename.split("roger-")[1])
-  return commands
+      commands.add(re.split("roger-|\.", filename)[1])
+  return sorted(commands)
 
 def getScriptCall(args, root):
-  command = args[1]
-  exists = os.path.exists("{}/cli/roger-{}".format(root, command))
+  command = "{}/cli/roger-{}.py".format(root, args[1])
+  exists = os.path.exists(command)
   if exists == True:
-    command = "{}/cli/roger-{}".format(root, command)
     for index in range(2,len(args)):
       command = command + " {}".format(args[index])
     return command
@@ -49,6 +56,8 @@ def main():
   if len(sys.argv) > 1:
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
       roger_help(commands)
+    elif sys.argv[1] == "-v" or sys.argv[1] == "--version":
+      roger_version(root)
     else:
       command = sys.argv[1]
       if command in commands:

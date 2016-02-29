@@ -8,7 +8,7 @@ import json
 import sys
 sys.path.append('/vagrant/cli')
 import imp
-roger_push = imp.load_source('roger_push', '/vagrant/cli/roger-push')
+roger_push = imp.load_source('roger_push', '/vagrant/cli/roger-push.py')
 from marathon import Marathon
 from frameworkutils import FrameworkUtils
 from appconfig import AppConfig
