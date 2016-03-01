@@ -141,8 +141,8 @@ def packagejson_swaparoo():
   '''Swap out package.json for the fixed one referencing git/ repos'''
   # Get package.json
   with open('package.json', 'r') as packagejson:
-    data = json.load(packagejson)
-  originalData = deepcopy(data)
+    originalData = packagejson.read()
+  data = json.loads(originalData)
 
   # Do the swaparoo
   for name, version in data['dependencies'].items():
@@ -160,7 +160,7 @@ def packagejson_swaparoo():
   finally:
     # Rewrite original
     with open('package.json', 'w+') as packagejson:
-      packagejson.write(json.dumps(originalData, indent=2))
+      packagejson.write(originalData)
 
 @contextlib.contextmanager
 def null_swaparoo():
@@ -172,7 +172,7 @@ def docker_build(directory, repo, projects, path, image_tag):
   sourcePath = "{0}/{1}/".format(directory, repo)
   if os.path.isdir(sourcePath):
     os.chdir(sourcePath)
-  
+
   if projects != 'none':
     download_private_repos(projects)
 
