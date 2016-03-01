@@ -103,9 +103,9 @@ def createMarathonConfig(templ_dir, filename, app_id):
   env['ENV_VAR1'] = "value1"
   env['ENV_VAR2'] = "value2"
   json_dict['id'] = app_id
-  json_dict['instances'] = "1"
-  json_dict['cpus'] = "0.2"
-  json_dict['mem'] = "1"
+  json_dict['instances'] = 1
+  json_dict['cpus'] = 0.2
+  json_dict['mem'] = 1
   json_dict['env'] = env
   json_output = json.dumps(json_dict, indent=2)
   writeJson(json_output, templ_dir, filename)
