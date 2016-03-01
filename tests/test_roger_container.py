@@ -6,9 +6,8 @@ import os
 import argparse
 import json
 import sys
-sys.path.append('/vagrant/cli')
-import imp
-roger_push = imp.load_source('roger_push', '/vagrant/cli/roger-push.py')
+sys.path.insert(0,'/vagrant/cli')
+import roger_push
 from marathon import Marathon
 from frameworkutils import FrameworkUtils
 from appconfig import AppConfig
@@ -26,9 +25,16 @@ class Testcontainer(unittest.TestCase):
     parser.add_argument('--secrets-file', '-S',
       help="Specify an optional secrets file for deploy runtime variables.")
     self.parser = parser
-    with open('/vagrant/tests/configs/roger_single_container_var_tests.json') as config:
+    self.args = parser
+
+    self.settingObj = Settings()
+    self.base_dir = self.settingObj.getCliDir()
+    self.configs_dir = self.base_dir+"/tests/configs"
+
+
+    with open(self.configs_dir+'/roger_single_container_var_tests.json') as config:
       config = json.load(config)
-    with open('/vagrant/tests/configs/roger-env.json') as roger:
+    with open(self.configs_dir+'/roger-env.json') as roger:
       roger_env = json.load(roger)
     data = config['apps']['container-vars']
     self.config = config
@@ -44,28 +50,24 @@ class Testcontainer(unittest.TestCase):
     data = self.data
     frameworkUtils = mock(FrameworkUtils)
     when(frameworkUtils).getFramework(data).thenReturn(marathon)
-    when(settings).getComponentsDir().thenReturn("/vagrant/tests/components")
-    when(settings).getSecretsDir().thenReturn("/vagrant/tests/secrets")
-    when(settings).getTemplatesDir().thenReturn("/vagrant/tests/templates")
-    when(settings).getConfigDir().thenReturn("/vagrant/tests/configs")
-    when(settings).getCliDir().thenReturn("/vagrant")
-    when(appConfig).getRogerEnv("/vagrant/tests/configs").thenReturn(roger_env)
-    when(appConfig).getConfig("/vagrant/tests/configs", "roger_single_container_var_tests.json").thenReturn(config)
+    when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
+    when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
+    when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
+    when(settings).getConfigDir().thenReturn(self.configs_dir)
+    when(settings).getCliDir().thenReturn(self.base_dir)
+    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
+    when(appConfig).getConfig(self.configs_dir, "roger_single_container_var_tests.json").thenReturn(config)
 
-    when(appConfig).getAppData("/vagrant/tests/configs", "roger_single_container_var_tests.json", "container-vars").thenReturn(data)
+    when(appConfig).getAppData(self.configs_dir, "roger_single_container_var_tests.json", "container-vars").thenReturn(data)
 
-    args = argparse.ArgumentParser(description='Args for test')
-    args.add_argument('-e', '--env', metavar='env', help="Environment to deploy to. example: 'dev' or 'stage'")
-    args.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
-    args.add_argument('--secrets-file', '-S',
-      help="Specify an optional secrets file for deploy runtime variables.")
+    args = self.args
     args.env = "dev"
     args.skip_push=True
     args.secrets_dir=""
 
     args.app_name = 'container-vars'
     args.config_file = 'roger_single_container_var_tests.json'
-    args.directory = '/vagrant/tests/testrepo'
+    args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'tests/v0.1.0'
     object_list = []
     object_list.append(settings)
@@ -74,7 +76,7 @@ class Testcontainer(unittest.TestCase):
 
     roger_push.main(object_list, args)
 
-    with open('/vagrant/tests/components/dev/roger-single-container-var-tests.json') as output:
+    with open(self.base_dir+'/tests/components/dev/roger-single-container-var-tests.json') as output:
       output = json.load(output)
 
     var1 = output["env"]["VAR_1"]
