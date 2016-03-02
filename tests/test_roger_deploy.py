@@ -6,17 +6,17 @@ import argparse
 import os
 import sys
 import json
-sys.path.append('/vagrant/cli')
-import imp
-roger_deploy = imp.load_source('roger_deploy', '/vagrant/cli/roger-deploy.py')
-roger_push = imp.load_source('roger_push', '/vagrant/cli/roger-push.py')
-roger_git_pull = imp.load_source('roger_git_pull', '/vagrant/cli/roger-git-pull.py')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
+import roger_push
+import roger_deploy
+import roger_gitpull
 from marathon import Marathon
 from frameworkutils import FrameworkUtils
 from appconfig import AppConfig
 from settings import Settings
 from mockito import mock, when, verify
 from mock import MagicMock
+from settings import Settings
 
 #Test basic functionalities of roger-deploy script
 class TestDeploy(unittest.TestCase):
@@ -32,9 +32,15 @@ class TestDeploy(unittest.TestCase):
     parser.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
     parser.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
     self.parser = parser
-    with open('/vagrant/tests/configs/app.json') as config:
+    self.args = parser
+
+    self.settingObj = Settings()
+    self.base_dir = self.settingObj.getCliDir()
+    self.configs_dir = self.base_dir+"/tests/configs"
+
+    with open(self.configs_dir+'/app.json') as config:
       config = json.load(config)
-    with open('/vagrant/tests/configs/roger-env.json') as roger:
+    with open(self.configs_dir+'/roger-env.json') as roger:
       roger_env = json.load(roger)
     data = config['apps']['grafana_test_app']
     self.config = config
@@ -49,15 +55,7 @@ class TestDeploy(unittest.TestCase):
     git_sha = "dwqjdqgwd7y12edq21"
     image_version_list = ['0.001','0.2.034','1.1.2','1.002.1']
 
-    args = argparse.ArgumentParser(description='Args for test')
-    args.add_argument('-e', '--environment', metavar='env',
-    help="Environment to deploy to. example: 'dev' or 'stage'")
-    args.add_argument('-s', '--skip-build', action="store_true", help="Flag that skips roger-build when set to true. Defaults to false.'")
-    args.add_argument('-M', '--incr-major', action="store_true", help="Increment major in version. Defaults to false.'")
-    args.add_argument('-p', '--incr-patch', action="store_true", help="Increment patch in version. Defaults to false.'")
-    args.add_argument('-sp', '--skip-push', action="store_true", help="Flag that skips roger-push when set to true. Defaults to false.'")
-    args.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
-    args.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
+    args = self.args
     args.directory=""
     args.secrets_file=""
     args.incr_patch = True
@@ -70,15 +68,7 @@ class TestDeploy(unittest.TestCase):
   def test_tempDirCheck(self):
     work_dir = "./test_dir"
 
-    args = argparse.ArgumentParser(description='Args for test')
-    args.add_argument('-e', '--environment', metavar='env',
-    help="Environment to deploy to. example: 'dev' or 'stage'")
-    args.add_argument('-s', '--skip-build', action="store_true", help="Flag that skips roger-build when set to true. Defaults to false.'")
-    args.add_argument('-M', '--incr-major', action="store_true", help="Increment major in version. Defaults to false.'")
-    args.add_argument('-p', '--incr-patch', action="store_true", help="Increment patch in version. Defaults to false.'")
-    args.add_argument('-sp', '--skip-push', action="store_true", help="Flag that skips roger-push when set to true. Defaults to false.'")
-    args.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
-    args.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
+    args = self.args
     args.directory=""
     args.skip_push=True
     args.secrets_file=""
@@ -102,21 +92,13 @@ class TestDeploy(unittest.TestCase):
     when(marathon).getCurrentImageVersion(roger_env, 'dev', 'grafana').thenReturn("testversion/v0.1.0")
     frameworkUtils = mock(FrameworkUtils)
     when(frameworkUtils).getFramework(data).thenReturn(marathon)
-    when(settings).getConfigDir().thenReturn("/vagrant/tests/configs")
-    when(settings).getCliDir().thenReturn("/vagrant")
-    when(appConfig).getRogerEnv("/vagrant/tests/configs").thenReturn(roger_env)
-    when(appConfig).getConfig("/vagrant/tests/configs", "app.json").thenReturn(config)
-    when(appConfig).getAppData("/vagrant/tests/configs", "app.json", "grafana_test_app").thenReturn(data)
+    when(settings).getConfigDir().thenReturn(self.configs_dir)
+    when(settings).getCliDir().thenReturn(self.base_dir)
+    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
+    when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
+    when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
 
-    args = argparse.ArgumentParser(description='Args for test')
-    args.add_argument('-e', '--environment', metavar='env',
-    help="Environment to deploy to. example: 'dev' or 'stage'")
-    args.add_argument('-s', '--skip-build', action="store_true", help="Flag that skips roger-build when set to true. Defaults to false.'")
-    args.add_argument('-M', '--incr-major', action="store_true", help="Increment major in version. Defaults to false.'")
-    args.add_argument('-p', '--incr-patch', action="store_true", help="Increment patch in version. Defaults to false.'")
-    args.add_argument('-sp', '--skip-push', action="store_true", help="Flag that skips roger-push when set to true. Defaults to false.'")
-    args.add_argument('-S', '--secrets-file', help="Specify an optional secrets file for deployment runtime variables.")
-    args.add_argument('-d', '--directory', help="Specify an optional directory to pull out the repo. This is the working directory.")
+    args = self.args
     args.directory=""
     args.secrets_file=""
     args.environment="dev"
@@ -125,7 +107,7 @@ class TestDeploy(unittest.TestCase):
     args.config_file = 'app.json'
     args.skip_build = True
     args.branch = None
-    os.environ["ROGER_CONFIG_DIR"] = "/vagrant/tests/configs"
+    os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
     object_list = []
     object_list.append(settings)
     object_list.append(appConfig)
@@ -134,8 +116,8 @@ class TestDeploy(unittest.TestCase):
     roger_deploy.main(object_list, args)
     verify(settings).getConfigDir()
     verify(settings).getCliDir()
-    verify(appConfig).getRogerEnv("/vagrant/tests/configs")
-    verify(appConfig).getConfig("/vagrant/tests/configs", "app.json")
+    verify(appConfig).getRogerEnv(self.configs_dir)
+    verify(appConfig).getConfig(self.configs_dir, "app.json")
     verify(frameworkUtils).getFramework(data)
     verify(marathon).getCurrentImageVersion(roger_env, 'dev', 'grafana_test_app')
 

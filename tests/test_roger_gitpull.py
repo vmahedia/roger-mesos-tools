@@ -6,25 +6,29 @@ import os
 import json
 import shutil
 import sys
-sys.path.append('/vagrant/cli')
-import imp
-roger_git_pull = imp.load_source('roger_git_pull', '/vagrant/cli/roger-git-pull.py')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
+import roger_gitpull
+from settings import Settings
 
 #Test basic functionalities of roger-git-pull script
 class TestGitPull(unittest.TestCase):
 
   def setUp(self):
+    self.settingObj = Settings()
+    self.base_dir = self.settingObj.getCliDir()
+    self.configs_dir = self.base_dir+"/tests/configs"
+    self.work_dir = self.base_dir+"/tests/work_dir"
     pass
 
   def test_rogerGitPull(self):
     set_config_dir = ''
     if "ROGER_CONFIG_DIR" in os.environ:
       set_config_dir = os.environ.get('ROGER_CONFIG_DIR')
-    os.environ["ROGER_CONFIG_DIR"] = "/vagrant/tests/configs"
+    os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
     config_file = "app.json"
-    work_dir = "/vagrant/tests/work_dir"
-    os.system("roger git-pull test_app {} {}".format(work_dir, config_file))
-    with open('/vagrant/tests/configs/{}'.format(config_file)) as config:
+    work_dir = self.work_dir
+    os.system("roger gitpull test_app {} {}".format(work_dir, config_file))
+    with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     repo = config['repo']
     exists = os.path.exists(work_dir)

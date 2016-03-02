@@ -32,12 +32,12 @@ def getFiles(directory):
 def getCommands(files):
   commands = set()
   for filename in files:
-    if filename.startswith("roger-"):
-      commands.add(re.split("roger-|\.", filename)[1])
+    if filename.startswith("roger_"):
+      commands.add(re.split("roger_|\.", filename)[1])
   return sorted(commands)
 
 def getScriptCall(args, root):
-  command = "{}/cli/roger-{}.py".format(root, args[1])
+  command = "{}/cli/roger_{}.py".format(root, args[1])
   exists = os.path.exists(command)
   if exists == True:
     for index in range(2,len(args)):

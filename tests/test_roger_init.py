@@ -5,30 +5,34 @@ import unittest
 import os
 import json
 import sys
-sys.path.append('/vagrant/bin')
 import shutil
-import imp
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
+from settings import Settings
 
 #Test basic functionalities of roger-init script
 class TestInit(unittest.TestCase):
 
   def setUp(self):
+    self.settingObj = Settings()
+    self.base_dir = self.settingObj.getCliDir()
+    self.config_dir = self.base_dir+"/tests/configs"
+    self.template_dir = self.base_dir+"/tests/templates"
     pass
 
   def test_roger_init(self):
     set_config_dir = ''
     if "ROGER_CONFIG_DIR" in os.environ:
       set_config_dir = os.environ.get('ROGER_CONFIG_DIR')
-    os.environ["ROGER_CONFIG_DIR"] = "/vagrant/tests/configs"
+    os.environ["ROGER_CONFIG_DIR"] = self.config_dir
 
     set_templ_dir = ''
     if "ROGER_TEMPLATES_DIR" in os.environ:
       set_templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
-    os.environ["ROGER_TEMPLATES_DIR"] = "/vagrant/configs/templates"
+    os.environ["ROGER_TEMPLATES_DIR"] = self.template_dir
 
     os.system("roger init test_app roger")
-    config_file = "/vagrant/tests/configs/app.json"
-    template_file = "/vagrant/tests/templates/test-app-grafana.json"
+    config_file = self.config_dir+"/app.json"
+    template_file = self.template_dir+"/test-app-grafana.json"
     assert os.path.exists(config_file) == True
     assert os.path.exists(template_file) == True
     with open('{0}'.format(config_file)) as config:
