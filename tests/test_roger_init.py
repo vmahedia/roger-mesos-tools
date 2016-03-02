@@ -6,7 +6,7 @@ import os
 import json
 import sys
 import shutil
-sys.path.insert(0,'/vagrant/cli')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 from settings import Settings
 
 #Test basic functionalities of roger-init script

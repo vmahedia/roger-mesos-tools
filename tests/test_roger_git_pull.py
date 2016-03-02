@@ -6,7 +6,7 @@ import os
 import json
 import shutil
 import sys
-sys.path.insert(0,'/vagrant/cli')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 import roger_gitpull
 from settings import Settings
 

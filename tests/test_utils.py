@@ -4,7 +4,7 @@ from __future__ import print_function
 import unittest
 import os
 import sys
-sys.path.insert(0,'/vagrant/cli')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 from utils import Utils
 from appConfig import AppConfig
 

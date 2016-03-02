@@ -6,7 +6,7 @@ import os
 import argparse
 import json
 import sys
-sys.path.insert(0,'/vagrant/cli')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 import roger_push
 from marathon import Marathon
 from frameworkutils import FrameworkUtils

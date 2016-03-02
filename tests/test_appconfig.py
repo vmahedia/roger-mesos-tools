@@ -5,7 +5,7 @@ import unittest
 import argparse
 import os
 import sys
-sys.path.insert(0,'/vagrant/cli')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 from appconfig import AppConfig
 from settings import Settings
 
