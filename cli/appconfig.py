@@ -4,6 +4,7 @@ from __future__ import print_function
 import os
 import sys
 import json
+import yaml
 
 class AppConfig:
 
@@ -13,8 +14,9 @@ class AppConfig:
     return roger_env
 
   def getConfig(self, config_dir, config_file):
-    with open('{0}/{1}'.format(config_dir, config_file)) as config:
-      config = json.load(config)
+    config = None
+    with open('{0}/{1}'.format(config_dir, config_file)) as config_file_obj:
+      config = yaml.load(config_file_obj) if config_file.lower().endswith('.yml') else json.load(config_file_obj)
     return config
 
   def getAppData(self, config_dir, config_file, app_name):
