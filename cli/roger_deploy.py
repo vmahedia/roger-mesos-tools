@@ -143,7 +143,7 @@ def getGitSha(work_dir, repo, branch):
     return out[0].split('\n')[0]
 
 def parseArgs():
-  parser = argparse.ArgumentParser(description='Pulls code from repo, builds and then deploys into Roger.')
+  parser = argparse.ArgumentParser(prog='roger deploy', description='Pulls code from repo, builds and then deploys into Roger.')
   parser.add_argument('-e', '--environment', metavar='env',
     help="Environment to deploy to. example: 'dev' or 'stage'")
   parser.add_argument('application', metavar='application',

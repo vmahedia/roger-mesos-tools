@@ -19,7 +19,7 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='Creates an initial application template and a project config file.')
+  parser = argparse.ArgumentParser(prog='roger init', description='Creates an initial application template and a project config file.')
   parser.add_argument('app_name', metavar='app_name',
     help="An application name unique within a project (or team). Examples: 'grafana', 'agora', 'crux:web'")
   parser.add_argument('project_name', metavar='project_name',

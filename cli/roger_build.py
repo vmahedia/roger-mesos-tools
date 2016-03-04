@@ -20,7 +20,7 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='Builds the docker application and optionally pushes it to the docker registry.')
+  parser = argparse.ArgumentParser(prog='roger build', description='Builds the docker application and optionally pushes it to the docker registry.')
   parser.add_argument('app_name', metavar='app_name',
     help="Application name to be built. Example: 'agora' or 'grafana'")
   parser.add_argument('directory', metavar='directory',

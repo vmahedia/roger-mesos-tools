@@ -28,7 +28,7 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='To deploy an app to framework. Marathon by default')
+  parser = argparse.ArgumentParser(prog='roger push', description='To deploy an app to framework. Marathon by default')
   parser.add_argument('app_name', metavar='app_name',
     help="Application to be built. Example: 'agora' or 'grafana'")
   parser.add_argument('-e', '--env', metavar='env',

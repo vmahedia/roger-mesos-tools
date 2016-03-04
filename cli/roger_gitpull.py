@@ -21,7 +21,7 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='Pulls application repo from git.')
+  parser = argparse.ArgumentParser(prog='roger gitpull', description='Pulls application repo from git.')
   parser.add_argument('app_name', metavar='app_name',
     help="Application to be pulled. Example: 'agora' or 'grafana'")
   parser.add_argument('directory', metavar='directory',
