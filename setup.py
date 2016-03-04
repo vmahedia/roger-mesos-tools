@@ -34,7 +34,7 @@ class PyTest(TestCommand):
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open(path.join(here, "cli", "VERSION")) as f:
+with open(path.join(here, "VERSION")) as f:
     version = f.read().strip()
 
 setup(

@@ -1,3 +1,5 @@
+include VERSION README.md
+
 # Include the cli folder
 recursive-include cli *
 

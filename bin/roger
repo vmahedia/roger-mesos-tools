@@ -8,7 +8,7 @@ import subprocess
 import re
 
 def roger_version(root_dir):
-  with open(os.path.join(root_dir, "cli", "VERSION")) as f:
+  with open(os.path.join(root_dir, "VERSION")) as f:
       version = f.read().strip()
   print(version)
 
