@@ -13,7 +13,7 @@ from appconfig import AppConfig
 from containerconfig import ContainerConfig
 
 def parse_args():
-  parser = argparse.ArgumentParser(description="This command keeps streaming the new output \
+  parser = argparse.ArgumentParser(prog='roger logs', description="This command keeps streaming the new output \
     from the container\'s STDOUT and STDERR logs.")
   parser.add_argument('appTaskId', metavar='appTaskId', help="Application Task Id to uniquely \
     identify a container Id. example: 'content.56847afe9799")
@@ -25,7 +25,7 @@ def parse_args():
   parser.add_argument('-t', '--timestamps', help="Show timestamps. Defaults to false.", action="store_true")
   parser.add_argument('-s', '--since', help="Show logs since timestamp.")
   parser.add_argument('-T', '--tail', help="Number of lines to show from the end of the logs.\
-    If a negative number is given, it shows all.") 
+    If a negative number is given, it shows all.")
   return parser
 
 def main():

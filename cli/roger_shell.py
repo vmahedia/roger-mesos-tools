@@ -13,9 +13,9 @@ from appconfig import AppConfig
 from containerconfig import ContainerConfig
 
 def parse_args():
-  parser = argparse.ArgumentParser(description='Get an Interactive Bash session into your container.')
+  parser = argparse.ArgumentParser(prog='roger shell', description='Get an Interactive Bash session into your container.')
   parser.add_argument('appTaskId', metavar='appTaskId', help="Application Task Id to uniquely \
-    identify a container Id. example: 'content.56847afe9799")
+    identify a container Id (example: content.56847afe9799). Note that you can use the first few letters and it will find the first match.")
   parser.add_argument('-e', '--env', metavar='env', help="Environment to search. \
     example: 'dev' or 'stage'")
   parser.add_argument('-H','--hostname', metavar='hostname', help="Hostname to search.\
