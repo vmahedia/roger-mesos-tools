@@ -9,8 +9,10 @@ import yaml
 class AppConfig:
 
   def getRogerEnv(self, config_dir):
-    with open('{0}/roger-env.json'.format(config_dir)) as roger_env:
-      roger_env = json.load(roger_env)
+    roger_env = None
+    env_file = '{0}/roger-env.json'
+    with open(env_file.format(config_dir)) as roger_env_file_obj:
+      roger_env = yaml.load(roger_env_file_obj) if env_file.lower().endswith('.yml') else json.load(roger_env_file_obj)
     return roger_env
 
   def getConfig(self, config_dir, config_file):
