@@ -13,17 +13,18 @@ def roger_version(root_dir):
   print(version)
 
 def roger_help(commands):
-  print("\nUsage: roger [OPTIONS] COMMAND [arg...]\n")
-  print("A cli to work with roger os")
-  print("The arg is a list of parameter that" \
-        " the command takes.\n")
-  print("Options:\n")
+  print("usage: roger [-h] [-v] command [arg...]\n")
+  print("A command line interface to work with roger mesos.\n")
+  print("optional arguments:")
   print("  -h, --help            show this help message and exit")
   print("  -v, --version         show version information and exit")
-  print("\nCommands:")
+  print("\npositional arguments:")
+  print("  command               The command to run.")
+  print("  arg...                The arguments to pass to the command.")
+  print("\ncommands:")
   for command in commands:
     print("    {}".format(command))
-  print("\nRun 'roger COMMAND --help' for more information on a command.\n")
+  print("\nRun 'roger command -h' for more information on a command.\n")
 
 def getFiles(directory):
   filenames = next(os.walk(directory))[2]
@@ -36,18 +37,17 @@ def getCommands(files):
       commands.add(re.split("roger_|\.", filename)[1])
   return sorted(commands)
 
-def getScriptCall(args, root):
-  command = "{}/cli/roger_{}.py".format(root, args[1])
-  exists = os.path.exists(command)
+def getScriptCall(root, command, command_args):
+  script_call = "{}/cli/roger_{}.py".format(root, command)
+  exists = os.path.exists(script_call)
   if exists == True:
-    for index in range(2,len(args)):
-      command = command + " {}".format(args[index])
-    return command
+    for command_arg in command_args:
+      script_call = script_call + " {}".format(command_arg)
+    return script_call
   else:
-    sys.exit("Command does not exists. Exiting")
+    sys.exit("Command does not exist. Exiting.")
 
 def main():
-
   root = ''
   own_dir = os.path.dirname(os.path.realpath(__file__))
   root = os.path.abspath(os.path.join(own_dir, os.pardir))
@@ -60,11 +60,12 @@ def main():
       roger_version(root)
     else:
       command = sys.argv[1]
+      command_args = sys.argv[2:]
       if command in commands:
-         script_call = getScriptCall(sys.argv, root)
+         script_call = getScriptCall(root, command, command_args)
          os.system(script_call)
       else:
-        sys.exit("Command is not valid. Exiting")
+        sys.exit("Command is not valid. Exiting.")
   else:
     sys.exit("No arguments found. Please refer to usage: roger -h")
 
