@@ -6,25 +6,37 @@ import os
 import sys
 import subprocess
 import re
+import importlib
 
 def roger_version(root_dir):
   with open(os.path.join(root_dir, "VERSION")) as f:
       version = f.read().strip()
   print(version)
 
-def roger_help(commands):
+def print_help_opt(opt, desc):
+  print("  {} {}".format(opt.ljust(13), desc))
+
+def roger_help(root, commands):
   print("usage: roger [-h] [-v] command [arg...]\n")
-  print("A command line interface to work with roger mesos.\n")
-  print("optional arguments:")
-  print("  -h, --help            show this help message and exit")
-  print("  -v, --version         show version information and exit")
+  print("a command line interface to work with roger mesos.")
   print("\npositional arguments:")
-  print("  command               The command to run.")
-  print("  arg...                The arguments to pass to the command.")
+  print_help_opt("command", "command to run.")
+  print_help_opt("arg","arguments to pass to the command.")
+  print("\noptional arguments:")
+  print_help_opt("-h, --help", "show this help message and exit.")
+  print_help_opt("-v, --version", "show version information and exit.")
   print("\ncommands:")
+  sys.path.append("{}/cli".format(root))
   for command in commands:
-    print("    {}".format(command))
-  print("\nRun 'roger command -h' for more information on a command.\n")
+    description = ""
+    module_name = "roger_" + command
+    cmd_module = importlib.import_module(module_name)
+    try:
+      description = cmd_module.describe()
+    except Exception as e:
+      pass
+    print_help_opt(command, description)
+  print("\nrun: 'roger < command > -h' for more information on a command.")
 
 def getFiles(directory):
   filenames = next(os.walk(directory))[2]
@@ -55,7 +67,7 @@ def main():
   commands = getCommands(files)
   if len(sys.argv) > 1:
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
-      roger_help(commands)
+      roger_help(root, commands)
     elif sys.argv[1] == "-v" or sys.argv[1] == "--version":
       roger_version(root)
     else:

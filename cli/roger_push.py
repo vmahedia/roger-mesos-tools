@@ -27,21 +27,24 @@ def chdir(dirname):
     yield
   finally: os.chdir(curdir)
 
+def describe():
+  return 'pushes the application into roger mesos.'
+
 def parse_args():
-  parser = argparse.ArgumentParser(prog='roger push', description='To deploy an app to framework. Marathon by default')
+  parser = argparse.ArgumentParser(prog='roger push', description=describe())
   parser.add_argument('app_name', metavar='app_name',
-    help="Application to be built. Example: 'agora' or 'grafana'")
+    help="application to push. Example: 'agora' or 'grafana'")
   parser.add_argument('-e', '--env', metavar='env',
-    help="Environment to deploy to. Example: 'dev' or 'prod'")
+    help="environment to push to. Example: 'dev' or 'prod'")
   parser.add_argument('directory', metavar='directory',
-    help="Working directory where the pulled in repo exists. Template file is under this repo dir. Example: '/home/vagrant/work_dir'")
+    help="working directory. Example: '/home/vagrant/work_dir'")
   parser.add_argument('image_name', metavar='image_name',
-    help="Image name that includes version to be used in docker push. Example: 'roger-collectd-v0.20' or 'elasticsearch-v0.07'")
+    help="image name that includes version to use. Example: 'roger-collectd-v0.20' or 'elasticsearch-v0.07'")
   parser.add_argument('config_file', metavar='config_file',
-    help="Configuration file to be used for the project. Example: 'content.json' or 'kwe.json'")
-  parser.add_argument('--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
+    help="configuration file to use. Example: 'content.json' or 'kwe.json'")
+  parser.add_argument('--skip-push', '-s', help="skips push. Only generates components for review. Defaults to false.", action="store_true")
   parser.add_argument('--secrets-file', '-S',
-    help="Specify an optional secrets file for deploy runtime variables.")
+    help="specifies an optional secrets file for deploy runtime variables.")
   return parser
 
 def loadSecretsJson(secrets_dir, json_file_name, args, environment):

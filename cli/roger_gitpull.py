@@ -20,16 +20,19 @@ def chdir(dirname):
     yield
   finally: os.chdir(curdir)
 
+def describe():
+  return 'pulls code from the application git repository (clones the repository).'
+
 def parse_args():
-  parser = argparse.ArgumentParser(prog='roger gitpull', description='Pulls application repo from git.')
+  parser = argparse.ArgumentParser(prog='roger gitpull', description=describe())
   parser.add_argument('app_name', metavar='app_name',
-    help="Application to be pulled. Example: 'agora' or 'grafana'")
+    help="application for which code is to be pulled. Example: 'agora' or 'grafana'")
   parser.add_argument('directory', metavar='directory',
-    help="Directory where repo needs to be pulled into. Example: '/home/vagrant/work_dir'")
+    help="working directory. The repo has its own directory it this. Example: '/home/vagrant/work_dir'")
   parser.add_argument('-b', '--branch', metavar='branch',
-    help="Git branch to be deployed. Example: 'production' or 'master'. Defaults to master.")
+    help="git branch to pull code from. Example: 'production' or 'master'. Defaults to master.")
   parser.add_argument('config_file', metavar='config_file',
-    help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
+    help="configuration file to use. Example: 'content.json' or 'kwe.json'")
   return parser
 
 def main(object_list, args):

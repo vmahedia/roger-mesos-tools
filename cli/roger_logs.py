@@ -12,20 +12,18 @@ from settings import Settings
 from appconfig import AppConfig
 from containerconfig import ContainerConfig
 
+def describe():
+  return "streams the new output from the tasks's STDOUT and STDERR logs."
+
 def parse_args():
-  parser = argparse.ArgumentParser(prog='roger logs', description="This command keeps streaming the new output \
-    from the container\'s STDOUT and STDERR logs.")
-  parser.add_argument('appTaskId', metavar='appTaskId', help="Application Task Id to uniquely \
-    identify a container Id. example: 'content.56847afe9799")
-  parser.add_argument('-e', '--env', metavar='env', help="Environment to search. \
-    example: 'dev' or 'stage'")
-  parser.add_argument('-H','--hostname', metavar='hostname', help="Hostname to search.\
-    example: 'daldevmesos01' or 'daldevmesos04'")
-  parser.add_argument('-f', '--follow', help="Follow log output. Defaults to false.", action="store_true")
-  parser.add_argument('-t', '--timestamps', help="Show timestamps. Defaults to false.", action="store_true")
-  parser.add_argument('-s', '--since', help="Show logs since timestamp.")
-  parser.add_argument('-T', '--tail', help="Number of lines to show from the end of the logs.\
-    If a negative number is given, it shows all.")
+  parser = argparse.ArgumentParser(prog='roger logs', description=describe())
+  parser.add_argument('appTaskId', metavar='appTaskId', help="first few letters of application task id. Example: 'content.5684")
+  parser.add_argument('-e', '--env', metavar='env', help="environment to search. Example: 'dev' or 'stage'")
+  parser.add_argument('-H','--hostname', metavar='hostname', help="hostname to search. Example: 'daldevmesos01' or 'daldevmesos04'")
+  parser.add_argument('-f', '--follow', help="follow log output. Defaults to false.", action="store_true")
+  parser.add_argument('-t', '--timestamps', help="show timestamps. Defaults to false.", action="store_true")
+  parser.add_argument('-s', '--since', help="show logs since timestamp.")
+  parser.add_argument('-T', '--tail', help="number of lines to show from the end of the logs. If a negative number is given, it shows all.")
   return parser
 
 def main():
