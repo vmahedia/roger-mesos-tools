@@ -176,7 +176,7 @@ def push(root, app, work_dir, image_name, config_file, environment, secrets_file
     secrets = ""
   try:
     push_command = (root, app, os.path.abspath(work_dir), image_name, config_file, environment, secrets)
-    exit_code = os.system("{0}/cli/roger-push.py {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
+    exit_code = os.system("{0}/cli/roger_push.py {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
     return exit_code
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
