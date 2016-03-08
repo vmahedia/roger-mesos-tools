@@ -12,14 +12,14 @@ from settings import Settings
 from appconfig import AppConfig
 from containerconfig import ContainerConfig
 
+def describe():
+  return 'starts an interactive bash session into a task.'
+
 def parse_args():
-  parser = argparse.ArgumentParser(prog='roger shell', description='Get an Interactive Bash session into your container.')
-  parser.add_argument('appTaskId', metavar='appTaskId', help="Application Task Id to uniquely \
-    identify a container Id (example: content.56847afe9799). Note that you can use the first few letters and it will find the first match.")
-  parser.add_argument('-e', '--env', metavar='env', help="Environment to search. \
-    example: 'dev' or 'stage'")
-  parser.add_argument('-H','--hostname', metavar='hostname', help="Hostname to search.\
-    example: 'daldevmesos01' or 'daldevmesos04'")
+  parser = argparse.ArgumentParser(prog='roger shell', description=describe())
+  parser.add_argument('appTaskId', metavar='appTaskId', help="first few letters of application task id. Example: 'content.5684.")
+  parser.add_argument('-e', '--env', metavar='env', help="environment to search. Example: 'dev' or 'stage'")
+  parser.add_argument('-H','--hostname', metavar='hostname', help="hostname to search. Example: 'daldevmesos01' or 'daldevmesos04'")
   return parser
 
 def main():
@@ -33,7 +33,7 @@ def main():
     if "ROGER_ENV" in os.environ:
       env_var = os.environ.get('ROGER_ENV')
       if env_var.strip() == '':
-        print("Environment variable $ROGER_ENV is not set.Using the default set from roger-env.json file")
+        print("Environment variable $ROGER_ENV is not set. Using the default set from roger-env.json file")
       else:
         print("Using value {} from environment variable $ROGER_ENV".format(env_var))
         environment = env_var

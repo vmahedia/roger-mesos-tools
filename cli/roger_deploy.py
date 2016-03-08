@@ -142,28 +142,31 @@ def getGitSha(work_dir, repo, branch):
     out = proc.communicate()
     return out[0].split('\n')[0]
 
+def describe():
+  return 'runs through all of the steps: gitpull -> build & push to registry -> push to roger mesos.'
+
 def parseArgs():
-  parser = argparse.ArgumentParser(prog='roger deploy', description='Pulls code from repo, builds and then deploys into Roger.')
+  parser = argparse.ArgumentParser(prog='roger deploy', description=describe())
   parser.add_argument('-e', '--environment', metavar='env',
-    help="Environment to deploy to. example: 'dev' or 'stage'")
+    help="environment to deploy to. Example: 'dev' or 'stage'")
   parser.add_argument('application', metavar='application',
-    help="Application to be deployed. example: 'all' or 'kairos'")
+    help="application to deploy. Example: 'all' or 'kairos'")
   parser.add_argument('-b', '--branch', metavar='branch',
-    help="Branch to be deployed.Defaults to master. example: 'production' or 'master'")
+    help="branch to pull code from. Defaults to master. Example: 'production' or 'master'")
   parser.add_argument('-s', '--skip-build', action="store_true",
-    help="Flag that skips roger-build when set to true. Defaults to false.'")
+    help="whether to skip the build step. Defaults to false.'")
   parser.add_argument('config_file', metavar='config_file',
-    help="Configuration file to be used for the project. example: 'content.json' or 'kwe.json'")
+    help="configuration file to be use. Example: 'content.json' or 'kwe.json'")
   parser.add_argument('-M', '--incr-major', action="store_true",
-    help="Increment major in version. Defaults to false.'")
+    help="increment major in version. Defaults to false.'")
   parser.add_argument('-sp', '--skip-push', action="store_true",
-    help="Flag that skips roger push when set to true. Defaults to false.'")
+    help="skip the push step. Defaults to false.'")
   parser.add_argument('-p', '--incr-patch', action="store_true",
-    help="Increment patch in version. Defaults to false.'")
+    help="increment patch in version. Defaults to false.'")
   parser.add_argument('-S', '--secrets-file',
-    help="Specify an optional secrets file for deployment runtime variables.")
+    help="specifies an optional secrets file for deployment runtime variables.")
   parser.add_argument('-d', '--directory',
-    help="Specify an optional directory to pull out the repo. This is the working directory.")
+    help="working directory. Uses a temporary directory if not specified.")
   return parser
 
 def push(root, app, work_dir, image_name, config_file, environment, secrets_file, args):

@@ -18,14 +18,17 @@ def chdir(dirname):
     yield
   finally: os.chdir(curdir)
 
+def describe():
+  return 'creates an initial application template and a team config file.'
+
 def parse_args():
-  parser = argparse.ArgumentParser(prog='roger init', description='Creates an initial application template and a project config file.')
+  parser = argparse.ArgumentParser(prog='roger init', description=describe())
   parser.add_argument('app_name', metavar='app_name',
-    help="An application name unique within a project (or team). Examples: 'grafana', 'agora', 'crux:web'")
+    help="application name unique within a project (or team). Examples: 'grafana', 'agora', 'crux:web'")
   parser.add_argument('project_name', metavar='project_name',
-    help="A project (or team) name. Examples: 'roger', 'content', 'kwe'")
+    help="project (or team) name. Examples: 'roger', 'content', 'kwe'")
   parser.add_argument('-f', '--framework',
-    help="Framework to deploy to the application. Defaults to marathon.'")
+    help="framework to deploy the application to. Defaults to marathon.'")
   return parser
 
 def writeJson(json, path, filename):

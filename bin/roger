@@ -6,24 +6,37 @@ import os
 import sys
 import subprocess
 import re
+import importlib
 
 def roger_version(root_dir):
   with open(os.path.join(root_dir, "VERSION")) as f:
       version = f.read().strip()
   print(version)
 
-def roger_help(commands):
-  print("\nUsage: roger [OPTIONS] COMMAND [arg...]\n")
-  print("A cli to work with roger os")
-  print("The arg is a list of parameter that" \
-        " the command takes.\n")
-  print("Options:\n")
-  print("  -h, --help            show this help message and exit")
-  print("  -v, --version         show version information and exit")
-  print("\nCommands:")
+def print_help_opt(opt, desc):
+  print("  {} {}".format(opt.ljust(13), desc))
+
+def roger_help(root, commands):
+  print("usage: roger [-h] [-v] command [arg...]\n")
+  print("a command line interface to work with roger mesos.")
+  print("\npositional arguments:")
+  print_help_opt("command", "command to run.")
+  print_help_opt("arg","arguments to pass to the command.")
+  print("\noptional arguments:")
+  print_help_opt("-h, --help", "show this help message and exit.")
+  print_help_opt("-v, --version", "show version information and exit.")
+  print("\ncommands:")
+  sys.path.append("{}/cli".format(root))
   for command in commands:
-    print("    {}".format(command))
-  print("\nRun 'roger COMMAND --help' for more information on a command.\n")
+    description = ""
+    module_name = "roger_" + command
+    cmd_module = importlib.import_module(module_name)
+    try:
+      description = cmd_module.describe()
+    except Exception as e:
+      pass
+    print_help_opt(command, description)
+  print("\nrun: 'roger < command > -h' for more information on a command.")
 
 def getFiles(directory):
   filenames = next(os.walk(directory))[2]
@@ -36,18 +49,17 @@ def getCommands(files):
       commands.add(re.split("roger_|\.", filename)[1])
   return sorted(commands)
 
-def getScriptCall(args, root):
-  command = "{}/cli/roger_{}.py".format(root, args[1])
-  exists = os.path.exists(command)
+def getScriptCall(root, command, command_args):
+  script_call = "{}/cli/roger_{}.py".format(root, command)
+  exists = os.path.exists(script_call)
   if exists == True:
-    for index in range(2,len(args)):
-      command = command + " {}".format(args[index])
-    return command
+    for command_arg in command_args:
+      script_call = script_call + " {}".format(command_arg)
+    return script_call
   else:
-    sys.exit("Command does not exists. Exiting")
+    sys.exit("Command does not exist. Exiting.")
 
 def main():
-
   root = ''
   own_dir = os.path.dirname(os.path.realpath(__file__))
   root = os.path.abspath(os.path.join(own_dir, os.pardir))
@@ -55,16 +67,17 @@ def main():
   commands = getCommands(files)
   if len(sys.argv) > 1:
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
-      roger_help(commands)
+      roger_help(root, commands)
     elif sys.argv[1] == "-v" or sys.argv[1] == "--version":
       roger_version(root)
     else:
       command = sys.argv[1]
+      command_args = sys.argv[2:]
       if command in commands:
-         script_call = getScriptCall(sys.argv, root)
+         script_call = getScriptCall(root, command, command_args)
          os.system(script_call)
       else:
-        sys.exit("Command is not valid. Exiting")
+        sys.exit("Command is not valid. Exiting.")
   else:
     sys.exit("No arguments found. Please refer to usage: roger -h")
 

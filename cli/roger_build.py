@@ -19,16 +19,19 @@ def chdir(dirname):
     yield
   finally: os.chdir(curdir)
 
+def describe():
+    return 'runs the docker build and optionally pushes it into the registry.'
+
 def parse_args():
-  parser = argparse.ArgumentParser(prog='roger build', description='Builds the docker application and optionally pushes it to the docker registry.')
+  parser = argparse.ArgumentParser(prog='roger build', description=describe())
   parser.add_argument('app_name', metavar='app_name',
-    help="Application name to be built. Example: 'agora' or 'grafana'")
+    help="application to build. Example: 'agora'.")
   parser.add_argument('directory', metavar='directory',
-    help="The working directory where the repository is checked out. Example: '/home/vagrant/work_dir'")
+    help="working directory. Example: '/home/vagrant/work_dir'.")
   parser.add_argument('tag_name', metavar='tag_name',
-    help="Image name to be tagged including version (if needed). Example: 'roger-collectd:0.20' or 'grafana-v2.1.3'")
+    help="tag for the built image. Example: 'roger-collectd:0.20'.")
   parser.add_argument('config_file', metavar='config_file',
-    help="Configuration file to be used for the project. Example: 'content.json' or 'kwe.json'")
+    help="configuration file to use. Example: 'content.json'.")
   parser.add_argument('--push', '-p', help="Also push to registry. Defaults to false.", action="store_true")
   return parser
 
