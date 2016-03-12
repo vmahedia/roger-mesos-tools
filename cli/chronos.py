@@ -42,3 +42,6 @@ class Chronos(Framework):
           else:
             #Docker images of the format: grafana/grafana:2.1.3 or postgres:9.4.1
             return docker_image
+
+  def getTasks(self, roger_env, environment):
+    print("Not yet implemented!")
