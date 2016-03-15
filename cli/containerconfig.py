@@ -8,15 +8,15 @@ import os
 import requests
 import subprocess
 import sys
+from marathon import Marathon
 
+#we probably need to remove (or refactor) this module (ankan, 201603)
 class ContainerConfig:
 
   def get_hostname_from_marathon(self, environment, roger_env, appTaskId):
     hostname = ''
-    headers = {'Accept': 'application/json','Accept-Encoding': 'gzip, deflate','Content-Type': 'application/json'}
-    url = roger_env['environments'][environment]['marathon_endpoint']+'/v2/tasks?status=running'
-    resp = requests.get("{}".format(url), headers=headers)
-    tasks = resp.json()['tasks']
+    marathon = Marathon()
+    tasks = marathon.getTasks(roger_env, environment)
     for task in tasks:
       if task['id'].startswith(appTaskId):
         hostname = task['host']

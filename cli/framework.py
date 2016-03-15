@@ -23,3 +23,7 @@ class Framework(object):
   @abstractmethod
   def getCurrentImageVersion(self, roger_env, environment, application):
     pass
+
+  @abstractmethod
+  def getTasks(self, roger_env, environment):
+    pass

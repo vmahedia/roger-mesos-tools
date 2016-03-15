@@ -3,6 +3,7 @@
 from __future__ import print_function
 import os
 import sys
+import getpass
 
 class Settings:
 
@@ -46,3 +47,21 @@ class Settings:
     own_dir = os.path.dirname(os.path.realpath(__file__))
     cli_dir = os.path.abspath(os.path.join(own_dir, os.pardir))
     return cli_dir
+
+  def getUser(self):
+    user = None
+    # ROGER_USER_ID env var > getpass.getuser()
+    envvar = "ROGER_USER"
+    if envvar in os.environ:
+      user = os.environ.get(envvar)
+    else:
+      user = getpass.getuser()
+    print("user: {} (to specify a different user set the environment variable {})".format(user, envvar))
+    return user
+
+  def getPass(self, env):
+    # ROGER_USER_PASS_<ENV> > getpass.getpass()
+    envvar = "ROGER_USER_PASS_{}".format(env.upper())
+    if envvar in os.environ:
+      return os.environ.get(envvar)
+    return getpass.getpass("password for [{}] env (to avoid getting this message set the environment variable {})? ".format(env, envvar))
