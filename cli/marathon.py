@@ -35,7 +35,7 @@ class Marathon(Framework):
     print ("Server response: [ {} - {} ]".format(resp.status_code, resp.reason))
     return resp.json()
 
-  def put(self, file_path, environmentObj, container):
+  def put(self, file_path, environmentObj, container, environment):
     data = open(file_path).read()
     appName = json.loads(data)['id']
     self.fetchUserPass(environment)
