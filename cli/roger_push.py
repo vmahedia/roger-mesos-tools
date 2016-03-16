@@ -260,7 +260,7 @@ def main(object_list, args):
           containerConfig = "{0}-{1}.json".format(config['name'], container)
 
         config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
-        frameworkObj.put(config_file_path, environmentObj, container_name)
+        frameworkObj.put(config_file_path, environmentObj, container_name, environment)
 
 if __name__ == "__main__":
   settingObj = Settings()

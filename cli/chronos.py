@@ -19,7 +19,7 @@ class Chronos(Framework):
     resp = requests.get(url)
     return resp.json()
 
-  def put(self, file_path, environmentObj, container):
+  def put(self, file_path, environmentObj, container, environment):
     data = open(file_path).read()
     print("TRIGGERING CHRONOS FRAMEWORK UPDATE FOR: {}".format(container))
     print("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/scheduler/iso8601".format(file_path, environmentObj['chronos_endpoint']))
