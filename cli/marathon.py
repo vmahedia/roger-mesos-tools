@@ -32,6 +32,7 @@ class Marathon(Framework):
     url = roger_env['environments'][environment]['marathon_endpoint']+"/v2/apps"
     self.fetchUserPass(environment)
     resp = requests.get(url, auth=(self.user, self.passw))
+    print ("Server response: [ {} - {} ]".format(resp.status_code, resp.reason))
     return resp.json()
 
   def put(self, file_path, environmentObj, container):
@@ -45,11 +46,13 @@ class Marathon(Framework):
             data=data,
             headers = {'Content-type': 'application/json'}, auth=(self.user, self.passw))
       print("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/groups/{}".format(file_path, environmentObj['marathon_endpoint'], appName))
+      print ("Server response: [ {} - {} ]".format(resp.status_code, resp.reason))
     else:
-      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/apps/{}".format(file_path, environmentObj['marathon_endpoint'], appName))
       endpoint = environmentObj['marathon_endpoint']
       deploy_url = "{}/v2/apps/{}".format(endpoint, appName)
       resp = requests.put(deploy_url, data=data, headers = {'Content-type': 'application/json'}, auth=(self.user, self.passw))
+      print("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/apps/{}".format(file_path, environmentObj['marathon_endpoint'], appName))
+      print ("Server response: [ {} - {} ]".format(resp.status_code, resp.reason))
 
     marathon_message = "{0}: {1}".format(appName, resp)
     print(marathon_message)
@@ -74,6 +77,7 @@ class Marathon(Framework):
     headers = {'Accept': 'application/json','Accept-Encoding': 'gzip, deflate','Content-Type': 'application/json'}
     url = roger_env['environments'][environment]['marathon_endpoint']+'/v2/tasks?status=running'
     resp = requests.get("{}".format(url), headers=headers, auth=(self.user, self.passw))
+    print ("Server response: [ {} - {} ]".format(resp.status_code, resp.reason))
     respjson = resp.json()
     tasks = resp.json()['tasks'] if 'tasks' in respjson else {}
     return tasks
