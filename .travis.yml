@@ -1,0 +1,16 @@
+language: python
+python:
+    - 2.7
+
+install:
+    - pip install pyyaml
+    - pip install Jinja2
+    - pip install requests
+
+script:
+    - export PATH=$PATH:/home/travis/build/seomoz/roger-mesos-tools/bin:/home/travis/build/seomoz/roger-mesos-tools/cli
+    - cd tests
+    - python test_roger_init.py
+    - python test_appconfig.py
+    - python test_roger_build.py
+    - python test_settings.py
