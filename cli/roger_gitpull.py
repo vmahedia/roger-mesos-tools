@@ -71,13 +71,7 @@ def main(object_list, args):
   try:
     repo = Repo.clone_from(git_url, path)
   except:
-     if os.path.isdir(path):
-       with chdir(path):
-         os.system("git pull origin {}".format(branch))
-     else:
-       with chdir('{0}'.format(args.directory)):
-         os.system("git clone --depth 1 --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
-         os.chdir(repo)
+    print("\n Error in Cloning Repository")
 
 if __name__ == "__main__":
   settingObj = Settings()

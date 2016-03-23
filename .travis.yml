@@ -21,4 +21,3 @@ script:
     - python test_settings.py
     - python test_roger_container.py
     - python test_roger_push.py
-    - python test_roger_gitpull.py
