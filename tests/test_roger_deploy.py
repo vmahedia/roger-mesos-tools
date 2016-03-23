@@ -11,7 +11,7 @@ import roger_push
 import roger_deploy
 import roger_gitpull
 from marathon import Marathon
-from frameworkutils import FrameworkUtils
+from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
 from settings import Settings
 from mockito import mock, when, verify

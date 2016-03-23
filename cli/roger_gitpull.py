@@ -63,15 +63,12 @@ def main(object_list, args):
         if exception.errno != errno.EEXIST:
             raise
 
+  os.system("sudo pip install gitpython")
+  from git import Repo
+  git_url = "git@github.com:seomoz/{}.git".format(repo)
   # get/update target source(s)
   path = "{0}/{1}".format(args.directory, repo)
-  if os.path.isdir(path):
-    with chdir(path):
-      os.system("git pull origin {}".format(branch))
-  else:
-    with chdir('{0}'.format(args.directory)):
-      os.system("git clone --depth 1 --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
-      os.chdir(repo)
+  repo = Repo.clone_from(git_url, path)
 
 if __name__ == "__main__":
   settingObj = Settings()

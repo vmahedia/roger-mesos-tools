@@ -6,6 +6,11 @@ install:
     - pip install pyyaml
     - pip install Jinja2
     - pip install requests
+    - pip install setuptools
+    - pip install mock
+    - pip install mockito
+    - pip install gitpython
+    - sudo apt-get install python-yaml
 
 script:
     - export PATH=$PATH:/home/travis/build/seomoz/roger-mesos-tools/bin:/home/travis/build/seomoz/roger-mesos-tools/cli
@@ -14,3 +19,5 @@ script:
     - python test_appconfig.py
     - python test_roger_build.py
     - python test_settings.py
+    - python test_roger_container.py
+    - python test_roger_push.py
