@@ -68,7 +68,16 @@ def main(object_list, args):
   git_url = "git@github.com:seomoz/{}.git".format(repo)
   # get/update target source(s)
   path = "{0}/{1}".format(args.directory, repo)
-  repo = Repo.clone_from(git_url, path)
+  try:
+    repo = Repo.clone_from(git_url, path)
+  except:
+     if os.path.isdir(path):
+       with chdir(path):
+         os.system("git pull origin {}".format(branch))
+     else:
+       with chdir('{0}'.format(args.directory)):
+         os.system("git clone --depth 1 --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
+         os.chdir(repo)
 
 if __name__ == "__main__":
   settingObj = Settings()
