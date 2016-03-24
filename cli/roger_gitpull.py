@@ -72,7 +72,7 @@ def main(object_list, args):
       gitObj.gitPull(branch)
   else:
     with chdir('{0}'.format(args.directory)):
-      gitObj.gitClone(branch, repo)
+      gitObj.gitShallowClone(branch, repo)
 
 if __name__ == "__main__":
   settingObj = Settings()

@@ -9,5 +9,8 @@ class GitUtils:
   def gitPull(self, branch):
     os.system("git pull origin {}".format(branch))
 
-  def gitClone(self, branch, repo):
+  def gitShallowClone(self, branch, repo):
     os.system("git clone --depth 1 --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
+
+  def gitClone(self, repo):
+    os.system("git clone git@github.com:seomoz/{}.git".format(repo))

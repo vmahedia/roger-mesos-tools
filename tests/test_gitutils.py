@@ -20,10 +20,58 @@ class TestInit(unittest.TestCase):
     self.configs_dir = self.base_dir+"/tests/configs"
     self.work_dir = self.base_dir+"/tests/work_dir"
     self.branch = "master"
-    pass
 
   def test_gitPull(self):
+    config_file = "app.json"
+    work_dir = self.work_dir
+    branch = self.branch
+
+    if not os.path.exists(self.work_dir):
+      try:
+          os.makedirs(self.work_dir)
+      except OSError as exception:
+          if exception.errno != errno.EEXIST:
+              raise
+    os.chdir(self.work_dir)
+    with open(self.configs_dir+'/{}'.format(config_file)) as config:
+      config = json.load(config)
+    repo = config['repo']
+    self.gitObj.gitClone(repo)
+    exists = os.path.exists(work_dir)
+    assert exists == True
+    os.chdir("{}/{}".format(work_dir, repo))
+    self.gitObj.gitPull(self.branch)
+    assert exists == True
+    exists = os.path.exists("{}/{}".format(work_dir, repo))
+    assert exists == True
+    exists = os.path.exists("{}/{}/ansible".format(work_dir, repo))
+    assert exists == True
+    shutil.rmtree(work_dir)
     pass
+
+  def test_gitShallowClone(self):
+    config_file = "app.json"
+    work_dir = self.work_dir
+    branch = self.branch
+
+    if not os.path.exists(self.work_dir):
+      try:
+          os.makedirs(self.work_dir)
+      except OSError as exception:
+          if exception.errno != errno.EEXIST:
+              raise
+    os.chdir(self.work_dir)
+    with open(self.configs_dir+'/{}'.format(config_file)) as config:
+      config = json.load(config)
+    repo = config['repo']
+    self.gitObj.gitShallowClone(branch,repo)
+    exists = os.path.exists(work_dir)
+    assert exists == True
+    exists = os.path.exists("{}/{}".format(work_dir, repo))
+    assert exists == True
+    exists = os.path.exists("{}/{}/ansible".format(work_dir, repo))
+    assert exists == True
+    shutil.rmtree(work_dir)
 
   def test_gitClone(self):
     config_file = "app.json"
@@ -40,7 +88,7 @@ class TestInit(unittest.TestCase):
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     repo = config['repo']
-    self.gitObj.gitClone(branch,repo)
+    self.gitObj.gitClone(repo)
     exists = os.path.exists(work_dir)
     assert exists == True
     exists = os.path.exists("{}/{}".format(work_dir, repo))
@@ -48,8 +96,6 @@ class TestInit(unittest.TestCase):
     exists = os.path.exists("{}/{}/ansible".format(work_dir, repo))
     assert exists == True
     shutil.rmtree(work_dir)
-    pass
-
 
   def tearDown(self):
     pass

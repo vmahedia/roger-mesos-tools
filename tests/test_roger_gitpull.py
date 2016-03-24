@@ -75,7 +75,6 @@ class TestGitPull(unittest.TestCase):
     when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
     when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
     when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
-    when(gitObj).gitClone("master","roger").thenReturn
     args = self.args
     args.app_name = "grafana_test_app"
     args.config_file = config_file
