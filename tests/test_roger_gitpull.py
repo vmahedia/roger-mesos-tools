@@ -14,6 +14,7 @@ from appconfig import AppConfig
 from mockito import mock, when, verify
 from mock import MagicMock
 from marathon import Marathon
+from gitutils  import GitUtils
 from frameworkUtils import FrameworkUtils
 
 #Test basic functionalities of roger-git-pull script
@@ -59,6 +60,7 @@ class TestGitPull(unittest.TestCase):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    gitObj = mock(GitUtils)
     data = self.data
     config = self.config
     roger_env = self.roger_env
@@ -73,6 +75,7 @@ class TestGitPull(unittest.TestCase):
     when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
     when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
     when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
+    when(gitObj).gitClone("master","roger").thenReturn
     args = self.args
     args.app_name = "grafana_test_app"
     args.config_file = config_file
@@ -81,15 +84,11 @@ class TestGitPull(unittest.TestCase):
     object_list = []
     object_list.append(settings)
     object_list.append(appConfig)
+    object_list.append(gitObj)
     roger_gitpull.main(object_list, args)
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
-    repo = config['repo']
     exists = os.path.exists(work_dir)
-    assert exists == True
-    exists = os.path.exists("{}/{}".format(work_dir, repo))
-    assert exists == True
-    exists = os.path.exists("{}/{}/ansible".format(work_dir, repo))
     assert exists == True
     shutil.rmtree(work_dir)
     if set_config_dir.strip() != '':

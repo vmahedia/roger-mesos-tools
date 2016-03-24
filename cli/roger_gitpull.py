@@ -7,6 +7,7 @@ import os
 import sys
 from settings import Settings
 from appconfig import AppConfig
+from gitutils  import GitUtils
 import errno
 
 import contextlib
@@ -38,8 +39,10 @@ def parse_args():
 def main(object_list, args):
   settingObj = object_list[0]
   appObj = object_list[1]
+  gitObj = object_list[2]
   config_dir = settingObj.getConfigDir()
   config = appObj.getConfig(config_dir, args.config_file)
+
 
   if args.app_name not in config['apps']:
     sys.exit('Application specified not found.')
@@ -62,23 +65,23 @@ def main(object_list, args):
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise
-
-  os.system("sudo pip install gitpython")
-  from git import Repo
-  git_url = "git@github.com:seomoz/{}.git".format(repo)
   # get/update target source(s)
   path = "{0}/{1}".format(args.directory, repo)
-  try:
-    repo = Repo.clone_from(git_url, path)
-  except:
-    print("\n Error in Cloning Repository")
+  if os.path.isdir(path):
+    with chdir(path):
+      gitObj.gitPull(branch)
+  else:
+    with chdir('{0}'.format(args.directory)):
+      gitObj.gitClone(branch, repo)
 
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
+  gitObj = GitUtils()
   object_list = []
   object_list.append(settingObj)
   object_list.append(appObj)
+  object_list.append(gitObj)
   parser = parse_args()
   args = parser.parse_args()
   main(object_list, args)
