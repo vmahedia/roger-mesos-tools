@@ -17,6 +17,7 @@ from settings import Settings
 from mockito import mock, when, verify
 from mock import MagicMock
 from settings import Settings
+from gitutils  import GitUtils
 
 #Test basic functionalities of roger-deploy script
 class TestDeploy(unittest.TestCase):
@@ -86,6 +87,7 @@ class TestDeploy(unittest.TestCase):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    gitObj = mock(GitUtils)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -112,6 +114,7 @@ class TestDeploy(unittest.TestCase):
     object_list.append(settings)
     object_list.append(appConfig)
     object_list.append(frameworkUtils)
+    object_list.append(gitObj)
     roger_deploy.push = MagicMock(return_value=0)
     roger_deploy.main(object_list, args)
     verify(settings).getConfigDir()
