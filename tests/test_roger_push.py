@@ -13,7 +13,6 @@ from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
 from settings import Settings
 from mockito import mock, when, verify
-from mock import MagicMock
 from settings import Settings
 
 #Test basic functionalities of roger-push script

@@ -12,7 +12,6 @@ import argparse
 from settings import Settings
 from appconfig import AppConfig
 from mockito import mock, when, verify
-from mock import MagicMock
 from marathon import Marathon
 from gitutils  import GitUtils
 from frameworkUtils import FrameworkUtils
