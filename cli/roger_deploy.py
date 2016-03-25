@@ -11,6 +11,9 @@ import json
 import os
 import requests
 import sys
+own_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0,own_dir)
+import roger_gitpull
 import re
 import shutil
 from settings import Settings
@@ -135,8 +138,7 @@ def splitVersion(version):
   return int(major), int(minor) if minor else 0, int(patch) if patch else 0
 
 def getGitSha(work_dir, repo, branch, gitObj):
-  with chdir("{0}/{1}".format(work_dir, repo)):
-    return  gitObj.getGitSha(branch)
+  return  gitObj.getGitSha(repo, branch, work_dir)
 
 def describe():
   return 'runs through all of the steps: gitpull -> build & push to registry -> push to roger mesos.'
@@ -179,10 +181,22 @@ def push(root, app, work_dir, image_name, config_file, environment, secrets_file
     removeDirTree(work_dir, args)
     sys.exit('Exiting')
 
-def pullRepo(root, app, work_dir, config_file, branch, args):
+def pullRepo(root, app, work_dir, config_file, branch, args, object_list):
+
+  args.app_name = app
+  args.directory = work_dir
+
+  git_pull_object = []
+  git_pull_object.append(object_list[0])
+  git_pull_object.append(object_list[1])
+  git_pull_object.append(object_list[3])
+
   try:
-    exit_code = os.system("{0}/cli/roger_gitpull.py {1} {2} {3} --branch {4}".format(root, app, os.path.abspath(work_dir), config_file, branch))
-    return exit_code
+    try:
+      roger_gitpull.main(git_pull_object, args)
+      return 0
+    except:
+      return 1
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     removeDirTree(work_dir, args)
@@ -264,7 +278,7 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
 
   # get/update target source(s)
   try:
-    exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args)
+    exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, object_list)
     if exit_code != 0:
       removeDirTree(work_dir, args)
       sys.exit('Exiting')

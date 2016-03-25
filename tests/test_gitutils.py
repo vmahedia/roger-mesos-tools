@@ -36,7 +36,7 @@ class TestInit(unittest.TestCase):
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     repo = config['repo']
-    self.gitObj.gitClone(repo)
+    self.gitObj.gitClone(repo, branch)
     exists = os.path.exists(work_dir)
     assert exists == True
     os.chdir("{}/{}".format(work_dir, repo))
@@ -64,7 +64,7 @@ class TestInit(unittest.TestCase):
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     repo = config['repo']
-    self.gitObj.gitShallowClone(branch,repo)
+    self.gitObj.gitShallowClone(repo, branch)
     exists = os.path.exists(work_dir)
     assert exists == True
     exists = os.path.exists("{}/{}".format(work_dir, repo))
@@ -88,7 +88,7 @@ class TestInit(unittest.TestCase):
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     repo = config['repo']
-    self.gitObj.gitClone(repo)
+    self.gitObj.gitClone(repo, branch)
     exists = os.path.exists(work_dir)
     assert exists == True
     exists = os.path.exists("{}/{}".format(work_dir, repo))
