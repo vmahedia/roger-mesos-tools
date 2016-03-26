@@ -11,8 +11,6 @@ import json
 import os
 import requests
 import sys
-own_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0,own_dir)
 import roger_gitpull
 import re
 import shutil
@@ -181,19 +179,14 @@ def push(root, app, work_dir, image_name, config_file, environment, secrets_file
     removeDirTree(work_dir, args)
     sys.exit('Exiting')
 
-def pullRepo(root, app, work_dir, config_file, branch, args, object_list):
+def pullRepo(root, app, work_dir, config_file, branch, args, settingObj, appObj, gitObj):
 
   args.app_name = app
   args.directory = work_dir
 
-  git_pull_object = []
-  git_pull_object.append(object_list[0])
-  git_pull_object.append(object_list[1])
-  git_pull_object.append(object_list[3])
-
   try:
     try:
-      roger_gitpull.main(git_pull_object, args)
+      roger_gitpull.main(settingObj, appObj, gitObj, args)
       return 0
     except:
       return 1
@@ -278,7 +271,7 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
 
   # get/update target source(s)
   try:
-    exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, object_list)
+    exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, settingObj, appObj, gitObj)
     if exit_code != 0:
       removeDirTree(work_dir, args)
       sys.exit('Exiting')

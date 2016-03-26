@@ -36,13 +36,12 @@ def parse_args():
     help="configuration file to use. Example: 'content.json' or 'kwe.json'")
   return parser
 
-def main(object_list, args):
-  settingObj = object_list[0]
-  appObj = object_list[1]
-  gitObj = object_list[2]
+def main(settings, appConfig, gitObject, args):
+  settingObj = settings
+  appObj = appConfig
+  gitObj = gitObject
   config_dir = settingObj.getConfigDir()
   config = appObj.getConfig(config_dir, args.config_file)
-
 
   if args.app_name not in config['apps']:
     sys.exit('Application specified not found.')
@@ -78,10 +77,6 @@ if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
   gitObj = GitUtils()
-  object_list = []
-  object_list.append(settingObj)
-  object_list.append(appObj)
-  object_list.append(gitObj)
   parser = parse_args()
   args = parser.parse_args()
-  main(object_list, args)
+  main(settingObj, appObj, gitObj, args)
