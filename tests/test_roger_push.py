@@ -46,7 +46,7 @@ class TestPush(unittest.TestCase):
     self.test_config = test_config
     self.test_data = test_data
 
-  def test_rogerPush(self):
+  '''def test_rogerPush(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
@@ -73,11 +73,7 @@ class TestPush(unittest.TestCase):
     args.config_file = 'app.json'
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
-    object_list = []
-    object_list.append(settings)
-    object_list.append(appConfig)
-    object_list.append(frameworkUtils)
-    roger_push.main(object_list, args)
+    roger_push.main(settings, appConfig, frameworkUtils, args)
     with open(self.components_dir+'/test-app-grafana.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
@@ -116,11 +112,7 @@ class TestPush(unittest.TestCase):
     args.config_file = 'app.json'
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
-    object_list = []
-    object_list.append(settings)
-    object_list.append(appConfig)
-    object_list.append(frameworkUtils)
-    roger_push.main(object_list, args)
+    roger_push.main(settings, appConfig, frameworkUtils, args)
     with open(self.components_dir+'/test-app-grafana.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
@@ -137,6 +129,99 @@ class TestPush(unittest.TestCase):
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
     assert output['cpus'] == 1
     assert output['mem'] == 1024
+
+  def test_rogerPush_noApp(self):
+    settings = mock(Settings)
+    appConfig = mock(AppConfig)
+    marathon = mock(Marathon)
+    roger_env = self.roger_env
+    config = self.config
+    data = self.data
+    when(marathon).put(self.components_dir+'/test-roger-grafana.json', roger_env['environments']['dev'], 'grafana_test_app').thenReturn("Response [200]")
+    frameworkUtils = mock(FrameworkUtils)
+    when(frameworkUtils).getFramework(data).thenReturn(marathon)
+    when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
+    when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
+    when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
+    when(settings).getConfigDir().thenReturn(self.configs_dir)
+    when(settings).getCliDir().thenReturn(self.base_dir)
+    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
+    when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
+    when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
+
+    args = self.args
+    args.app_name = ''
+    args.config_file = 'app.json'
+    return_code = roger_push.main(settings, appConfig, frameworkUtils, args)
+    assert return_code == 1
+
+  def test_rogerPush_noRegistry(self):
+    settings = mock(Settings)
+    appConfig = mock(AppConfig)
+    marathon = mock(Marathon)
+    roger_env = self.roger_env
+    config = self.config
+    data = self.data
+    when(marathon).put(self.components_dir+'/test-roger-grafana.json', roger_env['environments']['dev'], 'grafana_test_app').thenReturn("Response [200]")
+    frameworkUtils = mock(FrameworkUtils)
+    when(frameworkUtils).getFramework(data).thenReturn(marathon)
+    when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
+    when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
+    when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
+    when(settings).getConfigDir().thenReturn(self.configs_dir)
+    when(settings).getCliDir().thenReturn(self.base_dir)
+    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
+    when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
+    when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
+
+    args = self.args
+    args.env = "dev"
+    args.secrets_file=""
+    args.skip_push=True
+    args.app_name = 'grafana_test_app'
+    args.config_file = 'app.json'
+    args.directory = self.base_dir+'/tests/testrepo'
+    args.image_name = 'grafana/grafana:2.1.3'
+
+    config_dir = settings.getConfigDir()
+    roger_env = appConfig.getRogerEnv(config_dir)
+    # Remove registry key from dictionary
+    del roger_env['registry']
+    retrun_code = roger_push.main(settings, appConfig, frameworkUtils, args)
+    assert retrun_code == 1'''
+
+  def test_rogerPush_noEnvironment(self):
+    settings = mock(Settings)
+    settings.getComponentsDir = MagicMock(return_value=0)
+    appConfig = mock(AppConfig)
+    marathon = mock(Marathon)
+    roger_env = self.roger_env
+    config = self.config
+    data = self.data
+    when(marathon).put(self.components_dir+'/test-roger-grafana.json', roger_env['environments']['dev'], 'grafana_test_app').thenReturn("Response [200]")
+    frameworkUtils = mock(FrameworkUtils)
+    when(frameworkUtils).getFramework(data).thenReturn(marathon)
+    #when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
+    when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
+    when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
+    when(settings).getConfigDir().thenReturn(self.configs_dir)
+    when(settings).getCliDir().thenReturn(self.base_dir)
+    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
+    when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
+    when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
+
+    args = self.args
+    # Set environment variable as None
+    args.env = ''
+    args.secrets_file=""
+    args.skip_push=True
+    args.app_name = 'grafana_test_app'
+    args.config_file = 'app.json'
+    args.directory = self.base_dir+'/tests/testrepo'
+    args.image_name = 'grafana/grafana:2.1.3'
+
+    retrun_code = roger_push.main(settings, appConfig, frameworkUtils, args)
+    assert retrun_code == 1
 
   def tearDown(self):
     pass
