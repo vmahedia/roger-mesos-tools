@@ -46,7 +46,7 @@ class TestPush(unittest.TestCase):
     self.test_config = test_config
     self.test_data = test_data
 
-  '''def test_rogerPush(self):
+  def test_rogerPush(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
@@ -188,7 +188,7 @@ class TestPush(unittest.TestCase):
     # Remove registry key from dictionary
     del roger_env['registry']
     retrun_code = roger_push.main(settings, appConfig, frameworkUtils, args)
-    assert retrun_code == 1'''
+    assert retrun_code == 1
 
   def test_rogerPush_noEnvironment(self):
     settings = mock(Settings)
