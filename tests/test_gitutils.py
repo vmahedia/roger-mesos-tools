@@ -40,7 +40,8 @@ class TestInit(unittest.TestCase):
     exists = os.path.exists(work_dir)
     assert exists == True
     os.chdir("{}/{}".format(work_dir, repo))
-    self.gitObj.gitPull(self.branch)
+    return_code = self.gitObj.gitPull(self.branch)
+    assert return_code == 0
     assert exists == True
     exists = os.path.exists("{}/{}".format(work_dir, repo))
     assert exists == True
@@ -64,7 +65,8 @@ class TestInit(unittest.TestCase):
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     repo = config['repo']
-    self.gitObj.gitShallowClone(repo, branch)
+    return_code = self.gitObj.gitShallowClone(repo, branch)
+    assert return_code == 0
     exists = os.path.exists(work_dir)
     assert exists == True
     exists = os.path.exists("{}/{}".format(work_dir, repo))
@@ -88,7 +90,8 @@ class TestInit(unittest.TestCase):
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     repo = config['repo']
-    self.gitObj.gitClone(repo, branch)
+    return_code = self.gitObj.gitClone(repo, branch)
+    assert return_code == 0
     exists = os.path.exists(work_dir)
     assert exists == True
     exists = os.path.exists("{}/{}".format(work_dir, repo))
