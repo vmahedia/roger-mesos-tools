@@ -192,18 +192,22 @@ def pullRepo(root, app, work_dir, config_file, branch, args):
     removeDirTree(work_dir, args)
     sys.exit('Exiting')
 
-def main(object_list, args):
-  settingObj = object_list[0]
-  appObj = object_list[1]
+def main(settingObject, appObject, frameworkUtilsObject, args):
+  settingObj = settingObject
+  appObj = appObject
   config_dir = settingObj.getConfigDir()
   root = settingObj.getCliDir()
   roger_env = appObj.getRogerEnv(config_dir)
   config = appObj.getConfig(config_dir, args.config_file)
   if args.application not in config['apps']:
-    sys.exit('Application specified not found.')
+    print('Application specified not found.')
+    # Return exit code to caller
+    return 1
 
   if 'registry' not in roger_env:
-    sys.exit('Registry not found in roger-env.json file.')
+    print('Registry not found in roger-env.json file.')
+    # Returning exit code for caller to catch
+    return 1
 
   #Setup for Slack-Client, token, and git user
   slack = Slack(config['notifications'], '/home/vagrant/.roger_cli.conf.d/slack_token')
@@ -237,20 +241,22 @@ def main(object_list, args):
 
   if environment not in roger_env['environments']:
     removeDirTree(work_dir, args)
-    sys.exit('Environment not found in roger-env.json file.')
+    print('Environment not found in roger-env.json file.')
+    # Returning exit code for caller to catch
+    return 1
 
   branch = "master"     #master by default
   if not args.branch is None:
     branch = args.branch
 
   for app in apps:
-    deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo)
+    deployApp(settingObject, appObject, frameworkUtilsObject, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo)
 
-def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo):
+def deployApp(settingObject, appObject, frameworkUtilsObject, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
-  settingObj = object_list[0]
-  appObj = object_list[1]
-  frameworkUtils = object_list[2]
+  settingObj = settingObject
+  appObj = appObject
+  frameworkUtils = frameworkUtilsObject
   environmentObj = roger_env['environments'][environment]
   data = appObj.getAppData(config_dir, config_file, app)
   frameworkObj = frameworkUtils.getFramework(data)
@@ -356,4 +362,4 @@ if __name__ == "__main__":
   object_list.append(frameworkUtils)
   parser = parseArgs()
   args = parser.parse_args()
-  main(object_list, args)
+  main(settingObj, appObj, frameworkUtils, args)
