@@ -79,7 +79,7 @@ class TestGitPull(unittest.TestCase):
     args.config_file = config_file
     args.branch = "master"
     args.directory = self.work_dir
-    roger_gitpull.main(settings, appConfig, gitObj, args)
+    return_code = roger_gitpull.main(settings, appConfig, gitObj, args)
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     exists = os.path.exists(work_dir)

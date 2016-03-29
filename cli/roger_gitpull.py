@@ -68,10 +68,15 @@ def main(settings, appConfig, gitObject, args):
   path = "{0}/{1}".format(args.directory, repo)
   if os.path.isdir(path):
     with chdir(path):
-      gitObj.gitPull(branch)
+      exit_code = gitObj.gitPull(branch)
   else:
     with chdir('{0}'.format(args.directory)):
-      gitObj.gitShallowClone(repo, branch)
+      exit_code = gitObj.gitShallowClone(repo, branch)
+
+  if exit_code is None:
+    return 0
+  else:
+    return exit_code
 
 if __name__ == "__main__":
   settingObj = Settings()

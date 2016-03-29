@@ -185,11 +185,8 @@ def pullRepo(root, app, work_dir, config_file, branch, args, settingObj, appObj,
   args.directory = work_dir
 
   try:
-    try:
-      roger_gitpull.main(settingObj, appObj, gitObj, args)
-      return 0
-    except:
-      return 1
+    exit_code = roger_gitpull.main(settingObj, appObj, gitObj, args)
+    return exit_code
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     removeDirTree(work_dir, args)
