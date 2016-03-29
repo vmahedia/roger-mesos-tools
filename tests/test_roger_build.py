@@ -31,12 +31,10 @@ class TestBuild(unittest.TestCase):
 
     self.parser = parser
     self.args = parser
-
     self.settingObj = Settings()
     self.base_dir = self.settingObj.getCliDir()
     self.configs_dir = self.base_dir+"/tests/configs"
     self.components_dir = self.base_dir+'/tests/components/dev'
-
     with open(self.configs_dir+'/app.json') as config:
       config = json.load(config)
     with open(self.configs_dir+'/roger-env.json') as roger:
@@ -62,7 +60,6 @@ class TestBuild(unittest.TestCase):
     when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
     when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
     when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
-
     args = self.args
     # Setting app_name as empty
     args.app_name = ''
@@ -96,11 +93,11 @@ class TestBuild(unittest.TestCase):
     args.config_file = 'app.json'
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
-
     config_dir = settings.getConfigDir()
     roger_env = appConfig.getRogerEnv(config_dir)
     # Remove registry key from dictionary
     del roger_env['registry']
+
     retrun_code = roger_build.main(settings, appConfig, args)
     assert retrun_code == 1
 
