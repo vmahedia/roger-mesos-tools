@@ -148,10 +148,10 @@ def renderTemplate(template, environment, image, app_data, config, container):
     output = template.render(variables)
     return output
 
-def main(object_list, args):
-  settingObj = object_list[0]
-  appObj = object_list[1]
-  frameworkUtils = object_list[2]
+def main(settings, appConfig, frameworkObject, args):
+  settingObj = settings
+  appObj = appConfig
+  frameworkUtils = frameworkObject
   config_dir = settingObj.getConfigDir()
 
   cur_file_path = os.path.dirname(os.path.realpath(__file__))
@@ -159,10 +159,12 @@ def main(object_list, args):
   roger_env = appObj.getRogerEnv(config_dir)
 
   if 'registry' not in roger_env.keys():
-    sys.exit('Registry not found in roger-env.json file.')
+    print('Registry not found in roger-env.json file.Exiting...')
+    return 1
 
   if args.app_name not in config['apps'].keys():
-    sys.exit('Application specified not found.')
+    print('Application specified not found.Exiting...')
+    return 1
 
   environment = roger_env.get('default', '')
   if args.env is None:
@@ -177,7 +179,8 @@ def main(object_list, args):
     environment = args.env
 
   if environment not in roger_env['environments']:
-    sys.exit('Environment not found in roger-env.json file.')
+    print('Environment not found in roger-env.json file.Exiting...')
+    return 1
 
   environmentObj = roger_env['environments'][environment]
   common_repo = config.get('repo', '')
@@ -266,10 +269,6 @@ if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
   frameworkUtils = FrameworkUtils()
-  object_list = []
-  object_list.append(settingObj)
-  object_list.append(appObj)
-  object_list.append(frameworkUtils)
   parser = parse_args()
   args = parser.parse_args()
-  main(object_list, args)
+  main(settingObj, appObj, frameworkUtils, args)
