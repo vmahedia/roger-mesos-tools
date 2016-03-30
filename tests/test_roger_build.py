@@ -44,7 +44,7 @@ class TestBuild(unittest.TestCase):
     self.roger_env = roger_env
     self.data = data
 
-  def test_rogerBuild_noApp(self):
+  def test_roger_build_with_no_app_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
@@ -68,7 +68,7 @@ class TestBuild(unittest.TestCase):
     return_code = roger_build.main(settings, appConfig, args)
     assert return_code == 1
 
-  def test_rogerBuild_noRegistry(self):
+  def test_roger_build_with_no_registry_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
