@@ -11,6 +11,7 @@ import json
 import os
 import requests
 import sys
+import roger_gitpull
 import re
 import shutil
 from settings import Settings
@@ -18,6 +19,7 @@ from appconfig import AppConfig
 from marathon import Marathon
 from chronos import Chronos
 from frameworkUtils import FrameworkUtils
+from gitutils  import GitUtils
 
 import contextlib
 
@@ -86,8 +88,8 @@ class Slack:
 
 # Expected format:
 #   <host>:<port>/moz-content-agora-7da406eb9e8937875e0548ae1149/v0.46
-def getNextVersion(config, roger_env, application, branch, work_dir, repo, args):
-  sha = getGitSha(work_dir, repo, branch)
+def getNextVersion(config, roger_env, application, branch, work_dir, repo, args, gitObj):
+  sha = getGitSha(work_dir, repo, branch, gitObj)
   docker_search = subprocess.check_output("docker search {0}/{1}-{2}".format(roger_env['registry'], config['name'], application), shell=True)
   image_version_list = []
   version = ''
@@ -133,14 +135,8 @@ def splitVersion(version):
   patch, _, rest = rest.partition('.')
   return int(major), int(minor) if minor else 0, int(patch) if patch else 0
 
-def getGitSha(work_dir, repo, branch):
-  with chdir("{0}/{1}".format(work_dir, repo)):
-    proc = subprocess.Popen(
-        ["git rev-parse origin/{} --verify HEAD".format(branch)],
-        stdout=subprocess.PIPE, shell=True)
-
-    out = proc.communicate()
-    return out[0].split('\n')[0]
+def getGitSha(work_dir, repo, branch, gitObj):
+  return  gitObj.getGitSha(repo, branch, work_dir)
 
 def describe():
   return 'runs through all of the steps: gitpull -> build & push to registry -> push to roger mesos.'
@@ -183,27 +179,35 @@ def push(root, app, work_dir, image_name, config_file, environment, secrets_file
     removeDirTree(work_dir, args)
     sys.exit('Exiting')
 
-def pullRepo(root, app, work_dir, config_file, branch, args):
+def pullRepo(root, app, work_dir, config_file, branch, args, settingObj, appObj, gitObj):
+
+  args.app_name = app
+  args.directory = work_dir
+
   try:
-    exit_code = os.system("{0}/cli/roger_gitpull.py {1} {2} {3} --branch {4}".format(root, app, os.path.abspath(work_dir), config_file, branch))
+    exit_code = roger_gitpull.main(settingObj, appObj, gitObj, args)
     return exit_code
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     removeDirTree(work_dir, args)
     sys.exit('Exiting')
 
-def main(object_list, args):
-  settingObj = object_list[0]
-  appObj = object_list[1]
+def main(settingObject, appObject, frameworkUtilsObject, gitObj, args):
+  settingObj = settingObject
+  appObj = appObject
   config_dir = settingObj.getConfigDir()
   root = settingObj.getCliDir()
   roger_env = appObj.getRogerEnv(config_dir)
   config = appObj.getConfig(config_dir, args.config_file)
   if args.application not in config['apps']:
-    sys.exit('Application specified not found.')
+    print('Application specified not found.')
+    # Return exit code to caller
+    return 1
 
   if 'registry' not in roger_env:
-    sys.exit('Registry not found in roger-env.json file.')
+    print('Registry not found in roger-env.json file.')
+    # Returning exit code for caller to catch
+    return 1
 
   #Setup for Slack-Client, token, and git user
   slack = Slack(config['notifications'], '/home/vagrant/.roger_cli.conf.d/slack_token')
@@ -237,20 +241,22 @@ def main(object_list, args):
 
   if environment not in roger_env['environments']:
     removeDirTree(work_dir, args)
-    sys.exit('Environment not found in roger-env.json file.')
+    print('Environment not found in roger-env.json file.')
+    # Returning exit code for caller to catch
+    return 1
 
   branch = "master"     #master by default
   if not args.branch is None:
     branch = args.branch
 
   for app in apps:
-    deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo)
+    deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo)
 
-def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo):
+def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo):
   startTime = datetime.now()
-  settingObj = object_list[0]
-  appObj = object_list[1]
-  frameworkUtils = object_list[2]
+  settingObj = settingObject
+  appObj = appObject
+  frameworkUtils = frameworkUtilsObject
   environmentObj = roger_env['environments'][environment]
   data = appObj.getAppData(config_dir, config_file, app)
   frameworkObj = frameworkUtils.getFramework(data)
@@ -267,7 +273,7 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
 
   # get/update target source(s)
   try:
-    exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args)
+    exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, settingObj, appObj, gitObj)
     if exit_code != 0:
       removeDirTree(work_dir, args)
       sys.exit('Exiting')
@@ -289,7 +295,7 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
     secrets_file = args.secrets_file
 
   #Set initial version
-  image_git_sha = getGitSha(work_dir, repo, branch)
+  image_git_sha = getGitSha(work_dir, repo, branch, gitObj)
   image_name = "{0}-{1}-{2}/v0.1.0".format(config['name'], app, image_git_sha)
 
   if skip_build == True:
@@ -302,7 +308,7 @@ def deployApp(object_list, root, args, config, roger_env, work_dir, config_dir, 
       print("Using base version for image:{0}".format(image_name))
   else:
     #Docker build,tag and push
-    image_name = getNextVersion(config, roger_env, app, branch, work_dir, repo, args)
+    image_name = getNextVersion(config, roger_env, app, branch, work_dir, repo, args, gitObj)
     image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
     print("Bumped up image to version:{0}".format(image_name))
     try:
@@ -350,10 +356,7 @@ if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
   frameworkUtils = FrameworkUtils()
-  object_list = []
-  object_list.append(settingObj)
-  object_list.append(appObj)
-  object_list.append(frameworkUtils)
+  gitObj = GitUtils()
   parser = parseArgs()
   args = parser.parse_args()
-  main(object_list, args)
+  main(settingObj, appObj, frameworkUtils, gitObj, args)

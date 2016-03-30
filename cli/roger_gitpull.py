@@ -7,6 +7,7 @@ import os
 import sys
 from settings import Settings
 from appconfig import AppConfig
+from gitutils  import GitUtils
 import errno
 
 import contextlib
@@ -35,9 +36,10 @@ def parse_args():
     help="configuration file to use. Example: 'content.json' or 'kwe.json'")
   return parser
 
-def main(object_list, args):
-  settingObj = object_list[0]
-  appObj = object_list[1]
+def main(settings, appConfig, gitObject, args):
+  settingObj = settings
+  appObj = appConfig
+  gitObj = gitObject
   config_dir = settingObj.getConfigDir()
   config = appObj.getConfig(config_dir, args.config_file)
 
@@ -62,23 +64,24 @@ def main(object_list, args):
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise
-
   # get/update target source(s)
   path = "{0}/{1}".format(args.directory, repo)
   if os.path.isdir(path):
     with chdir(path):
-      os.system("git pull origin {}".format(branch))
+      exit_code = gitObj.gitPull(branch)
   else:
     with chdir('{0}'.format(args.directory)):
-      os.system("git clone --depth 1 --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
-      os.chdir(repo)
+      exit_code = gitObj.gitShallowClone(repo, branch)
+
+  if exit_code is None:
+    return 0
+  else:
+    return exit_code
 
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
-  object_list = []
-  object_list.append(settingObj)
-  object_list.append(appObj)
+  gitObj = GitUtils()
   parser = parse_args()
   args = parser.parse_args()
-  main(object_list, args)
+  main(settingObj, appObj, gitObj, args)

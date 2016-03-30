@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 import roger_push
 from marathon import Marathon
-from frameworkutils import FrameworkUtils
+from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
 from settings import Settings
 from mockito import mock, when, verify
@@ -69,12 +69,8 @@ class Testcontainer(unittest.TestCase):
     args.config_file = 'roger_single_container_var_tests.json'
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'tests/v0.1.0'
-    object_list = []
-    object_list.append(settings)
-    object_list.append(appConfig)
-    object_list.append(frameworkUtils)
 
-    roger_push.main(object_list, args)
+    roger_push.main(settings, appConfig, frameworkUtils, args)
 
     with open(self.base_dir+'/tests/components/dev/roger-single-container-var-tests.json') as output:
       output = json.load(output)

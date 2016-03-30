@@ -19,3 +19,7 @@ script:
     - python test_appconfig.py
     - python test_roger_build.py
     - python test_settings.py
+    - python test_roger_container.py
+    - python test_roger_push.py
+    - python test_roger_gitpull.py
+    - python test_roger_deploy.py
