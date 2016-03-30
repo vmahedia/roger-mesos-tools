@@ -13,7 +13,6 @@ from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
 from settings import Settings
 from mockito import mock, when, verify
-from mock import MagicMock
 from settings import Settings
 
 #Test basic functionalities of roger-push script
@@ -192,7 +191,6 @@ class TestPush(unittest.TestCase):
 
   def test_rogerPush_noEnvironment(self):
     settings = mock(Settings)
-    settings.getComponentsDir = MagicMock(return_value=0)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
     roger_env = self.roger_env
@@ -201,7 +199,7 @@ class TestPush(unittest.TestCase):
     when(marathon).put(self.components_dir+'/test-roger-grafana.json', roger_env['environments']['dev'], 'grafana_test_app').thenReturn("Response [200]")
     frameworkUtils = mock(FrameworkUtils)
     when(frameworkUtils).getFramework(data).thenReturn(marathon)
-    #when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
+    when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
     when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
     when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
     when(settings).getConfigDir().thenReturn(self.configs_dir)
