@@ -98,8 +98,8 @@ class TestBuild(unittest.TestCase):
     # Remove registry key from dictionary
     del roger_env['registry']
 
-    retrun_code = roger_build.main(settings, appConfig, args)
-    assert retrun_code == 1
+    return_code = roger_build.main(settings, appConfig, args)
+    assert return_code == 1
 
   def tearDown(self):
     pass
