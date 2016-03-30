@@ -129,7 +129,7 @@ class TestPush(unittest.TestCase):
     assert output['cpus'] == 1
     assert output['mem'] == 1024
 
-  def test_rogerPush_noApp(self):
+  def test_roger_push_with_no_app_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
@@ -154,7 +154,7 @@ class TestPush(unittest.TestCase):
     return_code = roger_push.main(settings, appConfig, frameworkUtils, args)
     assert return_code == 1
 
-  def test_rogerPush_noRegistry(self):
+  def test_roger_push_with_no_registry_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
@@ -189,7 +189,7 @@ class TestPush(unittest.TestCase):
     retrun_code = roger_push.main(settings, appConfig, frameworkUtils, args)
     assert retrun_code == 1
 
-  def test_rogerPush_noEnvironment(self):
+  def test_roger_push_with_no_environment_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
