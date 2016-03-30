@@ -8,6 +8,7 @@ import json
 from framework import Framework
 from utils import Utils
 from settings import Settings
+from marathonvalidator import MarathonValidator
 
 utils = Utils()
 settings = Settings()
@@ -57,6 +58,22 @@ class Marathon(Framework):
     marathon_message = "{0}: {1}".format(appName, resp)
     print(marathon_message)
     return resp
+
+  def runDeploymentChecks(self, file_path, environment):
+    data = open(file_path).read()
+    marathon_data = json.loads(data)
+    app_id = marathon_data['id']
+    http_prefix = ""
+    if 'env' in marathon_data:
+      if 'HTTP_PREFIX' in marathon_data['env']:
+        http_prefix = marathon_data['env']['HTTP_PREFIX']
+
+    marathonvalidator = MarathonValidator()
+    result = marathonvalidator.check_http_prefix(environment, http_prefix, app_id)
+    if result == False:
+      return False
+
+    return True
 
   def getCurrentImageVersion(self, roger_env, environment, application):
     data = self.get(roger_env, environment)

@@ -22,7 +22,6 @@ class HAProxyParser:
     host = roger_env['environments'][environment]['host']
     haproxy_config_path = roger_env['environments'][environment]['haproxy_config_path']
     url = "{}{}".format(host, haproxy_config_path)
-    print("Url: {}".format(url))
     haproxy_config = requests.get(url, stream=True) 
     return haproxy_config.text
 
@@ -46,13 +45,3 @@ class HAProxyParser:
 
   def get_http_prefixes(self):
     return self.http_prefixes
-
-'''
-def main():
-  haproxyObj = HAProxyParser()
-  haproxyObj.parseConfig("dev")
-  test_dict = haproxyObj.get_http_prefixes()
-
-if __name__ == "__main__":
-  main()
-'''

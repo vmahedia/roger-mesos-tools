@@ -21,6 +21,10 @@ class Framework(object):
     pass
 
   @abstractmethod
+  def runDeploymentChecks(self, file_path, environment):
+    pass
+
+  @abstractmethod
   def getCurrentImageVersion(self, roger_env, environment, application):
     pass
 
