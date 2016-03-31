@@ -19,6 +19,8 @@ class Marathon(Framework):
   def __init__(self):
     self.user = None
     self.passw = None
+    self.marathonvalidator = MarathonValidator()
+    self.haproxyparser = HAProxyParser() 
 
   def fetchUserPass(self, env):
     if self.user == None:
@@ -69,9 +71,7 @@ class Marathon(Framework):
       if 'HTTP_PREFIX' in marathon_data['env']:
         http_prefix = marathon_data['env']['HTTP_PREFIX']
 
-    marathonvalidator = MarathonValidator()
-    haproxyparser = HAProxyParser()
-    result = marathonvalidator.check_path_begin_value(haproxyparser, environment, http_prefix, app_id)
+    result = self.marathonvalidator.validate(self.haproxyparser, environment, http_prefix, app_id)
     if result == False:
       return False
 

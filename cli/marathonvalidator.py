@@ -7,8 +7,12 @@ from haproxyparser import HAProxyParser
 
 class MarathonValidator:
 
-  def check_path_begin_value(self, haproxy_parser_obj, environment, path_begin_value, acl_name):
+  def validate(self, haproxy_parser_obj, environment, path_begin_value, acl_name):
     haproxy_parser_obj.parseConfig("dev")
+    result = self.check_path_begin_value(haproxy_parser_obj, environment, path_begin_value, acl_name)
+    return result
+
+  def check_path_begin_value(self, haproxy_parser_obj, environment, path_begin_value, acl_name):
     path_begin_values = haproxy_parser_obj.get_path_begin_values()
 
     if path_begin_value not in path_begin_values.keys():
@@ -19,8 +23,7 @@ class MarathonValidator:
           if path_begin_values[key] == acl_name:
             return True
           else:
-            print("\nPATH BEGIN value validation check failed. The PATH BEGIN '{}' you are trying " \
+            print("\nHTTP PREFIX validation check failed. The HTTP PREFIX '{}' you are trying " \
                  "to use is already in use by app id: '{}'".format(path_begin_value, path_begin_values[key]))
-            print("The deployment will still happen if the --force-push flag is enabled.")
             return False
 

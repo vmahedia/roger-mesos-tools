@@ -158,7 +158,7 @@ def parseArgs():
   parser.add_argument('-sp', '--skip-push', action="store_true",
     help="skip the push step. Defaults to false.'")
   parser.add_argument('-f', '--force-push', action="store_true",
-    help="force push. Forces push even if validation checks failed. Applies only if skip_push is false. Defaults to false.")
+    help="force push. Not recommended. Forces push even if validation checks failed. Applies only if skip_push is false. Defaults to false.")
   parser.add_argument('-p', '--incr-patch', action="store_true",
     help="increment patch in version. Defaults to false.'")
   parser.add_argument('-S', '--secrets-file',
