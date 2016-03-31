@@ -9,6 +9,7 @@ from framework import Framework
 from utils import Utils
 from settings import Settings
 from marathonvalidator import MarathonValidator
+from haproxyparser import HAProxyParser
 
 utils = Utils()
 settings = Settings()
@@ -69,7 +70,8 @@ class Marathon(Framework):
         http_prefix = marathon_data['env']['HTTP_PREFIX']
 
     marathonvalidator = MarathonValidator()
-    result = marathonvalidator.check_http_prefix(environment, http_prefix, app_id)
+    haproxyparser = HAProxyParser()
+    result = marathonvalidator.check_path_begin_value(haproxyparser, environment, http_prefix, app_id)
     if result == False:
       return False
 

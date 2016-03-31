@@ -11,7 +11,7 @@ from settings import Settings
 
 class HAProxyParser:
 
-  http_prefixes = {}
+  path_begin_values = {}
 
   def get_haproxy_config(self, environment):
     haproxy_config = ""
@@ -26,7 +26,7 @@ class HAProxyParser:
     return haproxy_config.text
 
   def parseConfig(self, environment):
-    http_prefix_appids = {}
+    path_begin_values = {}
     config = self.get_haproxy_config(environment)
     aclrules = subprocess.check_output("echo \"{}\" | grep 'acl ::' ".format(config), shell=True)
     lines = aclrules.split('\n')
@@ -34,14 +34,14 @@ class HAProxyParser:
       pattern = re.compile("acl (.*)-aclrule path_beg -i (.*)")
       result = pattern.search(line)
       if result != None:
-        app_id = result.group(1).replace("::","/")
-        http_prefix = result.group(2)
-        http_prefix_appids[http_prefix] = app_id
+        acl_name = result.group(1).replace("::","/")
+        path_begin_value = result.group(2)
+        path_begin_values[path_begin_value] = acl_name
      
-    self.set_http_prefixes(http_prefix_appids)
+    self.set_path_begin_values(path_begin_values)
 
-  def set_http_prefixes(self, http_prefix_appids):
-    self.http_prefixes = http_prefix_appids
+  def set_path_begin_values(self, path_begin_values_aclnames):
+    self.path_begin_values = path_begin_values_aclnames
 
-  def get_http_prefixes(self):
-    return self.http_prefixes
+  def get_path_begin_values(self):
+    return self.path_begin_values

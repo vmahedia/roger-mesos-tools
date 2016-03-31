@@ -173,7 +173,7 @@ def push(root, app, work_dir, image_name, config_file, environment, secrets_file
   else:
     secrets = ""
 
-  if args.force_push is not None:
+  if args.force_push is not False:
     force_push = "-f "
   else:
     force_push = ""
