@@ -172,7 +172,10 @@ def push(root, app, work_dir, image_name, config_file, environment, secrets_file
     secrets = ""
   try:
     push_command = (root, app, os.path.abspath(work_dir), image_name, config_file, environment, secrets)
-    exit_code = os.system("{0}/cli/roger_push.py {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
+    if args.skip_push == True:
+      exit_code = os.system("{0}/cli/roger_push.py --skip-push {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
+    else:
+      exit_code = os.system("{0}/cli/roger_push.py {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
     return exit_code
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
@@ -323,18 +326,15 @@ def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args
   print("Version is:"+image_name)
 
   #Deploying the app to framework
-  if skip_push == True:
-    print("Skipping push to framework as skip_push is set.")
-  else:
-    try:
-      exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, secrets_file, args)
-      if exit_code != 0:
-        removeDirTree(work_dir, args)
-        sys.exit('Exiting')
-    except (IOError) as e:
-      print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
+  try:
+    exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, secrets_file, args)
+    if exit_code != 0:
       removeDirTree(work_dir, args)
       sys.exit('Exiting')
+  except (IOError) as e:
+    print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
+    removeDirTree(work_dir, args)
+    sys.exit('Exiting')
 
   removeDirTree(work_dir, args)
 
