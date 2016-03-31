@@ -71,7 +71,7 @@ class TestDeploy(unittest.TestCase):
 
     args = self.args
     args.directory=""
-    args.skip_push=True
+    args.skip_push=False
     args.secrets_file=""
     roger_deploy.removeDirTree(work_dir, args)
     exists = os.path.exists(os.path.abspath(work_dir))
@@ -104,15 +104,13 @@ class TestDeploy(unittest.TestCase):
     args.directory=""
     args.secrets_file=""
     args.environment="dev"
-    args.skip_push=True
+    args.skip_push = False
     args.application = ''
     args.config_file = 'app.json'
     args.skip_build = True
     args.branch = None
     os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
 
-    #roger_env = appConfig.getRogerEnv(self.configs_dir)
-    #del roger_env['registry']
     roger_deploy.push = MagicMock(return_value=0)
     return_code = roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, args)
     assert return_code == 1
@@ -138,7 +136,7 @@ class TestDeploy(unittest.TestCase):
     args.directory=""
     args.secrets_file=""
     args.environment="dev"
-    args.skip_push=True
+    args.skip_push = False
     args.application = 'grafana_test_app'
     args.config_file = 'app.json'
     args.skip_build = True
@@ -172,7 +170,7 @@ class TestDeploy(unittest.TestCase):
     args.directory=""
     args.secrets_file=""
     args.environment=""
-    args.skip_push=True
+    args.skip_push = False
     args.application = 'grafana_test_app'
     args.config_file = 'app.json'
     args.skip_build = True
@@ -187,6 +185,47 @@ class TestDeploy(unittest.TestCase):
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
     gitObj = mock(GitUtils)
+    roger_env = self.roger_env
+    config = self.config
+    data = self.data
+    when(marathon).getCurrentImageVersion(roger_env, 'dev', 'grafana').thenReturn("testversion/v0.1.0")
+    frameworkUtils = mock(FrameworkUtils)
+    when(frameworkUtils).getFramework(data).thenReturn(marathon)
+    when(settings).getConfigDir().thenReturn(self.configs_dir)
+    when(settings).getCliDir().thenReturn(self.base_dir)
+    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
+    when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
+    when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
+
+    args = self.args
+    args.directory=""
+    args.secrets_file=""
+    args.environment="dev"
+    args.skip_push = False
+    args.application = 'grafana_test_app'
+    args.config_file = 'app.json'
+    args.skip_build = True
+    args.branch = None
+    os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
+    roger_deploy.push = MagicMock(return_value=0)
+    roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, args)
+    settings.getConfigDir   = MagicMock(return_value=2)
+    settings.getCliDir      = MagicMock(return_value=2)
+    appConfig.getRogerEnv   = MagicMock(return_value=2)
+    appConfig.getConfig     = MagicMock(return_value=2)
+    verify(settings).getConfigDir()
+    verify(settings).getCliDir()
+    verify(appConfig).getRogerEnv(self.configs_dir)
+    verify(appConfig).getConfig(self.configs_dir, "app.json")
+    verify(frameworkUtils).getFramework(data)
+    verify(marathon).getCurrentImageVersion(roger_env, 'dev', 'grafana_test_app')
+
+  def test_rogerDeploy_with_skip_push(self):
+    settings = mock(Settings)
+    appConfig = mock(AppConfig)
+    marathon = mock(Marathon)
+    gitObj = mock(GitUtils)
+
     roger_env = self.roger_env
     config = self.config
     data = self.data

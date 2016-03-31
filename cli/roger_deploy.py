@@ -14,6 +14,7 @@ import sys
 import roger_gitpull
 import re
 import shutil
+import roger_push
 from settings import Settings
 from appconfig import AppConfig
 from marathon import Marathon
@@ -165,22 +166,21 @@ def parseArgs():
     help="working directory. Uses a temporary directory if not specified.")
   return parser
 
-def push(root, app, work_dir, image_name, config_file, environment, secrets_file, args):
-  if secrets_file:
-    secrets = "-S " + secrets_file
-  else:
-    secrets = ""
+def push(root, app, work_dir, image_name, config_file, environment, settingObj, appObj, frameworkUtils, args):
+  # Prepare args to invoke roger_push
+  args.image_name = image_name
+  args.config_file = config_file
+  args.env = environment
+  args.app_name = app
+  args.directory = work_dir
+
   try:
-    push_command = (root, app, os.path.abspath(work_dir), image_name, config_file, environment, secrets)
-    if args.skip_push == True:
-      exit_code = os.system("{0}/cli/roger_push.py --skip-push {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
-    else:
-      exit_code = os.system("{0}/cli/roger_push.py {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
-    return exit_code
+    roger_push.main(settingObj, appObj, frameworkUtils, args)
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     removeDirTree(work_dir, args)
     sys.exit('Exiting')
+  return 0
 
 def pullRepo(root, app, work_dir, config_file, branch, args, settingObj, appObj, gitObj):
 
@@ -327,7 +327,7 @@ def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args
 
   #Deploying the app to framework
   try:
-    exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, secrets_file, args)
+    exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, settingObj, appObj, frameworkUtils, args)
     if exit_code != 0:
       removeDirTree(work_dir, args)
       sys.exit('Exiting')
