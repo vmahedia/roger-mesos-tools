@@ -8,11 +8,9 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 import roger_build
-from marathon import Marathon
 from appconfig import AppConfig
 from settings import Settings
-from mockito import mock, when, verify
-from mock import MagicMock
+from mockito import mock, when
 
 #Test basic functionalities of roger-build script
 class TestBuild(unittest.TestCase):
@@ -47,11 +45,9 @@ class TestBuild(unittest.TestCase):
   def test_roger_build_with_no_app_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
-    marathon = mock(Marathon)
     roger_env = self.roger_env
     config = self.config
     data = self.data
-    when(marathon).put(self.components_dir+'/test-roger-grafana.json', roger_env['environments']['dev'], 'grafana_test_app').thenReturn("Response [200]")
     when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
     when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
     when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
@@ -71,11 +67,9 @@ class TestBuild(unittest.TestCase):
   def test_roger_build_with_no_registry_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
-    marathon = mock(Marathon)
     roger_env = self.roger_env
     config = self.config
     data = self.data
-    when(marathon).put(self.components_dir+'/test-roger-grafana.json', roger_env['environments']['dev'], 'grafana_test_app').thenReturn("Response [200]")
     when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
     when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
     when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
@@ -84,15 +78,9 @@ class TestBuild(unittest.TestCase):
     when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
     when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
     when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
-
+    # Setting up args
     args = self.args
-    args.env = "dev"
-    args.secrets_file=""
-    args.skip_push=True
-    args.app_name = 'grafana_test_app'
     args.config_file = 'app.json'
-    args.directory = self.base_dir+'/tests/testrepo'
-    args.image_name = 'grafana/grafana:2.1.3'
     config_dir = settings.getConfigDir()
     roger_env = appConfig.getRogerEnv(config_dir)
     # Remove registry key from dictionary
