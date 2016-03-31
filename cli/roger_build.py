@@ -109,4 +109,6 @@ def main(settingObj, appObj, args):
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
-  main(settingObj, appObj)
+  parser = parse_args()
+  args = parser.parse_args()
+  main(settingObj, appObj, args)
