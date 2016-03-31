@@ -83,7 +83,7 @@ class TestDeploy(unittest.TestCase):
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == False
 
-  def test_rogerDeploy_noApp(self):
+  def test_roger_deploy_with_no_app_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
@@ -117,7 +117,7 @@ class TestDeploy(unittest.TestCase):
     return_code = roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, args)
     assert return_code == 1
 
-  def test_rogerDeploy_noRegistry(self):
+  def test_roger_deploy_with_no_registry_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
@@ -151,7 +151,7 @@ class TestDeploy(unittest.TestCase):
     return_code = roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, args)
     assert return_code == 1
 
-  def test_rogerDeploy_noEnvironemnt(self):
+  def test_roger_deploy_with_no_environment_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)

@@ -35,19 +35,20 @@ def parse_args():
   parser.add_argument('--push', '-p', help="Also push to registry. Defaults to false.", action="store_true")
   return parser
 
-def main():
+def main(settingObj, appObj, args):
   parser = parse_args()
-  args = parser.parse_args()
   config_dir = settingObj.getConfigDir()
   root = settingObj.getCliDir()
   config = appObj.getConfig(config_dir, args.config_file)
   roger_env = appObj.getRogerEnv(config_dir)
 
   if 'registry' not in roger_env:
-    sys.exit('Registry not found in roger-env.json file.')
+    print('Registry not found in roger-env.json file.')
+    return 1
 
   if args.app_name not in config['apps']:
-    sys.exit('Application specified not found.')
+    print('Application specified not found.')
+    return 1
 
   common_repo = config.get('repo', '')
   data = appObj.getAppData(config_dir, args.config_file, args.app_name)
@@ -108,4 +109,4 @@ def main():
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
-  main()
+  main(settingObj, appObj)
