@@ -36,7 +36,6 @@ def parse_args():
   return parser
 
 def main(settingObj, appObj, args):
-  parser = parse_args()
   config_dir = settingObj.getConfigDir()
   root = settingObj.getCliDir()
   config = appObj.getConfig(config_dir, args.config_file)
