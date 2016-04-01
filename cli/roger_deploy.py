@@ -157,6 +157,8 @@ def parseArgs():
     help="increment major in version. Defaults to false.'")
   parser.add_argument('-sp', '--skip-push', action="store_true",
     help="skip the push step. Defaults to false.'")
+  parser.add_argument('-f', '--force-push', action="store_true",
+    help="force push. Not recommended. Forces push even if validation checks failed. Applies only if skip_push is false. Defaults to false.")
   parser.add_argument('-p', '--incr-patch', action="store_true",
     help="increment patch in version. Defaults to false.'")
   parser.add_argument('-S', '--secrets-file',
@@ -170,9 +172,15 @@ def push(root, app, work_dir, image_name, config_file, environment, secrets_file
     secrets = "-S " + secrets_file
   else:
     secrets = ""
+
+  if args.force_push is not False:
+    force_push = "-f "
+  else:
+    force_push = ""
+
   try:
-    push_command = (root, app, os.path.abspath(work_dir), image_name, config_file, environment, secrets)
-    exit_code = os.system("{0}/cli/roger_push.py {1} {2} \"{3}\" {4} --env {5} {6}".format(*push_command))
+    push_command = (root, app, os.path.abspath(work_dir), image_name, config_file, environment, secrets, force_push)
+    exit_code = os.system("{0}/cli/roger_push.py {1} {2} \"{3}\" {4} --env {5} {6} {7}".format(*push_command))
     return exit_code
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
