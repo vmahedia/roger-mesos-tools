@@ -169,15 +169,16 @@ def parseArgs():
   return parser
 
 def push(root, app, work_dir, image_name, config_file, environment, settingObj, appObj, frameworkUtils, args):
-  # Prepare args to invoke roger_push
-  args.image_name = image_name
-  args.config_file = config_file
-  args.env = environment
-  args.app_name = app
-  args.directory = work_dir
+  # Prepare push_args to invoke roger_push
+  push_args = args
+  push_args.image_name = image_name
+  push_args.config_file = config_file
+  push_args.env = environment
+  push_args.app_name = app
+  push_args.directory = work_dir
 
   try:
-    roger_push.main(settingObj, appObj, frameworkUtils, args)
+    roger_push.main(settingObj, appObj, frameworkUtils, push_args)
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     removeDirTree(work_dir, args)
