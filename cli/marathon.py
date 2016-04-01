@@ -8,6 +8,8 @@ import json
 from framework import Framework
 from utils import Utils
 from settings import Settings
+from marathonvalidator import MarathonValidator
+from haproxyparser import HAProxyParser
 
 utils = Utils()
 settings = Settings()
@@ -17,6 +19,8 @@ class Marathon(Framework):
   def __init__(self):
     self.user = None
     self.passw = None
+    self.marathonvalidator = MarathonValidator()
+    self.haproxyparser = HAProxyParser() 
 
   def fetchUserPass(self, env):
     if self.user == None:
@@ -57,6 +61,21 @@ class Marathon(Framework):
     marathon_message = "{0}: {1}".format(appName, resp)
     print(marathon_message)
     return resp
+
+  def runDeploymentChecks(self, file_path, environment):
+    data = open(file_path).read()
+    marathon_data = json.loads(data)
+    app_id = marathon_data['id']
+    http_prefix = ""
+    if 'env' in marathon_data:
+      if 'HTTP_PREFIX' in marathon_data['env']:
+        http_prefix = marathon_data['env']['HTTP_PREFIX']
+
+    result = self.marathonvalidator.validate(self.haproxyparser, environment, http_prefix, app_id)
+    if result == False:
+      return False
+
+    return True
 
   def getCurrentImageVersion(self, roger_env, environment, application):
     data = self.get(roger_env, environment)

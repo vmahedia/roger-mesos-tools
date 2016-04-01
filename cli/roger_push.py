@@ -43,6 +43,7 @@ def parse_args():
   parser.add_argument('config_file', metavar='config_file',
     help="configuration file to use. Example: 'content.json' or 'kwe.json'")
   parser.add_argument('--skip-push', '-s', help="skips push. Only generates components for review. Defaults to false.", action="store_true")
+  parser.add_argument('--force-push', '-f', help="force push. Not Recommended. Forces push even if validation checks failed. Defaults to false.", action="store_true")
   parser.add_argument('--secrets-file', '-S',
     help="specifies an optional secrets file for deploy runtime variables.")
   return parser
@@ -263,7 +264,12 @@ def main(settings, appConfig, frameworkObject, args):
           containerConfig = "{0}-{1}.json".format(config['name'], container)
 
         config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
-        frameworkObj.put(config_file_path, environmentObj, container_name, environment)
+
+        result = frameworkObj.runDeploymentChecks(config_file_path, environment)
+        if args.force_push or result == True: 
+          frameworkObj.put(config_file_path, environmentObj, container_name, environment)
+        else:
+          print("Skipping push to {} framework for container {} as Validation Checks failed.".format(framework, container))
 
 if __name__ == "__main__":
   settingObj = Settings()
