@@ -73,13 +73,14 @@ class TestDeploy(unittest.TestCase):
     args.directory=""
     args.skip_push=False
     args.secrets_file=""
-    roger_deploy.removeDirTree(work_dir, args)
+    temp_dir_created = True
+    roger_deploy.removeDirTree(work_dir, args, temp_dir_created)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == False
     os.makedirs(work_dir)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == True
-    roger_deploy.removeDirTree(work_dir, args)
+    roger_deploy.removeDirTree(work_dir, args, temp_dir_created)
     exists = os.path.exists(os.path.abspath(work_dir))
     assert exists == False
 

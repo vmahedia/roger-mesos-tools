@@ -67,11 +67,16 @@ class Marathon(Framework):
     marathon_data = json.loads(data)
     app_id = marathon_data['id']
     http_prefix = ""
+    tcp_port_list = []
     if 'env' in marathon_data:
       if 'HTTP_PREFIX' in marathon_data['env']:
         http_prefix = marathon_data['env']['HTTP_PREFIX']
 
-    result = self.marathonvalidator.validate(self.haproxyparser, environment, http_prefix, app_id)
+      if 'TCP_PORTS' in marathon_data['env']:
+        tcp_ports_value = marathon_data['env']['TCP_PORTS']
+        tcp_port_list = json.loads(tcp_ports_value).keys()
+
+    result = self.marathonvalidator.validate(self.haproxyparser, environment, http_prefix, tcp_port_list, app_id)
     if result == False:
       return False
 
