@@ -18,9 +18,6 @@ from frameworkUtils import FrameworkUtils
 
 import contextlib
 
-#Create a global container_list to keep track of containers with unresolved jinja variables
-failed_container_list=[]
-
 @contextlib.contextmanager
 def chdir(dirname):
   '''Withable chdir function that restores directory'''
@@ -109,7 +106,7 @@ def mergeSecrets(json_str, secrets):
       raise StandardError('There are still "SECRET" values -- does your secrets file have all secret environment variables?')
   return json_str
 
-def renderTemplate(template, environment, image, app_data, config, container):
+def renderTemplate(template, environment, image, app_data, config, container, failed_container_list):
     output = ''
     variables = {}
     variables['environment'] = environment
@@ -153,7 +150,7 @@ def renderTemplate(template, environment, image, app_data, config, container):
       output = template.render(variables)
     except exceptions.UndefinedError as e:
       print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-      failed_container_list.add(container)
+      failed_container_list.append(container)
     return output
 
 def main(settings, appConfig, frameworkObject, args):
@@ -208,6 +205,8 @@ def main(settings, appConfig, frameworkObject, args):
 
   # template marathon files
   data_containers = data['containers']
+  #Create a failed container_list to keep track of containers with unresolved jinja variables
+  failed_container_list=[]
 
   for container in data_containers:
     if type(container) == dict:
@@ -240,7 +239,7 @@ def main(settings, appConfig, frameworkObject, args):
     template = env.get_template(containerConfig)
     image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
     print("Rendering content from template [{}{}] for environment [{}]".format(app_path, containerConfig, environment))
-    output = renderTemplate(template, environment, image_path, data, config, container)
+    output = renderTemplate(template, environment, image_path, data, config, container, failed_container_list)
     # Adding check to see if all jinja variables git resolved fot the container
     if container not in failed_container_list:
       #Adding check so that not all apps try to mergeSecrets
