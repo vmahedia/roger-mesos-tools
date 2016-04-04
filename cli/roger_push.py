@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import argparse
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, exceptions
 from datetime import datetime
 import requests
 import json
@@ -146,7 +146,11 @@ def renderTemplate(template, environment, image, app_data, config, container):
             for env_var in container_vars['environment'][environment]:
               variables[env_var] = container_vars['environment'][environment][env_var]
 
-    output = template.render(variables)
+    try:
+      output = template.render(variables)
+    except exceptions.UndefinedError as e:
+      print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
+      sys.exit("Exiting")
     return output
 
 def main(settings, appConfig, frameworkObject, args):
@@ -229,7 +233,7 @@ def main(settings, appConfig, frameworkObject, args):
     if not app_path.endswith('/'):
         app_path = app_path + '/'
 
-    env = Environment(loader=FileSystemLoader("{}".format(app_path)))
+    env = Environment(loader=FileSystemLoader("{}".format(app_path)), undefined=StrictUndefined)
     template = env.get_template(containerConfig)
     image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
     print("Rendering content from template [{}{}] for environment [{}]".format(app_path, containerConfig, environment))
@@ -266,7 +270,7 @@ def main(settings, appConfig, frameworkObject, args):
         config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
 
         result = frameworkObj.runDeploymentChecks(config_file_path, environment)
-        if args.force_push or result == True: 
+        if args.force_push or result == True:
           frameworkObj.put(config_file_path, environmentObj, container_name, environment)
         else:
           print("Skipping push to {} framework for container {} as Validation Checks failed.".format(framework, container))
