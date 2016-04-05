@@ -221,6 +221,48 @@ class TestPush(unittest.TestCase):
     retrun_code = roger_push.main(settings, appConfig, frameworkUtils, args)
     assert retrun_code == 1
 
+  def test_negative(self):
+
+    with open(self.configs_dir+'/roger_push_unresolved_jinja.json') as config:
+      config = json.load(config)
+    with open(self.configs_dir+'/roger-env.json') as roger:
+      roger_env = json.load(roger)
+    data = config['apps']['container-vars']
+    self.config = config
+    self.roger_env = roger_env
+    self.data = data
+
+    settings = mock(Settings)
+    appConfig = mock(AppConfig)
+    marathon = mock(Marathon)
+    roger_env = self.roger_env
+    config = self.config
+    data = self.data
+    frameworkUtils = mock(FrameworkUtils)
+    when(frameworkUtils).getFramework(data).thenReturn(marathon)
+    when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
+    when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
+    when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
+    when(settings).getConfigDir().thenReturn(self.configs_dir)
+    when(settings).getCliDir().thenReturn(self.base_dir)
+    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
+    when(appConfig).getConfig(self.configs_dir, "roger_push_unresolved_jinja.json").thenReturn(config)
+    when(appConfig).getAppData(self.configs_dir, "roger_push_unresolved_jinja.json", "container-vars").thenReturn(data)
+
+    args = self.args
+    args.env = "dev"
+    args.skip_push = False
+    args.force_push = False
+    args.secrets_dir = ""
+
+    args.app_name = 'container-vars'
+    args.config_file = 'roger_push_unresolved_jinja.json'
+    args.directory = self.base_dir+'/tests/testrepo'
+    args.image_name = 'tests/v0.1.0'
+
+    retrun_code = roger_push.main(settings, appConfig, frameworkUtils, args)
+    assert retrun_code == 1
+
   def tearDown(self):
     pass
 

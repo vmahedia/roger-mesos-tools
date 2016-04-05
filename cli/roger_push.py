@@ -106,7 +106,7 @@ def mergeSecrets(json_str, secrets):
       raise StandardError('There are still "SECRET" values -- does your secrets file have all secret environment variables?')
   return json_str
 
-def renderTemplate(template, environment, image, app_data, config, container, failed_container_list):
+def renderTemplate(template, environment, image, app_data, config, container, failed_container_list, container_name):
     output = ''
     variables = {}
     variables['environment'] = environment
@@ -150,7 +150,7 @@ def renderTemplate(template, environment, image, app_data, config, container, fa
       output = template.render(variables)
     except exceptions.UndefinedError as e:
       print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-      failed_container_list.append(container)
+      failed_container_list.append(container_name)
     return output
 
 def main(settings, appConfig, frameworkObject, args):
@@ -239,9 +239,9 @@ def main(settings, appConfig, frameworkObject, args):
     template = env.get_template(containerConfig)
     image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
     print("Rendering content from template [{}{}] for environment [{}]".format(app_path, containerConfig, environment))
-    output = renderTemplate(template, environment, image_path, data, config, container, failed_container_list)
+    output = renderTemplate(template, environment, image_path, data, config, container, failed_container_list, container_name)
     # Adding check to see if all jinja variables git resolved fot the container
-    if container not in failed_container_list:
+    if container_name not in failed_container_list:
       #Adding check so that not all apps try to mergeSecrets
       outputObj = json.loads(output)
       if 'SECRET' in output:
@@ -274,13 +274,16 @@ def main(settings, appConfig, frameworkObject, args):
         config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
 
         result = frameworkObj.runDeploymentChecks(config_file_path, environment)
-        if container in failed_container_list:
+        if container_name in failed_container_list:
           print("Failed push to {} framework for container {} as Unresolved Jinja variables present in template.".format(framework, container))
         else:
           if args.force_push or result == True:
             frameworkObj.put(config_file_path, environmentObj, container_name, environment)
           else:
             print("Skipping push to {} framework for container {} as Validation Checks failed.".format(framework, container))
+
+  if len(failed_container_list) > 0 :
+      return 1
 
 if __name__ == "__main__":
   settingObj = Settings()
