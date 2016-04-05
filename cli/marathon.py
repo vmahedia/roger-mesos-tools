@@ -94,45 +94,42 @@ class Marathon(Framework):
 
     return group_details
     
-  def validateGroupDetails(self, group_details):
+  def validateGroupDetails(self, group_details, message_list):
     http_prefixes = {}
     tcp_ports = {}
+    result = True
 
     for app_id, detail in group_details.iteritems():
       http_prefix = detail[0]
       if (http_prefix in http_prefixes):
-        print("HTTP_PREFIX conflict in Marathon template file. HTTP_PREFIX '{}' is used in multiple places.".format(http_prefix))
-        return False
+        message_list.append("HTTP_PREFIX conflict in Marathon template file. HTTP_PREFIX '{}' is used in multiple places.".format(http_prefix))
+        result = False
       else:
         if http_prefix != '':
-          print("Prefix: {} app_id: {}".format(http_prefix, app_id))
           http_prefixes[http_prefix] = app_id
 
       tcp_port_list = detail[1]
       for tcp_port in tcp_port_list:
         if (tcp_port in tcp_ports) and (tcp_port != ''):
-          print("TCP_PORT conflict in Marathon template file. TCP Port '{}' is used in multiple places.".format(tcp_port))
-          return False
+          message_list.append("TCP_PORT conflict in Marathon template file. TCP Port '{}' is used in multiple places.".format(tcp_port))
+          result = False
         else:
-          tcp_ports[tcp_port] = app_id
+          if tcp_port != '':
+            tcp_ports[tcp_port] = app_id
 
-    return True
+    return result
 
   def runDeploymentChecks(self, file_path, environment):
+    message_list = []
+    valid = True
+    app_ids = []
+    group_details = {}
     data = open(file_path).read()
     marathon_data = json.loads(data)
     if 'groups' in marathon_data:
       group_details = self.getGroupDetails(marathon_data)
-      valid = self.validateGroupDetails(group_details)
-      if valid == False:   # When there is a conflict among the apps in the template file
-        return False
-      else:
-        app_ids = group_details.keys()
-        for app_id in app_ids:
-          result = self.marathonvalidator.validate(self.haproxyparser, environment, group_details[app_id][0], group_details[app_id][1], app_id)
-          if result == False:
-            print("Validation failed for app_id '{}'. Skipping push to Marathon.".format(app_id))
-            return False
+      valid = self.validateGroupDetails(group_details, message_list)
+      app_ids = group_details.keys()
     else:
       app_id = marathon_data['id']
       if not app_id.startswith("/"):
@@ -146,12 +143,21 @@ class Marathon(Framework):
         if 'TCP_PORTS' in marathon_data['env']:
           tcp_ports_value = marathon_data['env']['TCP_PORTS']
           tcp_port_list = json.loads(tcp_ports_value).keys()
+      
+      app_ids = []
+      app_ids.append(app_id)
+      group_details[app_id] = (http_prefix, tcp_port_list) 
 
-      result = self.marathonvalidator.validate(self.haproxyparser, environment, http_prefix, tcp_port_list, app_id)
-      if result == False:
-        return False
+    for app_id in app_ids:
+      app_http_prefix = group_details[app_id][0]
+      app_tcp_port_list = group_details[app_id][1]
+      valid = self.marathonvalidator.validate(self.haproxyparser, environment, app_http_prefix, app_tcp_port_list, app_id, message_list) and valid
 
-    return True
+    if len(message_list) != 0:
+      for message in message_list:
+        print(message)
+
+    return valid
 
   def getCurrentImageVersion(self, roger_env, environment, application):
     data = self.get(roger_env, environment)
