@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import argparse
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, exceptions
 from datetime import datetime
 import requests
 import json
@@ -106,7 +106,7 @@ def mergeSecrets(json_str, secrets):
       raise StandardError('There are still "SECRET" values -- does your secrets file have all secret environment variables?')
   return json_str
 
-def renderTemplate(template, environment, image, app_data, config, container):
+def renderTemplate(template, environment, image, app_data, config, container, failed_container_list, container_name):
     output = ''
     variables = {}
     variables['environment'] = environment
@@ -146,7 +146,11 @@ def renderTemplate(template, environment, image, app_data, config, container):
             for env_var in container_vars['environment'][environment]:
               variables[env_var] = container_vars['environment'][environment][env_var]
 
-    output = template.render(variables)
+    try:
+      output = template.render(variables)
+    except exceptions.UndefinedError as e:
+      print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
+      failed_container_list.append(container_name)
     return output
 
 def main(settings, appConfig, frameworkObject, args):
@@ -201,6 +205,8 @@ def main(settings, appConfig, frameworkObject, args):
 
   # template marathon files
   data_containers = data['containers']
+  #Create a failed container_list to keep track of containers with unresolved jinja variables
+  failed_container_list=[]
 
   for container in data_containers:
     if type(container) == dict:
@@ -229,27 +235,29 @@ def main(settings, appConfig, frameworkObject, args):
     if not app_path.endswith('/'):
         app_path = app_path + '/'
 
-    env = Environment(loader=FileSystemLoader("{}".format(app_path)))
+    env = Environment(loader=FileSystemLoader("{}".format(app_path)), undefined=StrictUndefined)
     template = env.get_template(containerConfig)
     image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
     print("Rendering content from template [{}{}] for environment [{}]".format(app_path, containerConfig, environment))
-    output = renderTemplate(template, environment, image_path, data, config, container)
-    #Adding check so that not all apps try to mergeSecrets
-    outputObj = json.loads(output)
-    if 'SECRET' in output:
-      output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig, args, environment))
+    output = renderTemplate(template, environment, image_path, data, config, container, failed_container_list, container_name)
+    # Adding check to see if all jinja variables git resolved fot the container
+    if container_name not in failed_container_list:
+      #Adding check so that not all apps try to mergeSecrets
+      outputObj = json.loads(output)
+      if 'SECRET' in output:
+        output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig, args, environment))
 
-    try:
-      comp_exists = os.path.exists("{0}".format(comp_dir))
-      if comp_exists == False:
-        os.makedirs("{0}".format(comp_dir))
-      comp_env_exists = os.path.exists("{0}/{1}".format(comp_dir, environment))
-      if comp_env_exists == False:
-        os.makedirs("{0}/{1}".format(comp_dir, environment))
-    except Exception as e:
-      logging.error(traceback.format_exc())
-    with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
-      fh.write(output)
+      try:
+        comp_exists = os.path.exists("{0}".format(comp_dir))
+        if comp_exists == False:
+          os.makedirs("{0}".format(comp_dir))
+        comp_env_exists = os.path.exists("{0}/{1}".format(comp_dir, environment))
+        if comp_env_exists == False:
+          os.makedirs("{0}/{1}".format(comp_dir, environment))
+      except Exception as e:
+        logging.error(traceback.format_exc())
+      with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
+        fh.write(output)
 
   if args.skip_push:
       print("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(framework, comp_dir, environment))
@@ -266,10 +274,16 @@ def main(settings, appConfig, frameworkObject, args):
         config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
 
         result = frameworkObj.runDeploymentChecks(config_file_path, environment)
-        if args.force_push or result == True: 
-          frameworkObj.put(config_file_path, environmentObj, container_name, environment)
+        if container_name in failed_container_list:
+          print("Failed push to {} framework for container {} as Unresolved Jinja variables present in template.".format(framework, container))
         else:
-          print("Skipping push to {} framework for container {} as Validation Checks failed.".format(framework, container))
+          if args.force_push or result == True:
+            frameworkObj.put(config_file_path, environmentObj, container_name, environment)
+          else:
+            print("Skipping push to {} framework for container {} as Validation Checks failed.".format(framework, container))
+
+  if len(failed_container_list) > 0 :
+      return 1
 
 if __name__ == "__main__":
   settingObj = Settings()
