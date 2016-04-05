@@ -62,23 +62,94 @@ class Marathon(Framework):
     print(marathon_message)
     return resp
 
+  def getGroupDetails(self, data):
+    group_details = {}
+    base_id = data['id']
+    if not base_id.startswith("/"):
+      base_id = "/" + base_id
+    for group in data['groups']:
+      if 'id' in group.keys():
+        group_id = group['id']
+        if not group_id.startswith("/"):
+          group_id = "/" + group_id
+        for app in group['apps']:
+          http_prefix = ""
+          tcp_port_value = ""
+          tcp_port_list = []
+          if 'id' in app.keys():
+            app_id = app['id']
+          if not app_id.startswith("/"):
+            app_id = "/" + app_id
+          container_id = "{}{}{}".format(base_id, group_id, app_id)
+          if 'env' in app:
+            if 'HTTP_PREFIX' in app['env']:
+              http_prefix = app['env']['HTTP_PREFIX']
+
+            if 'TCP_PORTS' in app['env']:
+              tcp_ports_value = app['env']['TCP_PORTS']
+              tcp_port_list = json.loads(tcp_ports_value).keys()
+
+          envs = (http_prefix, tcp_port_list)
+          group_details[container_id] = envs
+
+    return group_details
+    
+  def validateGroupDetails(self, group_details):
+    http_prefixes = {}
+    tcp_ports = {}
+
+    for app_id, detail in group_details.iteritems():
+      http_prefix = detail[0]
+      if (http_prefix in http_prefixes):
+        print("HTTP_PREFIX conflict in Marathon template file. HTTP_PREFIX '{}' is used in multiple places.".format(http_prefix))
+        return False
+      else:
+        if http_prefix != '':
+          print("Prefix: {} app_id: {}".format(http_prefix, app_id))
+          http_prefixes[http_prefix] = app_id
+
+      tcp_port_list = detail[1]
+      for tcp_port in tcp_port_list:
+        if (tcp_port in tcp_ports) and (tcp_port != ''):
+          print("TCP_PORT conflict in Marathon template file. TCP Port '{}' is used in multiple places.".format(tcp_port))
+          return False
+        else:
+          tcp_ports[tcp_port] = app_id
+
+    return True
+
   def runDeploymentChecks(self, file_path, environment):
     data = open(file_path).read()
     marathon_data = json.loads(data)
-    app_id = marathon_data['id']
-    http_prefix = ""
-    tcp_port_list = []
-    if 'env' in marathon_data:
-      if 'HTTP_PREFIX' in marathon_data['env']:
-        http_prefix = marathon_data['env']['HTTP_PREFIX']
+    if 'groups' in marathon_data:
+      group_details = self.getGroupDetails(marathon_data)
+      valid = self.validateGroupDetails(group_details)
+      if valid == False:   # When there is a conflict among the apps in the template file
+        return False
+      else:
+        app_ids = group_details.keys()
+        for app_id in app_ids:
+          result = self.marathonvalidator.validate(self.haproxyparser, environment, group_details[app_id][0], group_details[app_id][1], app_id)
+          if result == False:
+            print("Validation failed for app_id '{}'. Skipping push to Marathon.".format(app_id))
+            return False
+    else:
+      app_id = marathon_data['id']
+      if not app_id.startswith("/"):
+        app_id = "/" + app_id
+      http_prefix = ""
+      tcp_port_list = []
+      if 'env' in marathon_data:
+        if 'HTTP_PREFIX' in marathon_data['env']:
+          http_prefix = marathon_data['env']['HTTP_PREFIX']
 
-      if 'TCP_PORTS' in marathon_data['env']:
-        tcp_ports_value = marathon_data['env']['TCP_PORTS']
-        tcp_port_list = json.loads(tcp_ports_value).keys()
+        if 'TCP_PORTS' in marathon_data['env']:
+          tcp_ports_value = marathon_data['env']['TCP_PORTS']
+          tcp_port_list = json.loads(tcp_ports_value).keys()
 
-    result = self.marathonvalidator.validate(self.haproxyparser, environment, http_prefix, tcp_port_list, app_id)
-    if result == False:
-      return False
+      result = self.marathonvalidator.validate(self.haproxyparser, environment, http_prefix, tcp_port_list, app_id)
+      if result == False:
+        return False
 
     return True
 
