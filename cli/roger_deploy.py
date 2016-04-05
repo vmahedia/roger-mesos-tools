@@ -34,9 +34,9 @@ def chdir(dirname):
   finally: os.chdir(curdir)
 
 #To remove a temporary directory created by roger-deploy if this script exits
-def removeDirTree(work_dir, args):
+def removeDirTree(work_dir, args, temp_dir_created):
   exists = os.path.exists(os.path.abspath(work_dir))
-  if exists and not args.directory:
+  if exists and (temp_dir_created == True):
     shutil.rmtree(work_dir)
     print("Deleting temporary dir:{0}".format(work_dir))
 
@@ -181,7 +181,7 @@ def push(root, app, work_dir, image_name, config_file, environment, settingObj, 
     roger_push.main(settingObj, appObj, frameworkUtils, push_args)
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-    removeDirTree(work_dir, args)
+    removeDirTree(work_dir, args, temp_dir_created)
     sys.exit('Exiting')
   return 0
 
@@ -195,7 +195,7 @@ def pullRepo(root, app, work_dir, config_file, branch, args, settingObj, appObj,
     return exit_code
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-    removeDirTree(work_dir, args)
+    removeDirTree(work_dir, args, temp_dir_created)
     sys.exit('Exiting')
 
 def main(settingObject, appObject, frameworkUtilsObject, gitObj, args):
@@ -229,9 +229,11 @@ def main(settingObject, appObject, frameworkUtilsObject, gitObj, args):
   work_dir = ''
   if args.directory:
     work_dir = args.directory
+    temp_dir_created = False
     print("Using {0} as the working directory".format(work_dir))
   else:
     work_dir = mkdtemp()
+    temp_dir_created = True
     print("Created a temporary dir: {0}".format(work_dir))
 
   if args.environment is None:
@@ -246,7 +248,7 @@ def main(settingObject, appObject, frameworkUtilsObject, gitObj, args):
     environment = args.environment
 
   if environment not in roger_env['environments']:
-    removeDirTree(work_dir, args)
+    removeDirTree(work_dir, args, temp_dir_created)
     print('Environment not found in roger-env.json file.')
     # Returning exit code for caller to catch
     return 1
@@ -256,9 +258,10 @@ def main(settingObject, appObject, frameworkUtilsObject, gitObj, args):
     branch = args.branch
 
   for app in apps:
-    deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo)
+    deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
 
-def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo):
+def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo, temp_dir_created):
+
   startTime = datetime.now()
   settingObj = settingObject
   appObj = appObject
@@ -281,11 +284,11 @@ def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args
   try:
     exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, settingObj, appObj, gitObj)
     if exit_code != 0:
-      removeDirTree(work_dir, args)
+      removeDirTree(work_dir, args, temp_dir_created)
       sys.exit('Exiting')
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-    removeDirTree(work_dir, args)
+    removeDirTree(work_dir, args, temp_dir_created)
     sys.exit('Exiting')
 
   skip_build = False
@@ -320,11 +323,11 @@ def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args
     try:
       exit_code = os.system("{0}/cli/roger_build.py --push {1} {2} {3} {4}".format(root, app, os.path.abspath(work_dir), image_name, config_file))
       if exit_code != 0:
-        removeDirTree(work_dir, args)
+        removeDirTree(work_dir, args, temp_dir_created)
         sys.exit('Exiting')
     except (IOError) as e:
       print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-      removeDirTree(work_dir, args)
+      removeDirTree(work_dir, args, temp_dir_created)
       sys.exit('Exiting')
   print("Version is:"+image_name)
 
@@ -332,14 +335,14 @@ def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args
   try:
     exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, settingObj, appObj, frameworkUtils, args)
     if exit_code != 0:
-      removeDirTree(work_dir, args)
+      removeDirTree(work_dir, args, temp_dir_created)
       sys.exit('Exiting')
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-    removeDirTree(work_dir, args)
+    removeDirTree(work_dir, args, temp_dir_created)
     sys.exit('Exiting')
 
-  removeDirTree(work_dir, args)
+  removeDirTree(work_dir, args, temp_dir_created)
 
   deployTime = datetime.now() - startTime
 
