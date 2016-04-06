@@ -67,41 +67,6 @@ class TestBuild(unittest.TestCase):
     return_code = roger_build.main(settings, appConfig, mockedHooks, args)
     assert return_code == 1
 
-  # This test is not a valid test because registry is required only if docker image needs to be built and pushed.
-  # The need to build and push docker images is not a strict requirement.
-  # Commenting out for now. Should be removed in the future after all parties agree.
-
-  def test_roger_build_with_no_registry_fails(self):
-    '''
-    settings = mock(Settings)
-    appConfig = mock(AppConfig)
-    hooks = mock(Hooks)
-    roger_env = self.roger_env
-    config = self.config
-    data = self.data
-    when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
-    when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
-    when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
-    when(settings).getConfigDir().thenReturn(self.configs_dir)
-    when(settings).getCliDir().thenReturn(self.base_dir)
-    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
-    when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
-    when(appConfig).getAppData(self.configs_dir, any(str), any(str)).thenReturn(data)
-    when(hooks).run_hook(any(), any(), any()).thenReturn(0)
-    # Setting up args
-    args = self.args
-    args.config_file = 'app.json'
-    args.app_name = 'any app'
-    args.directory = '/tmp'
-    config_dir = settings.getConfigDir()
-    roger_env = appConfig.getRogerEnv(config_dir)
-    # Remove registry key from dictionary
-    del roger_env['registry']
-
-    return_code = roger_build.main(settings, appConfig, hooks, args)
-    assert return_code == 1
-    '''
-
   def test_roger_build_calls_prebuild_hook_when_present(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
@@ -120,7 +85,7 @@ class TestBuild(unittest.TestCase):
     args.directory = '/tmp'
     when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     return_code = roger_build.main(settings, appConfig, mockedHooks, args)
-    verify(mockedHooks).run_hook("pre-build", any(), any())
+    verify(mockedHooks).run_hook("pre_build", any(), any())
 
   def test_roger_build_calls_postbuild_hook_when_present(self):
     settings = mock(Settings)
@@ -140,7 +105,7 @@ class TestBuild(unittest.TestCase):
     args.directory = '/tmp'
     when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     return_code = roger_build.main(settings, appConfig, mockedHooks, args)
-    verify(mockedHooks).run_hook("post-build", any(), any())
+    verify(mockedHooks).run_hook("post_build", any(), any())
 
   def tearDown(self):
     pass

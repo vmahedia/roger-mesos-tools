@@ -76,7 +76,7 @@ def main(settingObj, appObj, hooksObj, args):
     else:
       file_path = "{0}/{1}/{2}".format(cur_dir, args.directory, repo)
 
-  hookname = "pre-build"
+  hookname = "pre_build"
   exit_code = hooksObj.run_hook(hookname, data, file_path)
   if exit_code != 0:
       sys.exit('{} hook failed. Exiting.'.format(hookname))
@@ -110,7 +110,7 @@ def main(settingObj, appObj, hooksObj, args):
   else:
     print("Dockerfile does not exist in dir: {}".format(file_path))
 
-  hookname = "post-build"
+  hookname = "post_build"
   exit_code = hooksObj.run_hook(hookname, data, file_path)
   if exit_code != 0:
       sys.exit('{} hook failed. Exiting.'.format(hookname))
