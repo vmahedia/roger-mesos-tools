@@ -12,11 +12,12 @@ def chdir(dirname):
     yield
   finally: os.chdir(curdir)
 
-def run_hook(hookname, appdata, abs_path):
-  exit_code = 0
-  if "hooks" in appdata and hookname in appdata["hooks"]:
-    with chdir(abs_path):
-      print("About to run {} hook...".format(hookname))
-      exit_code = os.system(appdata["hooks"][hookname])
+class Hooks:
+  def run_hook(self, hookname, appdata, abs_path):
+    exit_code = 0
+    if "hooks" in appdata and hookname in appdata["hooks"]:
+      with chdir(abs_path):
+        print("About to run {} hook...".format(hookname))
+        exit_code = os.system(appdata["hooks"][hookname])
 
-  return exit_code
+    return exit_code
