@@ -10,7 +10,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath
 import roger_build
 from appconfig import AppConfig
 from settings import Settings
-from mockito import mock, when
+from mockito import mock, when, verify
+from mockito.matchers import any
+from hooks import Hooks
 
 #Test basic functionalities of roger-build script
 class TestBuild(unittest.TestCase):
@@ -45,6 +47,7 @@ class TestBuild(unittest.TestCase):
   def test_roger_build_with_no_app_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    mockedHooks = mock(Hooks)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -61,33 +64,48 @@ class TestBuild(unittest.TestCase):
     args.app_name = ''
     args.config_file = 'app.json'
 
-    return_code = roger_build.main(settings, appConfig, args)
+    return_code = roger_build.main(settings, appConfig, mockedHooks, args)
     assert return_code == 1
 
-  def test_roger_build_with_no_registry_fails(self):
+  def test_roger_build_calls_prebuild_hook_when_present(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
-    roger_env = self.roger_env
+    mockedHooks = mock(Hooks)
+    roger_env = {}
+    roger_env["registry"] = "any registry"
+    when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+    appdata = {}
+    appdata["hooks"]=dict([("pre-build", "some command")])
+    when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
     config = self.config
-    data = self.data
-    when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
-    when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
-    when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
-    when(settings).getConfigDir().thenReturn(self.configs_dir)
-    when(settings).getCliDir().thenReturn(self.base_dir)
-    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
-    when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
-    when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
-    # Setting up args
+    when(appConfig).getConfig(any(), any()).thenReturn(config)
     args = self.args
-    args.config_file = 'app.json'
-    config_dir = settings.getConfigDir()
-    roger_env = appConfig.getRogerEnv(config_dir)
-    # Remove registry key from dictionary
-    del roger_env['registry']
+    args.config_file = 'any.json'
+    args.app_name = 'any app'
+    args.directory = '/tmp'
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+    return_code = roger_build.main(settings, appConfig, mockedHooks, args)
+    verify(mockedHooks).run_hook("pre_build", any(), any())
 
-    return_code = roger_build.main(settings, appConfig, args)
-    assert return_code == 1
+  def test_roger_build_calls_postbuild_hook_when_present(self):
+    settings = mock(Settings)
+    appConfig = mock(AppConfig)
+    mockedHooks = mock(Hooks)
+    roger_env = {}
+    roger_env["registry"] = "any registry"
+    when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+    appdata = {}
+    appdata["hooks"]=dict([("post-build", "some command")])
+    when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
+    config = self.config
+    when(appConfig).getConfig(any(), any()).thenReturn(config)
+    args = self.args
+    args.config_file = 'any.json'
+    args.app_name = 'any app'
+    args.directory = '/tmp'
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+    return_code = roger_build.main(settings, appConfig, mockedHooks, args)
+    verify(mockedHooks).run_hook("post_build", any(), any())
 
   def tearDown(self):
     pass

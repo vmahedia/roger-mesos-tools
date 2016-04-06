@@ -14,12 +14,4 @@ install:
 
 script:
     - export PATH=$PATH:/home/travis/build/seomoz/roger-mesos-tools/bin:/home/travis/build/seomoz/roger-mesos-tools/cli
-    - cd tests
-    - python test_roger_init.py
-    - python test_appconfig.py
-    - python test_roger_build.py
-    - python test_settings.py
-    - python test_roger_container.py
-    - python test_roger_push.py
-    - python test_roger_gitpull.py
-    - python test_roger_deploy.py
+    - python setup.py test

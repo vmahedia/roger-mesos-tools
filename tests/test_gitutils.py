@@ -10,7 +10,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath
 from settings import Settings
 from gitutils  import GitUtils
 
+import pytest
+
 #Test basic functionalities of roger-init script
+@pytest.skip
 class TestInit(unittest.TestCase):
 
   def setUp(self):
