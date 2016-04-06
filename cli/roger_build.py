@@ -7,6 +7,7 @@ import os
 import sys
 from settings import Settings
 from appconfig import AppConfig
+from hooks import Hooks
 
 import contextlib
 
@@ -35,22 +36,18 @@ def parse_args():
   parser.add_argument('--push', '-p', help="Also push to registry. Defaults to false.", action="store_true")
   return parser
 
-def main(settingObj, appObj, args):
+def main(settingObj, appObj, hooksObj, args):
   config_dir = settingObj.getConfigDir()
   root = settingObj.getCliDir()
   config = appObj.getConfig(config_dir, args.config_file)
   roger_env = appObj.getRogerEnv(config_dir)
 
-  if 'registry' not in roger_env:
-    print('Registry not found in roger-env.json file.')
-    return 1
-
-  if args.app_name not in config['apps']:
-    print('Application specified not found.')
-    return 1
-
   common_repo = config.get('repo', '')
   data = appObj.getAppData(config_dir, args.config_file, args.app_name)
+  if not data:
+    print('Application with name [{}] or data for it not found at {}/{}.'.format(args.app_name, config_dir, args.config_file))
+    return 1
+
   repo = ''
   if common_repo != '':
     repo = data.get('repo', common_repo)
@@ -79,9 +76,17 @@ def main(settingObj, appObj, args):
     else:
       file_path = "{0}/{1}/{2}".format(cur_dir, args.directory, repo)
 
+  hookname = "pre-build"
+  exit_code = hooksObj.run_hook(hookname, data, file_path)
+  if exit_code != 0:
+      sys.exit('{} hook failed. Exiting.'.format(hookname))
+
   file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
   if file_exists:
+    if 'registry' not in roger_env:
+      print('Registry not found in roger-env.json file.')
+      return 1
     image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
     try:
       if abs_path == args.directory:
@@ -103,11 +108,17 @@ def main(settingObj, appObj, args):
       print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
       sys.exit('Exiting from build.')
   else:
-    print("Dockerfile does not exist in {0} dir:".format(file_path))
+    print("Dockerfile does not exist in dir: {}".format(file_path))
+
+  hookname = "post-build"
+  exit_code = hooksObj.run_hook(hookname, data, file_path)
+  if exit_code != 0:
+      sys.exit('{} hook failed. Exiting.'.format(hookname))
 
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
+  hooksObj = Hooks()
   parser = parse_args()
   args = parser.parse_args()
-  main(settingObj, appObj, args)
+  main(settingObj, appObj, hooksObj, args)
