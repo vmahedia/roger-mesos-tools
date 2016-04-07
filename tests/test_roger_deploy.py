@@ -14,7 +14,9 @@ from marathon import Marathon
 from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
 from settings import Settings
+from hooks import Hooks
 from mockito import mock, when, verify
+from mockito.matchers import any
 from mock import MagicMock
 from settings import Settings
 from gitutils  import GitUtils
@@ -89,6 +91,7 @@ class TestDeploy(unittest.TestCase):
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
     gitObj = mock(GitUtils)
+    mockedHooks = mock(Hooks)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -113,7 +116,7 @@ class TestDeploy(unittest.TestCase):
     os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
 
     roger_deploy.push = MagicMock(return_value=0)
-    return_code = roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, args)
+    return_code = roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
     assert return_code == 1
 
   def test_roger_deploy_with_no_registry_fails(self):
@@ -121,6 +124,7 @@ class TestDeploy(unittest.TestCase):
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
     gitObj = mock(GitUtils)
+    mockedHooks = mock(Hooks)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -147,13 +151,14 @@ class TestDeploy(unittest.TestCase):
     roger_env = appConfig.getRogerEnv(self.configs_dir)
     del roger_env['registry']
     roger_deploy.push = MagicMock(return_value=0)
-    return_code = roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, args)
+    return_code = roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
     assert return_code == 1
 
   def test_roger_deploy_with_no_environment_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
     gitObj = mock(GitUtils)
     roger_env = self.roger_env
     config = self.config
@@ -178,7 +183,7 @@ class TestDeploy(unittest.TestCase):
     args.branch = None
     os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
     roger_deploy.push = MagicMock(return_value=0)
-    return_code = roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, args)
+    return_code = roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
     assert return_code == 1
 
   def test_rogerDeploy(self):
@@ -186,6 +191,7 @@ class TestDeploy(unittest.TestCase):
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
     gitObj = mock(GitUtils)
+    mockedHooks = mock(Hooks)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -197,6 +203,9 @@ class TestDeploy(unittest.TestCase):
     when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
     when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
     when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+    when(gitObj).gitPull(any()).thenReturn(0)
+    when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
 
     args = self.args
     args.directory=""
@@ -209,7 +218,7 @@ class TestDeploy(unittest.TestCase):
     args.branch = None
     os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
     roger_deploy.push = MagicMock(return_value=0)
-    roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, args)
+    roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
     settings.getConfigDir   = MagicMock(return_value=2)
     settings.getCliDir      = MagicMock(return_value=2)
     appConfig.getRogerEnv   = MagicMock(return_value=2)
@@ -226,6 +235,7 @@ class TestDeploy(unittest.TestCase):
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
     gitObj = mock(GitUtils)
+    mockedHooks = mock(Hooks)
 
     roger_env = self.roger_env
     config = self.config
@@ -238,6 +248,9 @@ class TestDeploy(unittest.TestCase):
     when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
     when(appConfig).getConfig(self.configs_dir, "app.json").thenReturn(config)
     when(appConfig).getAppData(self.configs_dir, "app.json", "grafana_test_app").thenReturn(data)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+    when(gitObj).gitPull(any()).thenReturn(0)
+    when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
 
     args = self.args
     args.directory=""
@@ -250,7 +263,7 @@ class TestDeploy(unittest.TestCase):
     args.branch = None
     os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
     roger_deploy.push = MagicMock(return_value=0)
-    roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, args)
+    roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
     settings.getConfigDir   = MagicMock(return_value=2)
     settings.getCliDir      = MagicMock(return_value=2)
     appConfig.getRogerEnv   = MagicMock(return_value=2)

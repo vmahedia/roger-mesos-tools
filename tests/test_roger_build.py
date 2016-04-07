@@ -75,7 +75,7 @@ class TestBuild(unittest.TestCase):
     roger_env["registry"] = "any registry"
     when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
     appdata = {}
-    appdata["hooks"]=dict([("pre-build", "some command")])
+    appdata["hooks"]=dict([("pre_build", "some command")])
     when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
     config = self.config
     when(appConfig).getConfig(any(), any()).thenReturn(config)
@@ -95,7 +95,7 @@ class TestBuild(unittest.TestCase):
     roger_env["registry"] = "any registry"
     when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
     appdata = {}
-    appdata["hooks"]=dict([("post-build", "some command")])
+    appdata["hooks"]=dict([("post_build", "some command")])
     when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
     config = self.config
     when(appConfig).getConfig(any(), any()).thenReturn(config)
