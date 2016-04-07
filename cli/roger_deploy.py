@@ -17,6 +17,7 @@ import shutil
 import roger_push
 from settings import Settings
 from appconfig import AppConfig
+from hooks import Hooks
 from marathon import Marathon
 from chronos import Chronos
 from frameworkUtils import FrameworkUtils
@@ -168,7 +169,7 @@ def parseArgs():
     help="working directory. Uses a temporary directory if not specified.")
   return parser
 
-def push(root, app, work_dir, image_name, config_file, environment, settingObj, appObj, frameworkUtils, args):
+def push(root, app, work_dir, image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args):
   # Prepare push_args to invoke roger_push
   push_args = args
   push_args.image_name = image_name
@@ -178,7 +179,7 @@ def push(root, app, work_dir, image_name, config_file, environment, settingObj, 
   push_args.directory = work_dir
 
   try:
-    roger_push.main(settingObj, appObj, frameworkUtils, push_args)
+    roger_push.main(settingObj, appObj, frameworkUtils, hooksObj, push_args)
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     removeDirTree(work_dir, args, temp_dir_created)
@@ -333,7 +334,7 @@ def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, 
 
   #Deploying the app to framework
   try:
-    exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, settingObj, appObj, frameworkUtils, args)
+    exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args)
     if exit_code != 0:
       removeDirTree(work_dir, args, temp_dir_created)
       sys.exit('Exiting')

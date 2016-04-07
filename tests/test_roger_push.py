@@ -13,7 +13,9 @@ from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
 from settings import Settings
 from mockito import mock, when, verify
+from mockito.matchers import any
 from settings import Settings
+from hooks import Hooks
 
 #Test basic functionalities of roger-push script
 class TestPush(unittest.TestCase):
@@ -49,6 +51,8 @@ class TestPush(unittest.TestCase):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -72,7 +76,7 @@ class TestPush(unittest.TestCase):
     args.config_file = 'app.json'
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
-    roger_push.main(settings, appConfig, frameworkUtils, args)
+    roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
     with open(self.components_dir+'/test-app-grafana.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
@@ -86,6 +90,8 @@ class TestPush(unittest.TestCase):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     roger_env = self.roger_env
     config = self.test_config
     data = self.test_data
@@ -111,7 +117,7 @@ class TestPush(unittest.TestCase):
     args.config_file = 'app.json'
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
-    roger_push.main(settings, appConfig, frameworkUtils, args)
+    roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
     with open(self.components_dir+'/test-app-grafana.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
@@ -133,6 +139,8 @@ class TestPush(unittest.TestCase):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -151,13 +159,16 @@ class TestPush(unittest.TestCase):
     args = self.args
     args.app_name = ''
     args.config_file = 'app.json'
-    return_code = roger_push.main(settings, appConfig, frameworkUtils, args)
+    args.env = 'some_test_env'
+    return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
     assert return_code == 1
 
   def test_roger_push_with_no_registry_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -186,13 +197,15 @@ class TestPush(unittest.TestCase):
     roger_env = appConfig.getRogerEnv(config_dir)
     # Remove registry key from dictionary
     del roger_env['registry']
-    retrun_code = roger_push.main(settings, appConfig, frameworkUtils, args)
+    retrun_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
     assert retrun_code == 1
 
   def test_roger_push_with_no_environment_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -218,7 +231,7 @@ class TestPush(unittest.TestCase):
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
 
-    retrun_code = roger_push.main(settings, appConfig, frameworkUtils, args)
+    retrun_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
     assert retrun_code == 1
 
   def test_negative(self):
@@ -235,6 +248,8 @@ class TestPush(unittest.TestCase):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -260,8 +275,74 @@ class TestPush(unittest.TestCase):
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'tests/v0.1.0'
 
-    return_code = roger_push.main(settings, appConfig, frameworkUtils, args)
+    return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
     assert return_code == 1
+
+  def test_roger_push_calls_prepush_hook_when_present(self):
+    settings = mock(Settings)
+    appConfig = mock(AppConfig)
+    marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
+    frameworkUtils = mock(FrameworkUtils)
+    roger_env = self.roger_env
+    appdata = self.data
+    config = self.config
+    when(frameworkUtils).getFramework(any()).thenReturn(marathon)
+    when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
+    when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
+    when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
+    when(settings).getConfigDir().thenReturn(self.configs_dir)
+    when(settings).getCliDir().thenReturn(self.base_dir)
+    when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+    when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+
+    appdata["hooks"]=dict([("pre_push", "some command")])
+    when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
+    when(appConfig).getConfig(any(), any()).thenReturn(config)
+    args = self.args
+    args.config_file = 'any.json'
+    args.app_name = 'any app'
+    args.env = 'dev'
+    args.image_name = 'tests/v0.1.0'
+    args.directory = '/tmp'
+    args.secrets_file=""
+    args.skip_push=True
+    return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+    verify(mockedHooks).run_hook("pre_push", any(), any())
+
+  def test_roger_push_calls_postpush_hook_when_present(self):
+   settings = mock(Settings)
+   appConfig = mock(AppConfig)
+   marathon = mock(Marathon)
+   mockedHooks = mock(Hooks)
+   frameworkUtils = mock(FrameworkUtils)
+   roger_env = self.roger_env
+   appdata = self.data
+   config = self.config
+   when(frameworkUtils).getFramework(any()).thenReturn(marathon)
+   when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
+   when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
+   when(settings).getTemplatesDir().thenReturn(self.base_dir+"/tests/templates")
+   when(settings).getConfigDir().thenReturn(self.configs_dir)
+   when(settings).getCliDir().thenReturn(self.base_dir)
+   when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
+   when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+   when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+
+   appdata["hooks"]=dict([("post_push", "some command")])
+   when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
+   when(appConfig).getConfig(any(), any()).thenReturn(config)
+   args = self.args
+   args.config_file = 'any.json'
+   args.app_name = 'any app'
+   args.env = 'dev'
+   args.image_name = 'tests/v0.1.0'
+   args.directory = '/tmp'
+   args.secrets_file=""
+   args.skip_push=True
+   return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+   verify(mockedHooks).run_hook("post_push", any(), any())
 
   def tearDown(self):
     pass
