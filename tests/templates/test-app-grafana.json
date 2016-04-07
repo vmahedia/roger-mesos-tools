@@ -41,6 +41,7 @@
     "GF_AUTH_GOOGLE_ALLOWED_DOMAINS": "example.com",
     "GF_AUTH_GOOGLE_ALLOW_SIGN_UP": "true",
     "GF_SERVER_ROOT_URL": "http://example.com:3000",
-    "ENV_VAR": "some env value"
+    "ENV_VAR": "some env value",
+    "SECRET": "secret_var"
   }
 }
