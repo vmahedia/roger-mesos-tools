@@ -83,7 +83,7 @@ class TestPush(unittest.TestCase):
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
     roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    with open(self.components_dir+'/test-app-grafana.json') as output:
+    with open(self.base_dir+'/tests/templates/test-app-grafana.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
     verify(settings).getConfigDir()
@@ -124,18 +124,18 @@ class TestPush(unittest.TestCase):
     args.config_file = 'test.json'
     args.image_name = 'grafana/grafana:2.1.3'
     roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    with open(self.components_dir+'/test-app-grafana.json') as output:
+    with open(self.base_dir+'/tests/templates/test-app-grafana.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
     assert output['cpus'] == 2
     assert output['mem'] == 1024
     assert output['uris'] == [ "abc", "xyz", "$ENV_VAR" ]
-    with open(self.components_dir+'/test-app-grafana1.json') as output:
+    with open(self.base_dir+'/tests/templates/test-app-grafana1.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
     assert output['cpus'] == 0.5
     assert output['mem'] == 512
-    with open(self.components_dir+'/test-app-grafana2.json') as output:
+    with open(self.base_dir+'/tests/templates/test-app-grafana2.json') as output:
       output = json.load(output)
     assert output['container']['docker']['image'] == "grafana/grafana:2.1.3"
     assert output['cpus'] == 1

@@ -21,8 +21,8 @@
   },
   "id": "roger-grafana1",
   "instances": 1,
-  "cpus": {{ cpus }},
-  "mem": {{ mem }},
+  "cpus": 0.5,
+  "mem": 512,
   "uris": [],
   "env": {
     "TCP_PORTS": "{ \"3000\": \"PORT0\" }",
