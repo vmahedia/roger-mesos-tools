@@ -11,7 +11,9 @@ import roger_gitpull
 import argparse
 from settings import Settings
 from appconfig import AppConfig
+from hooks import Hooks
 from mockito import mock, when, verify
+from mockito.matchers import any
 from marathon import Marathon
 from gitutils  import GitUtils
 from frameworkUtils import FrameworkUtils
@@ -59,6 +61,7 @@ class TestGitPull(unittest.TestCase):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
     gitObj = mock(GitUtils)
     data = self.data
     config = self.config
@@ -79,7 +82,10 @@ class TestGitPull(unittest.TestCase):
     args.config_file = config_file
     args.branch = "master"
     args.directory = self.work_dir
-    return_code = roger_gitpull.main(settings, appConfig, gitObj, args)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+    when(gitObj).gitPull(any()).thenReturn(0)
+    when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
+    return_code = roger_gitpull.main(settings, appConfig, gitObj, mockedHooks, args)
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     exists = os.path.exists(work_dir)
@@ -87,6 +93,54 @@ class TestGitPull(unittest.TestCase):
     shutil.rmtree(work_dir)
     if set_config_dir.strip() != '':
       os.environ["ROGER_CONFIG_DIR"] = "{}".format(set_config_dir)
+
+  def test_roger_gitpull_calls_pregitpull_hook_when_present(self):
+    settings = mock(Settings)
+    appConfig = mock(AppConfig)
+    mockedHooks = mock(Hooks)
+    gitObj = mock(GitUtils)
+    roger_env = {}
+    roger_env["registry"] = "any registry"
+    when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+    appdata = {}
+    appdata["hooks"]=dict([("pre_gitpull", "some command")])
+    when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
+    config = self.config
+    when(appConfig).getConfig(any(), any()).thenReturn(config)
+    args = self.args
+    args.config_file = 'any.json'
+    args.app_name = 'any app'
+    args.branch = "some_branch"
+    args.directory = '/tmp'
+    when(gitObj).gitPull(any()).thenReturn(0)
+    when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+    return_code = roger_gitpull.main(settings, appConfig, gitObj, mockedHooks, args)
+    verify(mockedHooks).run_hook("pre_gitpull", any(), any())
+
+  def test_roger_gitpull_calls_postgitpull_hook_when_present(self):
+    settings = mock(Settings)
+    appConfig = mock(AppConfig)
+    mockedHooks = mock(Hooks)
+    gitObj = mock(GitUtils)
+    roger_env = {}
+    roger_env["registry"] = "any registry"
+    when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+    appdata = {}
+    appdata["hooks"]=dict([("post_gitpull", "some command")])
+    when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
+    config = self.config
+    when(appConfig).getConfig(any(), any()).thenReturn(config)
+    args = self.args
+    args.config_file = 'any.json'
+    args.app_name = 'any app'
+    args.branch = "some_branch"
+    args.directory = '/tmp'
+    when(gitObj).gitPull(any()).thenReturn(0)
+    when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+    return_code = roger_gitpull.main(settings, appConfig, gitObj, mockedHooks, args)
+    verify(mockedHooks).run_hook("post_gitpull", any(), any())
 
   def tearDown(self):
     pass

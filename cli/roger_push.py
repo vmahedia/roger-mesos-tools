@@ -13,6 +13,7 @@ import logging
 from settings import Settings
 from appconfig import AppConfig
 from marathon import Marathon
+from hooks import Hooks
 from chronos import Chronos
 from frameworkUtils import FrameworkUtils
 
@@ -153,7 +154,7 @@ def renderTemplate(template, environment, image, app_data, config, container, fa
       failed_container_list.append(container_name)
     return output
 
-def main(settings, appConfig, frameworkObject, args):
+def main(settings, appConfig, frameworkObject, hooksObj, args):
   settingObj = settings
   appObj = appConfig
   frameworkUtils = frameworkObject
@@ -165,10 +166,6 @@ def main(settings, appConfig, frameworkObject, args):
 
   if 'registry' not in roger_env.keys():
     print('Registry not found in roger-env.json file.Exiting...')
-    return 1
-
-  if args.app_name not in config['apps'].keys():
-    print('Application specified not found.Exiting...')
     return 1
 
   environment = roger_env.get('default', '')
@@ -190,6 +187,9 @@ def main(settings, appConfig, frameworkObject, args):
   environmentObj = roger_env['environments'][environment]
   common_repo = config.get('repo', '')
   data = appObj.getAppData(config_dir, args.config_file, args.app_name)
+  if not data:
+    print('Application with name [{}] or data for it not found at {}/{}.'.format(args.app_name, config_dir, args.config_file))
+    return 1
   frameworkObj = frameworkUtils.getFramework(data)
   framework = frameworkObj.getName()
 
@@ -259,6 +259,11 @@ def main(settings, appConfig, frameworkObject, args):
       with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
         fh.write(output)
 
+  hookname = "pre_push"
+  exit_code = hooksObj.run_hook(hookname, data, app_path)
+  if exit_code != 0:
+      sys.exit('{} hook failed. Exiting.'.format(hookname))
+
   if args.skip_push:
       print("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(framework, comp_dir, environment))
   else:
@@ -285,10 +290,16 @@ def main(settings, appConfig, frameworkObject, args):
   if len(failed_container_list) > 0 :
       return 1
 
+  hookname = "post_push"
+  exit_code = hooksObj.run_hook(hookname, data, app_path)
+  if exit_code != 0:
+      sys.exit('{} hook failed. Exiting.'.format(hookname))
+
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
   frameworkUtils = FrameworkUtils()
+  hooksObj = Hooks()
   parser = parse_args()
   args = parser.parse_args()
-  main(settingObj, appObj, frameworkUtils, args)
+  main(settingObj, appObj, frameworkUtils, hooksObj, args)

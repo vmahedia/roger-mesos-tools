@@ -17,6 +17,7 @@ import shutil
 import roger_push
 from settings import Settings
 from appconfig import AppConfig
+from hooks import Hooks
 from marathon import Marathon
 from chronos import Chronos
 from frameworkUtils import FrameworkUtils
@@ -168,7 +169,7 @@ def parseArgs():
     help="working directory. Uses a temporary directory if not specified.")
   return parser
 
-def push(root, app, work_dir, image_name, config_file, environment, settingObj, appObj, frameworkUtils, args):
+def push(root, app, work_dir, image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args):
   # Prepare push_args to invoke roger_push
   push_args = args
   push_args.image_name = image_name
@@ -178,27 +179,27 @@ def push(root, app, work_dir, image_name, config_file, environment, settingObj, 
   push_args.directory = work_dir
 
   try:
-    roger_push.main(settingObj, appObj, frameworkUtils, push_args)
+    roger_push.main(settingObj, appObj, frameworkUtils, hooksObj, push_args)
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     removeDirTree(work_dir, args, temp_dir_created)
     sys.exit('Exiting')
   return 0
 
-def pullRepo(root, app, work_dir, config_file, branch, args, settingObj, appObj, gitObj):
+def pullRepo(root, app, work_dir, config_file, branch, args, settingObj, appObj, hooksObj, gitObj):
 
   args.app_name = app
   args.directory = work_dir
 
   try:
-    exit_code = roger_gitpull.main(settingObj, appObj, gitObj, args)
+    exit_code = roger_gitpull.main(settingObj, appObj, gitObj, hooksObj, args)
     return exit_code
   except (IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     removeDirTree(work_dir, args, temp_dir_created)
     sys.exit('Exiting')
 
-def main(settingObject, appObject, frameworkUtilsObject, gitObj, args):
+def main(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, args):
   settingObj = settingObject
   appObj = appObject
   config_dir = settingObj.getConfigDir()
@@ -258,9 +259,9 @@ def main(settingObject, appObject, frameworkUtilsObject, gitObj, args):
     branch = args.branch
 
   for app in apps:
-    deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
+    deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
 
-def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo, temp_dir_created):
+def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo, temp_dir_created):
 
   startTime = datetime.now()
   settingObj = settingObject
@@ -282,7 +283,7 @@ def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args
 
   # get/update target source(s)
   try:
-    exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, settingObj, appObj, gitObj)
+    exit_code = pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, settingObj, appObj, hooksObj, gitObj)
     if exit_code != 0:
       removeDirTree(work_dir, args, temp_dir_created)
       sys.exit('Exiting')
@@ -333,7 +334,7 @@ def deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, root, args
 
   #Deploying the app to framework
   try:
-    exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, settingObj, appObj, frameworkUtils, args)
+    exit_code = push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args)
     if exit_code != 0:
       removeDirTree(work_dir, args, temp_dir_created)
       sys.exit('Exiting')
@@ -363,6 +364,7 @@ if __name__ == "__main__":
   appObj = AppConfig()
   frameworkUtils = FrameworkUtils()
   gitObj = GitUtils()
+  hooksObj = Hooks()
   parser = parseArgs()
   args = parser.parse_args()
-  main(settingObj, appObj, frameworkUtils, gitObj, args)
+  main(settingObj, appObj, frameworkUtils, gitObj, hooksObj, args)

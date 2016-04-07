@@ -13,7 +13,9 @@ from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
 from settings import Settings
 from mockito import mock, when, verify
+from mockito.matchers import any
 from mock import MagicMock
+from hooks import Hooks
 
 #Test basic functionalities of roger-push script
 class Testcontainer(unittest.TestCase):
@@ -45,6 +47,8 @@ class Testcontainer(unittest.TestCase):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
+    mockedHooks = mock(Hooks)
+    when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     roger_env = self.roger_env
     config = self.config
     data = self.data
@@ -70,7 +74,7 @@ class Testcontainer(unittest.TestCase):
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'tests/v0.1.0'
 
-    roger_push.main(settings, appConfig, frameworkUtils, args)
+    roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
 
     with open(self.base_dir+'/tests/components/dev/roger-single-container-var-tests.json') as output:
       output = json.load(output)

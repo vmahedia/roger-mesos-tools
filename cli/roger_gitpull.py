@@ -8,6 +8,7 @@ import sys
 from settings import Settings
 from appconfig import AppConfig
 from gitutils  import GitUtils
+from hooks import Hooks
 import errno
 
 import contextlib
@@ -36,18 +37,18 @@ def parse_args():
     help="configuration file to use. Example: 'content.json' or 'kwe.json'")
   return parser
 
-def main(settings, appConfig, gitObject, args):
+def main(settings, appConfig, gitObject, hooksObj, args):
   settingObj = settings
   appObj = appConfig
   gitObj = gitObject
   config_dir = settingObj.getConfigDir()
   config = appObj.getConfig(config_dir, args.config_file)
 
-  if args.app_name not in config['apps']:
-    sys.exit('Application specified not found.')
-
   common_repo = config.get('repo', '')
   data = appObj.getAppData(config_dir, args.config_file, args.app_name)
+  if not data:
+    print('Application with name [{}] or data for it not found at {}/{}.'.format(args.app_name, config_dir, args.config_file))
+    return 1
   repo = ''
   if common_repo != '':
     repo = data.get('repo', common_repo)
@@ -64,6 +65,12 @@ def main(settings, appConfig, gitObject, args):
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise
+
+  hookname = "pre_gitpull"
+  exit_code = hooksObj.run_hook(hookname, data, args.directory)
+  if exit_code != 0:
+      sys.exit('{} hook failed. Exiting.'.format(hookname))
+
   # get/update target source(s)
   path = "{0}/{1}".format(args.directory, repo)
   if os.path.isdir(path):
@@ -73,15 +80,21 @@ def main(settings, appConfig, gitObject, args):
     with chdir('{0}'.format(args.directory)):
       exit_code = gitObj.gitShallowClone(repo, branch)
 
-  if exit_code is None:
-    return 0
-  else:
-    return exit_code
+  if exit_code != 0:
+    sys.exit('gitpull failed. Exiting.')
+
+  hookname = "post_gitpull"
+  exit_code = hooksObj.run_hook(hookname, data, args.directory)
+  if exit_code != 0:
+      sys.exit('{} hook failed. Exiting.'.format(hookname))
+
+  return exit_code
 
 if __name__ == "__main__":
   settingObj = Settings()
   appObj = AppConfig()
   gitObj = GitUtils()
+  hooksObj = Hooks()
   parser = parse_args()
   args = parser.parse_args()
-  main(settingObj, appObj, gitObj, args)
+  main(settingObj, appObj, gitObj, hooksObj, args)
