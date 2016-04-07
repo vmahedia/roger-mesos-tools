@@ -53,7 +53,7 @@ class TestPush(unittest.TestCase):
     self.test_config = test_config
     self.test_data = test_data
 
-  def test_roger_push_test_grafana_app(self):
+  def test_roger_push_grafana_test_app(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
@@ -438,7 +438,7 @@ class TestPush(unittest.TestCase):
     args.image_name = 'grafana/grafana:2.1.3'
     roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
 
-  def test_roger_push_skip_push(self):
+  def test_roger_push_skip_push_set(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
