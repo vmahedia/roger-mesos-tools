@@ -180,7 +180,7 @@ def push(root, app, work_dir, image_name, config_file, environment, settingObj, 
 
   try:
     roger_push.main(settingObj, appObj, frameworkUtils, hooksObj, push_args)
-  except (IOError) as e:
+  except (Exception, IOError) as e:
     print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
     removeDirTree(work_dir, args, temp_dir_created)
     sys.exit('Exiting')

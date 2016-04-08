@@ -12,7 +12,8 @@ from marathon import Marathon
 from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
 from settings import Settings
-from mockito import mock, when, verify
+from mockito import mock, when, verify, verifyZeroInteractions
+from mock import MagicMock
 from mockito.matchers import any
 from settings import Settings
 from hooks import Hooks
@@ -448,7 +449,6 @@ class TestPush(unittest.TestCase):
     data = self.data
     when(marathon).put(any(), any(), any()).thenReturn("Response [200]")
     frameworkUtils = mock(FrameworkUtils)
-    frameworkUtils = mock(FrameworkUtils)
     when(frameworkUtils).getFramework(data).thenReturn(marathon)
     when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
     when(settings).getSecretsDir().thenReturn(self.base_dir+"/tests/secrets")
@@ -468,8 +468,9 @@ class TestPush(unittest.TestCase):
     args.config_file = 'test.json'
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
+
     return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    assert return_code == 1
+    verify(frameworkUtils, times=0).runDeploymentChecks(any(), any())
 
   def test_push_fails_with_validation_error(self):
     settings = mock(Settings)

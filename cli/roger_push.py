@@ -266,7 +266,7 @@ def main(settings, appConfig, frameworkObject, hooksObj, args):
   hookname = "pre_push"
   exit_code = hooksObj.run_hook(hookname, data, app_path)
   if exit_code != 0:
-      sys.exit('{} hook failed. Exiting.'.format(hookname))
+      raise Exception('{} hook failed.'.format(hookname))
 
   validation_error_flag = False
   if args.skip_push:
@@ -296,11 +296,9 @@ def main(settings, appConfig, frameworkObject, hooksObj, args):
   hookname = "post_push"
   exit_code = hooksObj.run_hook(hookname, data, app_path)
   if exit_code != 0:
-      sys.exit('{} hook failed. Exiting.'.format(hookname))
+      raise Exception('{} hook failed.'.format(hookname))
 
   if len(failed_container_list) > 0 :
-    return 1
-  if args.skip_push:
     return 1
   if validation_error_flag:
     return 1
