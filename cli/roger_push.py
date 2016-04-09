@@ -104,7 +104,8 @@ def mergeSecrets(json_str, secrets):
   json_str = json.dumps(replaceSecrets(output_dict, secrets), indent=4)
 
   if '\"SECRET\"' in json_str:
-      raise StandardError('There are still "SECRET" values -- does your secrets file have all secret environment variables?')
+      print('There are still "SECRET" values -- does your secrets file have all secret environment variables?')
+      return "StandardError"
   return json_str
 
 def renderTemplate(template, environment, image, app_data, config, container, failed_container_list, container_name):
@@ -207,6 +208,7 @@ def main(settings, appConfig, frameworkObject, hooksObj, args):
   data_containers = data['containers']
   #Create a failed container_list to keep track of containers with unresolved jinja variables
   failed_container_list=[]
+  standard_error = False
 
   for container in data_containers:
     if type(container) == dict:
@@ -246,24 +248,27 @@ def main(settings, appConfig, frameworkObject, hooksObj, args):
       outputObj = json.loads(output)
       if 'SECRET' in output:
         output = mergeSecrets(output, loadSecretsJson(secrets_dir, containerConfig, args, environment))
-
-      try:
-        comp_exists = os.path.exists("{0}".format(comp_dir))
-        if comp_exists == False:
-          os.makedirs("{0}".format(comp_dir))
-        comp_env_exists = os.path.exists("{0}/{1}".format(comp_dir, environment))
-        if comp_env_exists == False:
-          os.makedirs("{0}/{1}".format(comp_dir, environment))
-      except Exception as e:
-        logging.error(traceback.format_exc())
-      with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
-        fh.write(output)
+      if output != "StandardError":
+        try:
+          comp_exists = os.path.exists("{0}".format(comp_dir))
+          if comp_exists == False:
+            os.makedirs("{0}".format(comp_dir))
+          comp_env_exists = os.path.exists("{0}/{1}".format(comp_dir, environment))
+          if comp_env_exists == False:
+            os.makedirs("{0}/{1}".format(comp_dir, environment))
+        except Exception as e:
+          logging.error(traceback.format_exc())
+        with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
+          fh.write(output)
+      else:
+        standard_error = True
 
   hookname = "pre_push"
   exit_code = hooksObj.run_hook(hookname, data, app_path)
   if exit_code != 0:
-      sys.exit('{} hook failed. Exiting.'.format(hookname))
+      raise Exception('{} hook failed.'.format(hookname))
 
+  validation_error_flag = False
   if args.skip_push:
       print("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(framework, comp_dir, environment))
   else:
@@ -286,14 +291,19 @@ def main(settings, appConfig, frameworkObject, hooksObj, args):
             frameworkObj.put(config_file_path, environmentObj, container_name, environment)
           else:
             print("Skipping push to {} framework for container {} as Validation Checks failed.".format(framework, container))
-
-  if len(failed_container_list) > 0 :
-      return 1
+            validation_error_flag = True
 
   hookname = "post_push"
   exit_code = hooksObj.run_hook(hookname, data, app_path)
   if exit_code != 0:
-      sys.exit('{} hook failed. Exiting.'.format(hookname))
+      raise Exception('{} hook failed.'.format(hookname))
+
+  if len(failed_container_list) > 0 :
+    return 1
+  if validation_error_flag:
+    return 1
+  if standard_error:
+    return 1
 
 if __name__ == "__main__":
   settingObj = Settings()
