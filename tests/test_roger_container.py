@@ -7,7 +7,7 @@ import argparse
 import json
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-import roger_push
+from roger_push import RogerPush
 from marathon import Marathon
 from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
@@ -48,6 +48,7 @@ class Testcontainer(unittest.TestCase):
     appConfig = mock(AppConfig)
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
+    roger_push = RogerPush()
     when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
     roger_env = self.roger_env
     config = self.config

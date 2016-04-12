@@ -7,7 +7,7 @@ import argparse
 import json
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-import roger_push
+from roger_push import RogerPush
 from marathon import Marathon
 from frameworkUtils import FrameworkUtils
 from appconfig import AppConfig
@@ -57,6 +57,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_grafana_test_app(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -96,6 +97,7 @@ class TestPush(unittest.TestCase):
   def test_container_resolution(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -145,6 +147,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_with_no_app_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -174,6 +177,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_with_no_registry_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -211,6 +215,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_with_no_environment_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -255,6 +260,7 @@ class TestPush(unittest.TestCase):
 
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -289,6 +295,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_calls_prepush_hook_when_present(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     frameworkUtils = mock(FrameworkUtils)
@@ -322,6 +329,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_calls_postpush_hook_when_present(self):
    settings = mock(Settings)
    appConfig = mock(AppConfig)
+   roger_push = RogerPush()
    marathon = mock(Marathon)
    mockedHooks = mock(Hooks)
    frameworkUtils = mock(FrameworkUtils)
@@ -355,6 +363,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_verify_default_env_use(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     roger_env = self.roger_env
@@ -381,6 +390,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_env_from_ROGER_ENV_VAR(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     roger_env = self.roger_env
@@ -409,6 +419,7 @@ class TestPush(unittest.TestCase):
   def test_push_happens_with_validation_error_when_force_push_set(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     roger_env = self.roger_env
@@ -442,6 +453,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_skip_push_set(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     roger_env = self.roger_env
@@ -475,6 +487,7 @@ class TestPush(unittest.TestCase):
   def test_push_fails_with_validation_error(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     roger_env = self.roger_env
@@ -508,6 +521,7 @@ class TestPush(unittest.TestCase):
   def test_roger_push_secrets_replaced(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_push = RogerPush()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     roger_env = self.roger_env

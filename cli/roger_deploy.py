@@ -14,7 +14,7 @@ import sys
 import roger_gitpull
 import re
 import shutil
-import roger_push
+from roger_push import RogerPush
 from settings import Settings
 from appconfig import AppConfig
 from hooks import Hooks
@@ -177,6 +177,7 @@ def push(root, app, work_dir, image_name, config_file, environment, settingObj, 
   push_args.env = environment
   push_args.app_name = app
   push_args.directory = work_dir
+  roger_push = RogerPush()
 
   try:
     roger_push.main(settingObj, appObj, frameworkUtils, hooksObj, push_args)
