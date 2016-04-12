@@ -8,7 +8,7 @@ import sys
 import json
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 import roger_push
-import roger_deploy
+from roger_deploy import RogerDeploy
 import roger_gitpull
 from marathon import Marathon
 from frameworkUtils import FrameworkUtils
@@ -51,13 +51,14 @@ class TestDeploy(unittest.TestCase):
     self.data = data
 
   def test_splitVersion(self):
+    roger_deploy = RogerDeploy()
     assert roger_deploy.splitVersion("0.1.0") == (0,1,0)
     assert roger_deploy.splitVersion("2.0013") == (2,13,0)
 
   def test_incrementVersion(self):
     git_sha = "dwqjdqgwd7y12edq21"
     image_version_list = ['0.001','0.2.034','1.1.2','1.002.1']
-
+    roger_deploy = RogerDeploy()
     args = self.args
     args.directory=""
     args.secrets_file=""
@@ -70,7 +71,7 @@ class TestDeploy(unittest.TestCase):
 
   def test_tempDirCheck(self):
     work_dir = "./test_dir"
-
+    roger_deploy = RogerDeploy()
     args = self.args
     args.directory=""
     args.skip_push=False
@@ -89,6 +90,7 @@ class TestDeploy(unittest.TestCase):
   def test_roger_deploy_with_no_app_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_deploy = RogerDeploy()
     marathon = mock(Marathon)
     gitObj = mock(GitUtils)
     mockedHooks = mock(Hooks)
@@ -122,6 +124,7 @@ class TestDeploy(unittest.TestCase):
   def test_roger_deploy_with_no_registry_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_deploy = RogerDeploy()
     marathon = mock(Marathon)
     gitObj = mock(GitUtils)
     mockedHooks = mock(Hooks)
@@ -157,6 +160,7 @@ class TestDeploy(unittest.TestCase):
   def test_roger_deploy_with_no_environment_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_deploy = RogerDeploy()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     gitObj = mock(GitUtils)
@@ -189,6 +193,7 @@ class TestDeploy(unittest.TestCase):
   def test_rogerDeploy(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_deploy = RogerDeploy()
     marathon = mock(Marathon)
     gitObj = mock(GitUtils)
     mockedHooks = mock(Hooks)
@@ -233,6 +238,7 @@ class TestDeploy(unittest.TestCase):
   def test_rogerDeploy_with_skip_push(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_deploy = RogerDeploy()
     marathon = mock(Marathon)
     gitObj = mock(GitUtils)
     mockedHooks = mock(Hooks)

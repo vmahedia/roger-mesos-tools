@@ -7,7 +7,7 @@ import json
 import shutil
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-import roger_gitpull
+from roger_gitpull import RogerGitPull
 import argparse
 from settings import Settings
 from appconfig import AppConfig
@@ -60,6 +60,7 @@ class TestGitPull(unittest.TestCase):
     work_dir = self.work_dir
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_gitpull = RogerGitPull()
     marathon = mock(Marathon)
     mockedHooks = mock(Hooks)
     gitObj = mock(GitUtils)
@@ -97,6 +98,7 @@ class TestGitPull(unittest.TestCase):
   def test_roger_gitpull_calls_pregitpull_hook_when_present(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_gitpull = RogerGitPull()
     mockedHooks = mock(Hooks)
     gitObj = mock(GitUtils)
     roger_env = {}
@@ -121,6 +123,7 @@ class TestGitPull(unittest.TestCase):
   def test_roger_gitpull_calls_postgitpull_hook_when_present(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_gitpull = RogerGitPull()
     mockedHooks = mock(Hooks)
     gitObj = mock(GitUtils)
     roger_env = {}
