@@ -65,8 +65,8 @@ class TestBuild(unittest.TestCase):
     args.app_name = ''
     args.config_file = 'app.json'
 
-    return_code = roger_build.main(settings, appConfig, mockedHooks, args)
-    assert return_code == 1
+    with self.assertRaises(ValueError):
+        roger_build.main(settings, appConfig, mockedHooks, args)
 
   def test_roger_build_calls_prebuild_hook_when_present(self):
     settings = mock(Settings)
