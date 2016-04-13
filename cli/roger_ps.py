@@ -77,25 +77,27 @@ class RogerPS(object):
         for app_id in marathon_details["apps"].keys():
             app = []
             app_data = marathon_details["apps"][app_id]
-            app.append(app_id)
-            app.append(app_data["instances"])
+            app.append("{} ({} instances)".format(app_id, app_data["instances"])) if args.verbose else app.append(app_id)
+            app.append(app_data["instances"]) if not args.verbose else None
             app.append(app_data["http_prefix"])
             app.append(app_data["tcp_port_list"])
             apps.append(app)
             if args.verbose:
                 tasks = []
-                print("\nTasks details for app id: {}".format(app_id))
                 for task_id in app_data["tasks"]:
-                    task = []
                     task_data = app_data["tasks"][task_id]
-                    task.append(task_id)
-                    task.append("{}:{}".format(task_data["hostname"], task_data["ports"]))
-                    task.append(task_data["last_updated"])
-                    tasks.append(task)
-                print("{}".format(tabulate(tasks, headers=["Task id", "Hostname:[ports]", "Last Updated"], tablefmt="grid")))
+                    app = []
+                    app.append("|--{}".format(task_id))
+                    app.append("{}:{}".format(task_data["hostname"], task_data["ports"]))
+                    app.append(task_data["last_updated"])
+                    apps.append(app)
+                apps.append(["", "", ""])
  
-
-        print("\n{}".format(tabulate(apps, headers=["App Id", "Instances", "Http Prefix", "TCP Ports"], tablefmt="simple")))
+        if args.verbose:
+            headers=["App Id (Task Id)", "Http Prefix (Host:[Ports])", "TCP Ports (Last Updated)"]
+        else:
+            headers=["App Id", "Instances", "Http Prefix", "TCP Ports"]
+        print("{}".format(tabulate(apps, headers = headers , tablefmt="simple")))
 
     def get_instance_details(self, tasks):
         instance_details = {}
