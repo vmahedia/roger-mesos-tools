@@ -10,7 +10,6 @@ from roger_ps import RogerPS
 from haproxyparser import HAProxyParser
 from mockito import mock, when
 
-#Test basic functionalities of MarathonValidator class
 class TestRogerPS(unittest.TestCase):
 
     def setUp(self):
@@ -36,8 +35,6 @@ class TestRogerPS(unittest.TestCase):
         tasks.append(task1)
         tasks.append(task2)
         self.tasks = tasks
-
-    def test_get_marathon_details(self):
         haproxyparser = mock(HAProxyParser)
         path_beg_values = {}
         path_beg_values['/test/app1'] = "app1"
@@ -46,20 +43,26 @@ class TestRogerPS(unittest.TestCase):
         when(haproxyparser).get_backend_tcp_ports().thenReturn(backend_services_tcp_ports)
         when(haproxyparser).parseConfig("test").thenReturn("acl ::test::app-aclrule path_beg -i /test/app\nacl ::test::links-aclrule path_beg -i /test/links")
         when(haproxyparser).get_path_begin_values().thenReturn(path_beg_values)
+        self.haproxyparser = haproxyparser
+
+    def test_get_marathon_details_correctly_parses_tasks_and_haproxy_details_with_no_verbose(self):
         args = self.args
         args.verbose = False
-        marathon_details = self.rogerps.get_marathon_details(self.tasks, haproxyparser, "test", args)
-        assert marathon_details['apps']['app1']['http_prefix'] == "/test/app1"
-        assert marathon_details['apps']['app2']['http_prefix'] == ""
-        assert marathon_details['apps']['app1']['tcp_port_list'] == []
-        assert marathon_details['apps']['app2']['tcp_port_list'] == "9001"
-        assert ('tasks' in marathon_details['apps']['app1']) == False
-        assert ('tasks' in marathon_details['apps']['app2']) == False
+        app_details = self.rogerps.get_app_details(self.tasks, self.haproxyparser, "test", args)
+        assert app_details['apps']['app1']['http_prefix'] == "/test/app1"
+        assert app_details['apps']['app2']['http_prefix'] == ""
+        assert app_details['apps']['app1']['tcp_port_list'] == []
+        assert app_details['apps']['app2']['tcp_port_list'] == "9001"
+        assert ('tasks' in app_details['apps']['app1']) == False
+        assert ('tasks' in app_details['apps']['app2']) == False
+
+    def test_get_marathon_details_correctly_parses_tasks_and_haproxy_details_with_verbose(self):
+        args = self.args
         args.verbose = True
-        marathon_details = self.rogerps.get_marathon_details(self.tasks, haproxyparser, "test", args)
-        assert ('tasks' in marathon_details['apps']['app1']) == True
-        assert ('tasks' in marathon_details['apps']['app2']) == True
-        assert marathon_details['apps']['app1']['tasks']['app1-123']['hostname'] == "host1"
+        app_details = self.rogerps.get_app_details(self.tasks, self.haproxyparser, "test", args)
+        assert ('tasks' in app_details['apps']['app1']) == True
+        assert ('tasks' in app_details['apps']['app2']) == True
+        assert app_details['apps']['app1']['tasks']['app1-123']['hostname'] == "host1" 
 
 
     def test_get_instance_details(self):

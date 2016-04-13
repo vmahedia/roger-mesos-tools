@@ -15,21 +15,21 @@ from marathon import Marathon
 from haproxyparser import HAProxyParser
 
 def describe():
-    return "provides details for running applications."
+    return "displays information about the currently active applications and tasks."
 
 class RogerPS(object):
 
     def parse_args(self):
         parser = argparse.ArgumentParser(prog='roger ps', description=describe())
         parser.add_argument('-e', '--env', metavar='env', help="environment to search. Example: 'dev' or 'stage'")
-        parser.add_argument('-v','--verbose', help="provides details for each instance of different running apps. Defaults to false.",  action="store_true")
+        parser.add_argument('-v','--verbose', help="show extended information for each task",  action="store_true")
         return parser
 
-    def get_marathon_details(self, tasks, haproxyparser, environment, args):
-        marathon_details = {}
-    	instances = {}
-    	instance_details = self.get_instance_details(tasks)
-    	for task_id in instance_details:
+    def get_app_details(self, tasks, haproxyparser, environment, args):
+        app_details = {}
+        instances = {}
+        instance_details = self.get_instance_details(tasks)
+        for task_id in instance_details:
       	    app_id = instance_details[task_id][0]
             if app_id in instances.keys():
                 tasks_list = instances[app_id]
@@ -72,15 +72,15 @@ class RogerPS(object):
                 app_details["tasks"] = task_ids
             app_ids[app_id] = app_details
 
-        marathon_details["apps"] = app_ids
-        return marathon_details
+        app_details["apps"] = app_ids
+        return app_details
 
    
-    def print_marathon_details(self, marathon_details, args):     
+    def print_app_details(self, app_details, args):     
         apps = []
-        for app_id in marathon_details["apps"].keys():
+        for app_id in app_details["apps"].keys():
             app = []
-            app_data = marathon_details["apps"][app_id]
+            app_data = app_details["apps"][app_id]
             app.append("{} ({} instances)".format(app_id, app_data["instances"])) if args.verbose else app.append(app_id)
             app.append(app_data["instances"]) if not args.verbose else None
             app.append(app_data["http_prefix"])
@@ -136,8 +136,8 @@ class RogerPS(object):
             sys.exit('Environment not found in roger-env.json file.')
 
         tasks = marathon.getTasks(roger_env, environment)
-        marathon_details = self.get_marathon_details(tasks, haproxyparser, environment, args)
-        self.print_marathon_details(marathon_details, args)
+        app_details = self.get_app_details(tasks, haproxyparser, environment, args)
+        self.print_app_details(app_details, args)
 
   
 if __name__ == '__main__':
