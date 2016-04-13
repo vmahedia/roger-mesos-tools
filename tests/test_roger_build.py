@@ -7,7 +7,7 @@ import json
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-import roger_build
+from roger_build import RogerBuild
 from appconfig import AppConfig
 from settings import Settings
 from mockito import mock, when, verify
@@ -47,6 +47,7 @@ class TestBuild(unittest.TestCase):
   def test_roger_build_with_no_app_fails(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_build = RogerBuild()
     mockedHooks = mock(Hooks)
     roger_env = self.roger_env
     config = self.config
@@ -70,6 +71,7 @@ class TestBuild(unittest.TestCase):
   def test_roger_build_calls_prebuild_hook_when_present(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_build = RogerBuild()
     mockedHooks = mock(Hooks)
     roger_env = {}
     roger_env["registry"] = "any registry"
@@ -90,6 +92,7 @@ class TestBuild(unittest.TestCase):
   def test_roger_build_calls_postbuild_hook_when_present(self):
     settings = mock(Settings)
     appConfig = mock(AppConfig)
+    roger_build = RogerBuild()
     mockedHooks = mock(Hooks)
     roger_env = {}
     roger_env["registry"] = "any registry"
