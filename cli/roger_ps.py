@@ -49,10 +49,14 @@ class RogerPS(object):
             http_prefix = ""
             tcp_port_list = []
             num_instances = len(instances[app_id])
-            if app_id in http_prefixes.keys():
-                http_prefix = http_prefixes[app_id]
-            if app_id in tcp_ports.keys():
-                tcp_port_list = tcp_ports[app_id]
+            for k, v in http_prefixes.iteritems():
+                if app_id == v:
+                    http_prefix = k
+                    break
+            for k, v in tcp_ports.iteritems():
+                if app_id == v:
+                    tcp_port_list = k
+                    break
             app_details = {}
             app_details["instances"] = num_instances
             app_details["http_prefix"] = http_prefix
@@ -63,7 +67,7 @@ class RogerPS(object):
                     task_details = {}
                     task_details["hostname"] = instance_details[task_id][1]
                     task_details["ports"] = instance_details[task_id][2]
-                    task_details["last_updated"] = instance_details[task_id][3]
+                    task_details["started_at"] = instance_details[task_id][3]
                     task_ids[task_id] = task_details
                 app_details["tasks"] = task_ids
             app_ids[app_id] = app_details
@@ -89,12 +93,12 @@ class RogerPS(object):
                     app = []
                     app.append("|--{}".format(task_id))
                     app.append("{}:{}".format(task_data["hostname"], task_data["ports"]))
-                    app.append(task_data["last_updated"])
+                    app.append(task_data["started_at"])
                     apps.append(app)
                 apps.append(["", "", ""])
  
         if args.verbose:
-            headers=["App Id (Task Id)", "Http Prefix (Host:[Ports])", "TCP Ports (Last Updated)"]
+            headers=["App Id (Task Id)", "Http Prefix (Host:[Ports])", "TCP Ports (Started At)"]
         else:
             headers=["App Id", "Instances", "Http Prefix", "TCP Ports"]
         print("{}".format(tabulate(apps, headers = headers , tablefmt="simple")))
