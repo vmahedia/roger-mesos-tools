@@ -11,6 +11,7 @@ import json
 import os
 import requests
 import sys
+from roger_build import RogerBuild
 from roger_gitpull import RogerGitPull
 import re
 import shutil
@@ -213,14 +214,10 @@ class RogerDeploy(object):
       roger_env = appObj.getRogerEnv(config_dir)
       config = appObj.getConfig(config_dir, args.config_file)
       if args.application not in config['apps']:
-        print('Application specified not found.')
-        # Return exit code to caller
-        return 1
+        raise ValueError('Application specified not found.')
 
       if 'registry' not in roger_env:
-        print('Registry not found in roger-env.json file.')
-        # Returning exit code for caller to catch
-        return 1
+        raise ValueError('Registry not found in roger-env.json file.')
 
       #Setup for Slack-Client, token, and git user
       slack = Slack(config['notifications'], '/home/vagrant/.roger_cli.conf.d/slack_token')
@@ -256,9 +253,7 @@ class RogerDeploy(object):
 
       if environment not in roger_env['environments']:
         self.removeDirTree(work_dir, args, temp_dir_created)
-        print('Environment not found in roger-env.json file.')
-        # Returning exit code for caller to catch
-        return 1
+        raise ValueError('Environment not found in roger-env.json file.')
 
       branch = "master"     #master by default
       if not args.branch is None:
@@ -327,12 +322,18 @@ class RogerDeploy(object):
         image_name = self.getNextVersion(config, roger_env, app, branch, work_dir, repo, args, gitObj)
         image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
         print("Bumped up image to version:{0}".format(image_name))
+
+        build_args = args
+        build_args.app_name = app
+        build_args.directory = os.path.abspath(work_dir)
+        build_args.tag_name = image_name
+        build_args.config_file = config_file
+        build_args.push = True
+        roger_build = RogerBuild()
+
         try:
-          exit_code = os.system("{0}/cli/roger_build.py --push {1} {2} {3} {4}".format(root, app, os.path.abspath(work_dir), image_name, config_file))
-          if exit_code != 0:
-            self.removeDirTree(work_dir, args, temp_dir_created)
-            sys.exit('Exiting')
-        except (IOError) as e:
+          roger_build.main(settingObj, appObject, hooksObj, build_args)
+        except (ValueError, IOError) as e:
           print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
           self.removeDirTree(work_dir, args, temp_dir_created)
           sys.exit('Exiting')

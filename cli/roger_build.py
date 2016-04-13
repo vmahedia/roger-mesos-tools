@@ -47,8 +47,7 @@ class RogerBuild(object):
       common_repo = config.get('repo', '')
       data = appObj.getAppData(config_dir, args.config_file, args.app_name)
       if not data:
-        print('Application with name [{}] or data for it not found at {}/{}.'.format(args.app_name, config_dir, args.config_file))
-        return 1
+        raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(args.app_name, config_dir, args.config_file))
 
       repo = ''
       if common_repo != '':
@@ -87,28 +86,27 @@ class RogerBuild(object):
 
       if file_exists:
         if 'registry' not in roger_env:
-          print('Registry not found in roger-env.json file.')
-          return 1
+          raise ValueError('Registry not found in roger-env.json file.')
         image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
         try:
           if abs_path == args.directory:
             exit_code = os.system("{0}/cli/docker_build.py '{1}' '{2}' '{3}' '{4}' '{5}'".format(root, args.directory, repo, projects, docker_path, image))
             if exit_code != 0:
-              sys.exit('Docker build failed. Exiting from build.')
+              raise ValueError('Docker build failed. Exiting from build.')
           else:
             exit_code = os.system("{0}/cli/docker_build.py '{1}/{2}' '{3}' '{4}' '{5}' '{6}'".format(root, cur_dir, args.directory, repo, projects, docker_path, image))
             if exit_code != 0:
-              sys.exit('Docker build failed. Exiting from build.')
+              raise ValueError('Docker build failed. Exiting from build.')
           build_message = "Image {0} built".format(image)
           if(args.push):
               exit_code = os.system("docker push {0}".format(image))
               if exit_code != 0:
-                sys.exit('Docker push failed. Exiting from build.')
+                raise ValueError('Docker push failed. Exiting from build.')
               build_message += " and pushed to registry {}".format(roger_env['registry'])
           print(build_message)
         except (IOError) as e:
           print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-          sys.exit('Exiting from build.')
+          raise ValueError('Exiting from build.')
       else:
         print("Dockerfile does not exist in dir: {}".format(file_path))
 
