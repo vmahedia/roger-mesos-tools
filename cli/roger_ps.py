@@ -35,7 +35,7 @@ class RogerPS(object):
                 tasks_list = instances[app_id]
                 tasks_list.append(task_id)
                 instances[app_id] = tasks_list
-       	    else:
+            else:
                 tasks_list = []
                 tasks_list.append(task_id)
                 instances[app_id] = tasks_list
