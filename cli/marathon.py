@@ -173,12 +173,45 @@ class Marathon(Framework):
             #Docker images of the format: grafana/grafana:2.1.3 or postgres:9.4.1
             return docker_image
 
+  def getInstanceDetails(self, roger_env, environment):
+    tasks = self.getTasks(roger_env, environment)
+    instance_details = {}
+    for task in tasks:
+      app_id = task['appId']
+      started_at = task['startedAt']
+      mesos_task_id = task['id']
+      hostname = task['host']
+      ports = task['ports']
+      instance_details[mesos_task_id] = (app_id, hostname, ports, started_at)
+
+    return instance_details
+
+  def getAppEnvDetails(self, roger_env, environment):
+    apps = self.getApps(roger_env, environment)
+    app_envs = {}
+    for app in apps:
+      app_id = app['id']
+      if 'env' in app:
+        app_envs[app_id] = app['env'] 
+
+    return app_envs
+
+  def getApps(self, roger_env, environment):
+    self.fetchUserPass(environment)
+    headers = {'Accept': 'application/json','Accept-Encoding': 'gzip, deflate','Content-Type': 'application/json'}
+    url = roger_env['environments'][environment]['marathon_endpoint']+'/v2/apps'
+    resp = requests.get("{}".format(url), headers=headers, auth=(self.user, self.passw))
+    print ("Server response for apps: [ {} - {} ]".format(resp.status_code, resp.reason))
+    resp_json = resp.json()
+    apps = resp.json()['apps'] if 'apps' in resp_json else {}
+    return apps
+
   def getTasks(self, roger_env, environment):
     self.fetchUserPass(environment)
     headers = {'Accept': 'application/json','Accept-Encoding': 'gzip, deflate','Content-Type': 'application/json'}
     url = roger_env['environments'][environment]['marathon_endpoint']+'/v2/tasks?status=running'
     resp = requests.get("{}".format(url), headers=headers, auth=(self.user, self.passw))
-    print ("Server response: [ {} - {} ]".format(resp.status_code, resp.reason))
+    print ("Server response for tasks: [ {} - {} ]".format(resp.status_code, resp.reason))
     respjson = resp.json()
     tasks = resp.json()['tasks'] if 'tasks' in respjson else {}
     return tasks

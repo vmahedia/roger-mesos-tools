@@ -8,6 +8,7 @@ import argparse
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 from roger_ps import RogerPS
 from haproxyparser import HAProxyParser
+from marathon import Marathon
 from mockito import mock, when
 
 class TestRogerPS(unittest.TestCase):
@@ -19,22 +20,23 @@ class TestRogerPS(unittest.TestCase):
         parser.add_argument('-v','--verbose', help="provides instance details for each app.",  action="store_true")
         self.parser = parser
         self.args = parser
-        tasks = []
-        task1 = {}
-        task1["appId"] = "app1"
-        task1["startedAt"] = "2016-03-18T20:48:13.732Z"
-        task1["host"] = "host1"
-        task1["ports"] = ['3000','3001']
-        task1["id"] = "app1-123"
-        task2 = {}
-        task2["appId"] = "app2"
-        task2["startedAt"] = "2016-04-18T20:48:13.732Z"
-        task2["host"] = "host2"
-        task2["ports"] = ['9000']
-        task2["id"] = "app2-efg"
-        tasks.append(task1)
-        tasks.append(task2)
-        self.tasks = tasks
+        roger_env = {}
+        environment = {}
+        test = {}
+        test['host'] = "http://testhost"
+        environment['test'] = test
+        roger_env['environments'] = environment
+        self.roger_env = roger_env
+        framework = mock(Marathon)
+        app_envs = {}
+        instance_details = {}
+        app_envs['app1'] = { "HTTP_PORT" : "PORT0", "ENVKEY1": "value1"}
+        app_envs['app2'] = { "ENVKEY1": "value1"}
+        instance_details['app1-123'] = ( "app1", "host1", ['3000','3001'], "2016-03-18T20:48:13.732Z")
+        instance_details['app2-efg'] = ( "app2", "host2", ['9000'], "2016-04-18T20:48:13.732Z")
+        when(framework).getAppEnvDetails(self.roger_env, "test").thenReturn(app_envs)
+        when(framework).getInstanceDetails(self.roger_env, "test").thenReturn(instance_details)
+        self.framework = framework
         haproxyparser = mock(HAProxyParser)
         path_beg_values = {}
         path_beg_values['/test/app1'] = "app1"
@@ -48,9 +50,9 @@ class TestRogerPS(unittest.TestCase):
     def test_get_marathon_details_correctly_parses_tasks_and_haproxy_details_with_no_verbose(self):
         args = self.args
         args.verbose = False
-        app_details = self.rogerps.get_app_details(self.tasks, self.haproxyparser, "test", args)
-        assert app_details['apps']['app1']['http_prefix'] == "/test/app1"
-        assert app_details['apps']['app2']['http_prefix'] == ""
+        app_details = self.rogerps.get_app_details(self.framework, self.haproxyparser, "test", args, self.roger_env)
+        assert app_details['apps']['app1']['http_url'] == "http://testhost/test/app1"
+        assert app_details['apps']['app2']['http_url'] == "-"
         assert app_details['apps']['app1']['tcp_port_list'] == "-"
         assert app_details['apps']['app2']['tcp_port_list'] == "9001"
         assert ('tasks' in app_details['apps']['app1']) == False
@@ -59,14 +61,14 @@ class TestRogerPS(unittest.TestCase):
     def test_get_marathon_details_correctly_parses_tasks_and_haproxy_details_with_verbose(self):
         args = self.args
         args.verbose = True
-        app_details = self.rogerps.get_app_details(self.tasks, self.haproxyparser, "test", args)
+        app_details = self.rogerps.get_app_details(self.framework, self.haproxyparser, "test", args, self.roger_env)
         assert ('tasks' in app_details['apps']['app1']) == True
         assert ('tasks' in app_details['apps']['app2']) == True
         assert app_details['apps']['app1']['tasks']['app1-123']['hostname'] == "host1" 
 
 
     def test_get_instance_details(self):
-        instance_details = self.rogerps.get_instance_details(self.tasks) 
+        instance_details = self.rogerps.get_instance_details(self.framework, self.roger_env, "test") 
         assert instance_details.keys() == ['app1-123', 'app2-efg']
         app1_data = instance_details['app1-123']
         app2_data = instance_details['app2-efg']
