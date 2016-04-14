@@ -55,12 +55,14 @@ class RogerPS(object):
                     break
             for k, v in tcp_ports.iteritems():
                 if app_id == v:
-                    tcp_port_list = k
-                    break
+                    tcp_port_list.append(k)
             app_details = {}
             app_details["instances"] = num_instances
             app_details["http_prefix"] = http_prefix
-            app_details["tcp_port_list"] = tcp_port_list
+            if len(tcp_port_list) != 0:
+                app_details["tcp_port_list"] = ", ".join(tcp_port_list)
+            else:
+                app_details["tcp_port_list"] = "-"
             if args.verbose:
                 task_ids = {}
                 for task_id in instances[app_id]: 
