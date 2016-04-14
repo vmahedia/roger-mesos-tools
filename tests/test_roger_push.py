@@ -171,8 +171,8 @@ class TestPush(unittest.TestCase):
     args.app_name = ''
     args.config_file = 'test.json'
     args.env = 'some_test_env'
-    return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    assert return_code == 1
+    with self.assertRaises(ValueError):
+      roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
 
   def test_roger_push_with_no_registry_fails(self):
     settings = mock(Settings)
@@ -209,8 +209,8 @@ class TestPush(unittest.TestCase):
     roger_env = appConfig.getRogerEnv(config_dir)
     # Remove registry key from dictionary
     del roger_env['registry']
-    retrun_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    assert retrun_code == 1
+    with self.assertRaises(ValueError):
+      roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
 
   def test_roger_push_with_no_environment_fails(self):
     settings = mock(Settings)
@@ -244,8 +244,8 @@ class TestPush(unittest.TestCase):
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
 
-    retrun_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    assert retrun_code == 1
+    with self.assertRaises(ValueError):
+      roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
 
   def test_unresolved_jinja_variable_fails(self):
 
@@ -283,14 +283,13 @@ class TestPush(unittest.TestCase):
     args.skip_push = False
     args.force_push = False
     args.secrets_dir = ""
-
     args.app_name = 'container-vars'
     args.config_file = 'roger_push_unresolved_jinja.json'
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'tests/v0.1.0'
 
     return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    assert return_code == 1
+    verify(frameworkUtils, times=0).put(any(), any(), any(), any())
 
   def test_roger_push_calls_prepush_hook_when_present(self):
     settings = mock(Settings)
@@ -384,8 +383,8 @@ class TestPush(unittest.TestCase):
     roger_env = appConfig.getRogerEnv(self.configs_dir)
     roger_env["default"] = "test_env"
 
-    return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    assert return_code == 1
+    with self.assertRaises(ValueError):
+      roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
 
   def test_roger_push_env_from_ROGER_ENV_VAR(self):
     settings = mock(Settings)
@@ -413,8 +412,8 @@ class TestPush(unittest.TestCase):
     # Setting ROGER_ENV to specific value
     os.environ["ROGER_ENV"] = "test_env"
 
-    return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    assert return_code == 1
+    with self.assertRaises(ValueError):
+      roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
 
   def test_push_happens_with_validation_error_when_force_push_set(self):
     settings = mock(Settings)
@@ -493,7 +492,6 @@ class TestPush(unittest.TestCase):
     roger_env = self.roger_env
     config = self.config
     data = self.data
-    when(marathon).put(any(), any(), any()).thenReturn("Response [200]")
     frameworkUtils = mock(FrameworkUtils)
     when(frameworkUtils).getFramework(data).thenReturn(marathon)
     when(settings).getComponentsDir().thenReturn(self.base_dir+"/tests/components")
@@ -516,7 +514,7 @@ class TestPush(unittest.TestCase):
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
     return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    assert return_code == 1
+    verify(frameworkUtils, times=0).put(any(), any(), any(), any())
 
   def test_roger_push_secrets_replaced(self):
     settings = mock(Settings)
@@ -549,7 +547,8 @@ class TestPush(unittest.TestCase):
     args.directory = self.base_dir+'/tests/testrepo'
     args.image_name = 'grafana/grafana:2.1.3'
     exit_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
-    assert exit_code == 1
+    file_path = ( "{0}/{1}/{2}".format(self.components_dir, args.env, args.config_file) )
+    assert ( os.path.isfile(file_path) != True )
 
   def tearDown(self):
     pass

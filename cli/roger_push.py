@@ -114,7 +114,7 @@ class RogerPush(object):
           return "StandardError"
       return json_str
 
-    def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_list, container_name):
+    def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_dict, container_name):
         output = ''
         variables = {}
         variables['environment'] = environment
@@ -158,7 +158,7 @@ class RogerPush(object):
           output = template.render(variables)
         except exceptions.UndefinedError as e:
           print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
-          failed_container_list.append(container_name)
+          failed_container_dict[container_name] = ("The folowing error occurred.(Error: %s).\n" % e)
         return output
 
     def main(self, settings, appConfig, frameworkObject, hooksObj, args):
@@ -172,8 +172,7 @@ class RogerPush(object):
       roger_env = appObj.getRogerEnv(config_dir)
 
       if 'registry' not in roger_env.keys():
-        print('Registry not found in roger-env.json file.Exiting...')
-        return 1
+        raise ValueError('Registry not found in roger-env.json file.Exiting...')
 
       environment = roger_env.get('default', '')
       if args.env is None:
@@ -188,15 +187,14 @@ class RogerPush(object):
         environment = args.env
 
       if environment not in roger_env['environments']:
-        print('Environment not found in roger-env.json file.Exiting...')
-        return 1
+        raise ValueError('Environment not found in roger-env.json file.Exiting...')
 
       environmentObj = roger_env['environments'][environment]
       common_repo = config.get('repo', '')
       data = appObj.getAppData(config_dir, args.config_file, args.app_name)
       if not data:
-        print('Application with name [{}] or data for it not found at {}/{}.'.format(args.app_name, config_dir, args.config_file))
-        return 1
+        raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(args.app_name, config_dir, args.config_file))
+
       frameworkObj = frameworkUtils.getFramework(data)
       framework = frameworkObj.getName()
 
@@ -212,9 +210,8 @@ class RogerPush(object):
 
       # template marathon files
       data_containers = data['containers']
-      #Create a failed container_list to keep track of containers with unresolved jinja variables
-      failed_container_list=[]
-      standard_error = False
+
+      failed_container_dict = {}
 
       for container in data_containers:
         if type(container) == dict:
@@ -254,9 +251,9 @@ class RogerPush(object):
 
         image_path = "{0}/{1}".format(roger_env['registry'], args.image_name)
         print("Rendering content from template {} for environment [{}]".format(template_with_path, environment))
-        output = self.renderTemplate(template, environment, image_path, data, config, container, failed_container_list, container_name)
+        output = self.renderTemplate(template, environment, image_path, data, config, container, failed_container_dict, container_name)
         # Adding check to see if all jinja variables git resolved fot the container
-        if container_name not in failed_container_list:
+        if container_name not in failed_container_dict:
           #Adding check so that not all apps try to mergeSecrets
           try:
             outputObj = json.loads(output)
@@ -277,15 +274,12 @@ class RogerPush(object):
               logging.error(traceback.format_exc())
             with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
               fh.write(output)
-          else:
-            standard_error = True
 
       hookname = "pre_push"
       exit_code = hooksObj.run_hook(hookname, data, app_path)
       if exit_code != 0:
           raise ValueError('{} hook failed.'.format(hookname))
 
-      validation_error_flag = False
       if args.skip_push:
           print("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(framework, comp_dir, environment))
       else:
@@ -301,26 +295,19 @@ class RogerPush(object):
             config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
 
             result = frameworkObj.runDeploymentChecks(config_file_path, environment)
-            if container_name in failed_container_list:
+            if container_name in failed_container_dict:
               print("Failed push to {} framework for container {} as Unresolved Jinja variables present in template.".format(framework, container))
             else:
               if args.force_push or result == True:
                 frameworkObj.put(config_file_path, environmentObj, container_name, environment)
               else:
                 print("Skipping push to {} framework for container {} as Validation Checks failed.".format(framework, container))
-                validation_error_flag = True
 
       hookname = "post_push"
       exit_code = hooksObj.run_hook(hookname, data, app_path)
       if exit_code != 0:
           raise ValueError('{} hook failed.'.format(hookname))
 
-      if len(failed_container_list) > 0 :
-        return 1
-      if validation_error_flag:
-        return 1
-      if standard_error:
-        return 1
 
 if __name__ == "__main__":
   settingObj = Settings()

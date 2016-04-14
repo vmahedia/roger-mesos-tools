@@ -57,7 +57,7 @@ def getScriptCall(root, command, command_args):
       script_call = script_call + " {}".format(command_arg)
     return script_call
   else:
-    sys.exit("Command does not exist. Exiting.")
+    raise SystemExit("Command does not exist. Exiting.")
 
 def main():
   root = ''
@@ -77,9 +77,9 @@ def main():
          script_call = getScriptCall(root, command, command_args)
          os.system(script_call)
       else:
-        sys.exit("Command is not valid. Exiting.")
+        raise SystemExit("Command is not valid. Exiting.")
   else:
-    sys.exit("No arguments found. Please refer to usage: roger -h")
+    raise SystemExit("No arguments found. Please refer to usage: roger -h")
 
 if __name__ == "__main__":
   main()

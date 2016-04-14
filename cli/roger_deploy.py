@@ -189,7 +189,7 @@ class RogerDeploy(object):
       except (Exception, IOError) as e:
         print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
         self.removeDirTree(work_dir, args, temp_dir_created)
-        sys.exit('Exiting')
+        raise SystemExit('Exiting')
       return 0
 
     def pullRepo(self, root, app, work_dir, config_file, branch, args, settingObj, appObj, hooksObj, gitObj):
@@ -204,7 +204,7 @@ class RogerDeploy(object):
       except (IOError) as e:
         print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
         self.removeDirTree(work_dir, args, temp_dir_created)
-        sys.exit('Exiting')
+        raise SystemExit('Exiting')
 
     def main(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, args):
       settingObj = settingObject
@@ -287,11 +287,11 @@ class RogerDeploy(object):
         exit_code = self.pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, settingObj, appObj, hooksObj, gitObj)
         if exit_code != 0:
           self.removeDirTree(work_dir, args, temp_dir_created)
-          sys.exit('Exiting')
+          raise SystemExit('Exiting')
       except (IOError) as e:
         print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
         self.removeDirTree(work_dir, args, temp_dir_created)
-        sys.exit('Exiting')
+        raise SystemExit('Exiting')
 
       skip_build = False
       if args.skip_build is not None:
@@ -336,7 +336,7 @@ class RogerDeploy(object):
         except (ValueError, IOError) as e:
           print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
           self.removeDirTree(work_dir, args, temp_dir_created)
-          sys.exit('Exiting')
+          raise SystemExit('Exiting')
       print("Version is:"+image_name)
 
       #Deploying the app to framework
@@ -344,11 +344,11 @@ class RogerDeploy(object):
         exit_code = self.push(root, app, os.path.abspath(work_dir), image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args)
         if exit_code != 0:
           self.removeDirTree(work_dir, args, temp_dir_created)
-          sys.exit('Exiting')
+          raise SystemExit('Exiting')
       except (IOError) as e:
         print("The folowing error occurred.(Error: %s).\n" % e, file=sys.stderr)
         self.removeDirTree(work_dir, args, temp_dir_created)
-        sys.exit('Exiting')
+        raise SystemExit('Exiting')
 
       self.removeDirTree(work_dir, args, temp_dir_created)
 

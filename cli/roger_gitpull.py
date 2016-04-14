@@ -49,8 +49,7 @@ class RogerGitPull(object):
       common_repo = config.get('repo', '')
       data = appObj.getAppData(config_dir, args.config_file, args.app_name)
       if not data:
-        print('Application with name [{}] or data for it not found at {}/{}.'.format(args.app_name, config_dir, args.config_file))
-        return 1
+        raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(args.app_name, config_dir, args.config_file))
       repo = ''
       if common_repo != '':
         repo = data.get('repo', common_repo)
@@ -71,7 +70,7 @@ class RogerGitPull(object):
       hookname = "pre_gitpull"
       exit_code = hooksObj.run_hook(hookname, data, args.directory)
       if exit_code != 0:
-          sys.exit('{} hook failed. Exiting.'.format(hookname))
+          raise SystemExit('{} hook failed. Exiting.'.format(hookname))
 
       # get/update target source(s)
       path = "{0}/{1}".format(args.directory, repo)
@@ -83,12 +82,12 @@ class RogerGitPull(object):
           exit_code = gitObj.gitShallowClone(repo, branch)
 
       if exit_code != 0:
-        sys.exit('gitpull failed. Exiting.')
+        raise SystemExit('gitpull failed. Exiting.')
 
       hookname = "post_gitpull"
       exit_code = hooksObj.run_hook(hookname, data, args.directory)
       if exit_code != 0:
-          sys.exit('{} hook failed. Exiting.'.format(hookname))
+          raise SystemExit('{} hook failed. Exiting.'.format(hookname))
 
       return exit_code
 
