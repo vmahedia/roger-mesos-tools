@@ -51,7 +51,7 @@ class TestRogerPS(unittest.TestCase):
         app_details = self.rogerps.get_app_details(self.tasks, self.haproxyparser, "test", args)
         assert app_details['apps']['app1']['http_prefix'] == "/test/app1"
         assert app_details['apps']['app2']['http_prefix'] == ""
-        assert app_details['apps']['app1']['tcp_port_list'] == []
+        assert app_details['apps']['app1']['tcp_port_list'] == "-"
         assert app_details['apps']['app2']['tcp_port_list'] == "9001"
         assert ('tasks' in app_details['apps']['app1']) == False
         assert ('tasks' in app_details['apps']['app2']) == False
