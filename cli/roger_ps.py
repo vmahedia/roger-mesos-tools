@@ -70,7 +70,7 @@ class RogerPS(object):
                 app_details["tcp_port_list"] = "-"
             if args.verbose:
                 task_ids = {}
-                for task_id in instances[app_id]: 
+                for task_id in instances[app_id]:
                     task_details = {}
                     task_details["hostname"] = instance_details[task_id][1]
                     task_details["ports"] = instance_details[task_id][2]
@@ -82,8 +82,8 @@ class RogerPS(object):
         app_details["apps"] = app_ids
         return app_details
 
-   
-    def print_app_details(self, app_details, args):     
+
+    def print_app_details(self, app_details, args):
         apps = []
         for app_id in app_details["apps"].keys():
             app = []
@@ -103,7 +103,7 @@ class RogerPS(object):
                     app.append(task_data["started_at"])
                     apps.append(app)
                 apps.append(["", "", ""])
- 
+
         if args.verbose:
             headers=["App Id (Task Id)", "Http Url (Host:[Ports])", "TCP Ports (Started At)"]
         else:
@@ -135,12 +135,12 @@ class RogerPS(object):
             environment = args.env
 
         if environment not in roger_env['environments']:
-            sys.exit('Environment not found in roger-env.json file.')
+            raise SystemExit('Environment not found in roger-env.json file.')
 
         app_details = self.get_app_details(framework, haproxyparser, environment, args, roger_env)
         self.print_app_details(app_details, args)
 
-  
+
 if __name__ == '__main__':
     settings = Settings()
     appconfig = AppConfig()

@@ -80,7 +80,7 @@ class RogerBuild(object):
       hookname = "pre_build"
       exit_code = hooksObj.run_hook(hookname, data, file_path)
       if exit_code != 0:
-          sys.exit('{} hook failed. Exiting.'.format(hookname))
+          raise SystemExit('{} hook failed. Exiting.'.format(hookname))
 
       file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
@@ -113,7 +113,7 @@ class RogerBuild(object):
       hookname = "post_build"
       exit_code = hooksObj.run_hook(hookname, data, file_path)
       if exit_code != 0:
-          sys.exit('{} hook failed. Exiting.'.format(hookname))
+          raise SystemExit('{} hook failed. Exiting.'.format(hookname))
 
 if __name__ == "__main__":
   settingObj = Settings()

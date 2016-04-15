@@ -39,7 +39,8 @@ class TestInit(unittest.TestCase):
     with open(self.configs_dir+'/{}'.format(config_file)) as config:
       config = json.load(config)
     repo = config['repo']
-    self.gitObj.gitClone(repo, branch)
+    return_code = self.gitObj.gitClone(repo, branch)
+    assert return_code == 0
     exists = os.path.exists(work_dir)
     assert exists == True
     os.chdir("{}/{}".format(work_dir, repo))

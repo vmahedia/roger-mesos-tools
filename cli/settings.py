@@ -12,7 +12,7 @@ class Settings:
     if "ROGER_CONFIG_DIR" in os.environ:
       config_dir = os.environ.get('ROGER_CONFIG_DIR')
     if config_dir.strip() == '':
-      sys.exit("Environment variable $ROGER_CONFIG_DIR is not set. Exiting.")
+      raise SystemExit("Environment variable $ROGER_CONFIG_DIR is not set. Exiting.")
     config_dir = os.path.abspath(config_dir)
     return config_dir
 
@@ -21,7 +21,7 @@ class Settings:
     if "ROGER_COMPONENTS_DIR" in os.environ:
       comp_dir = os.environ.get('ROGER_COMPONENTS_DIR')
     if comp_dir.strip() == '':
-      sys.exit("Environment variable $ROGER_COMPONENTS_DIR is not set. Exiting.")
+      raise SystemExit("Environment variable $ROGER_COMPONENTS_DIR is not set. Exiting.")
     comp_dir = os.path.abspath(comp_dir)
     return comp_dir
 
@@ -30,7 +30,7 @@ class Settings:
     if "ROGER_TEMPLATES_DIR" in os.environ:
       templ_dir = os.environ.get('ROGER_TEMPLATES_DIR')
     if templ_dir.strip() == '':
-      sys.exit("Environment variable $ROGER_TEMPLATES_DIR is not set.Exiting.")
+      raise SystemExit("Environment variable $ROGER_TEMPLATES_DIR is not set.Exiting.")
     return templ_dir
 
   def getSecretsDir(self):
@@ -38,7 +38,7 @@ class Settings:
     if "ROGER_SECRETS_DIR" in os.environ:
       secrets_dir = os.environ.get('ROGER_SECRETS_DIR')
     if secrets_dir.strip() == '':
-      sys.exit("Environment variable $ROGER_SECRETS_DIR is not set. Exiting.")
+      raise SystemExit("Environment variable $ROGER_SECRETS_DIR is not set. Exiting.")
     secrets_dir = os.path.abspath(secrets_dir)
     return secrets_dir
 

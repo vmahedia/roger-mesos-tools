@@ -19,25 +19,16 @@ def chdir(dirname):
 class GitUtils:
 
   def gitPull(self, branch):
-    try:
-      os.system("git pull origin {}".format(branch))
-      return 0
-    except:
-      return 1
+    exit_code = os.system("git pull origin {}".format(branch))
+    return exit_code
 
   def gitShallowClone(self, repo, branch):
-    try:
-      os.system("git clone --depth 1 --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
-      return 0
-    except:
-      return 1
+    exit_code = os.system("git clone --depth 1 --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
+    return exit_code
 
   def gitClone(self, repo, branch):
-    try:
-      os.system("git clone --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
-      return 0
-    except:
-      return 1
+    exit_code = os.system("git clone --branch {} git@github.com:seomoz/{}.git".format(branch, repo))
+    return exit_code
 
   def getGitSha(self, repo, branch, work_dir):
     with chdir("{0}/{1}".format(work_dir, repo)):
