@@ -40,7 +40,7 @@ class TestInit(unittest.TestCase):
       config = json.load(config)
     repo = config['repo']
     return_code = self.gitObj.gitClone(repo, branch)
-    assert resturn_code == 0
+    assert return_code == 0
     exists = os.path.exists(work_dir)
     assert exists == True
     os.chdir("{}/{}".format(work_dir, repo))
