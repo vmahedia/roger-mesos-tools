@@ -13,69 +13,74 @@ import contextlib
 
 pattern = re.compile('.+/(\S+).git', re.IGNORECASE)
 
+
 @contextlib.contextmanager
 def chdir(dirname):
-  '''Withable chdir function that restores directory'''
-  curdir = os.getcwd()
-  try:
-    os.chdir(dirname)
-    yield
-  finally: os.chdir(curdir)
+    '''Withable chdir function that restores directory'''
+    curdir = os.getcwd()
+    try:
+        os.chdir(dirname)
+        yield
+    finally:
+        os.chdir(curdir)
 
 
 def update_id_matches(update_id):
-  if update_id is None:
-    return False
+    if update_id is None:
+        return False
 
-  projects_update_id = None
-  try:
-    with open('.roger_docker_build_update_id', 'r') as f:
-      projects_update_id = f.read()
-  except:
-    pass
+    projects_update_id = None
+    try:
+        with open('.roger_docker_build_update_id', 'r') as f:
+            projects_update_id = f.read()
+    except:
+        pass
 
-  return update_id == projects_update_id
+    return update_id == projects_update_id
+
 
 def write_update_id(update_id):
-  if update_id:
-    with open('.roger_docker_build_update_id', 'w') as f:
-      f.write(update_id)
+    if update_id:
+        with open('.roger_docker_build_update_id', 'w') as f:
+            f.write(update_id)
 
 
-GIT_ACCOUNT="seomoz"
+GIT_ACCOUNT = "seomoz"
+
+
 def download_private_repos(projects, update_id=None):
-  if type(projects) == str:
-    projects = projects.split(',')
-  '''Clone (or pull if already existing) private projects to the "git" subdirectory.
+    if type(projects) == str:
+        projects = projects.split(',')
+    '''Clone (or pull if already existing) private projects to the "git" subdirectory.
   Takes an optional "update_id" (can be a very long string like a Gemfile) that we save
   to the subdirectory. Only pulls from the subrepos if this has changed.'''
-  if not os.path.isdir('git'):
-    os.mkdir('git')
+    if not os.path.isdir('git'):
+        os.mkdir('git')
 
-  with chdir('git'):
-    if update_id_matches(update_id):
-      return
+    with chdir('git'):
+        if update_id_matches(update_id):
+            return
 
-    for project_or_path in projects:
-      matches = pattern.findall(project_or_path)
-      if matches:
-        project, path = matches[0], project_or_path
-      else:
-        project, path = project_or_path, 'git@github.com:{}/{}'.format(GIT_ACCOUNT, project_or_path)
+        for project_or_path in projects:
+            matches = pattern.findall(project_or_path)
+            if matches:
+                project, path = matches[0], project_or_path
+            else:
+                project, path = project_or_path, 'git@github.com:{}/{}'.format(
+                    GIT_ACCOUNT, project_or_path)
 
-      if os.path.isdir(project):
-        with chdir(project):
-          os.system('git fetch; git pull origin master')
-      else:
-        os.system('git clone {}'.format(path))
+            if os.path.isdir(project):
+                with chdir(project):
+                    os.system('git fetch; git pull origin master')
+            else:
+                os.system('git clone {}'.format(path))
 
-    write_update_id(update_id)
+        write_update_id(update_id)
 
 
-
-### SWAPAROOS
-### Swaparoos swap out package.json / Gemfile etc replacing references to private Github repos with local ones
-### They are language-specific and may work different ways
+# SWAPAROOS
+# Swaparoos swap out package.json / Gemfile etc replacing references to private Github repos with local ones
+# They are language-specific and may work different ways
 
 # Ruby / Gemfile Swaparoo
 
@@ -101,36 +106,45 @@ end
 
 '''
 
+
 @contextlib.contextmanager
 def gemfile_swaparoo():
     '''Ruby swaparoo -- swap out Gemfile for fixed one referencing repos in local git/ directory.
     You may need to modify your Dockerfile to add the 'git' before running bundle install'''
-    repo_re = re.compile('git@github.com:'+GIT_ACCOUNT+'/([^\'"\\r\\n]+)\\.git')
+    repo_re = re.compile('git@github.com:' + GIT_ACCOUNT +
+                         '/([^\'"\\r\\n]+)\\.git')
 
     # Get original file
-    with open('Gemfile', 'r') as f: orig_gemfile = f.read()
-    with open('Gemfile.lock', 'r') as f: orig_gemfile_lock = f.read()
+    with open('Gemfile', 'r') as f:
+        orig_gemfile = f.read()
+    with open('Gemfile.lock', 'r') as f:
+        orig_gemfile_lock = f.read()
 
     projects = re.findall(repo_re, orig_gemfile)
     if projects:
-      # Download private repos, but only if they haven't already been updated
-      # after Gemfile / Gemfile.lock have been. We do this by storing the
-      # Gemfile & Gemfile.lock in each subrepo.
-      download_private_repos(projects, orig_gemfile+orig_gemfile_lock)
+            # Download private repos, but only if they haven't already been updated
+            # after Gemfile / Gemfile.lock have been. We do this by storing the
+            # Gemfile & Gemfile.lock in each subrepo.
+        download_private_repos(projects, orig_gemfile + orig_gemfile_lock)
 
-      # Create new Gemfile pointing to local repos
-      new_gemfile = GEMFILE_BRANCH_HACK + re.sub(repo_re, 'git/\\1', orig_gemfile)
-      with open('Gemfile', 'w+') as f: f.write(new_gemfile)
-      new_gemfile_lock = re.sub(repo_re, 'git/\\1', orig_gemfile_lock)
-      with open('Gemfile.lock', 'w+') as f: f.write(new_gemfile_lock)
+        # Create new Gemfile pointing to local repos
+        new_gemfile = GEMFILE_BRANCH_HACK + \
+            re.sub(repo_re, 'git/\\1', orig_gemfile)
+        with open('Gemfile', 'w+') as f:
+            f.write(new_gemfile)
+        new_gemfile_lock = re.sub(repo_re, 'git/\\1', orig_gemfile_lock)
+        with open('Gemfile.lock', 'w+') as f:
+            f.write(new_gemfile_lock)
 
-    # Do the docker build, then restore the original Gemfile with original timestamps
+    # Do the docker build, then restore the original Gemfile with original
+    # timestamps
     try:
         yield
     finally:
-        with open('Gemfile', 'w+') as f: f.write(orig_gemfile)
-        with open('Gemfile.lock', 'w+') as f: f.write(orig_gemfile_lock)
-
+        with open('Gemfile', 'w+') as f:
+            f.write(orig_gemfile)
+        with open('Gemfile.lock', 'w+') as f:
+            f.write(orig_gemfile_lock)
 
 
 # Basic Node swaparoo written originally by Chris Whitten.
@@ -138,58 +152,61 @@ def gemfile_swaparoo():
 # in .dockerignore. This is not ideal and I want to rewrite it
 @contextlib.contextmanager
 def packagejson_swaparoo():
-  '''Swap out package.json for the fixed one referencing git/ repos'''
-  # Get package.json
-  with open('package.json', 'r') as packagejson:
-    originalData = packagejson.read()
-  data = json.loads(originalData)
+    '''Swap out package.json for the fixed one referencing git/ repos'''
+    # Get package.json
+    with open('package.json', 'r') as packagejson:
+        originalData = packagejson.read()
+    data = json.loads(originalData)
 
-  # Do the swaparoo
-  for name, version in data['dependencies'].items():
-    if('git' in version or 'https' in version) and 'seomoz' in version:
-      data['dependencies'].pop(name, None)
-      print("popped {} as a private dependency".format(name))
-      os.system('npm install {}'.format(name))
+    # Do the swaparoo
+    for name, version in data['dependencies'].items():
+        if('git' in version or 'https' in version) and 'seomoz' in version:
+            data['dependencies'].pop(name, None)
+            print("popped {} as a private dependency".format(name))
+            os.system('npm install {}'.format(name))
 
-  # Write modified
-  with open('package.json', 'w+') as packagejson:
-    packagejson.write(json.dumps(data, indent=2))
-
-  try:
-    yield # do the docker build
-  finally:
-    # Rewrite original
+    # Write modified
     with open('package.json', 'w+') as packagejson:
-      packagejson.write(originalData)
+        packagejson.write(json.dumps(data, indent=2))
+
+    try:
+        yield  # do the docker build
+    finally:
+        # Rewrite original
+        with open('package.json', 'w+') as packagejson:
+            packagejson.write(originalData)
+
 
 @contextlib.contextmanager
 def null_swaparoo():
-  '''Does nothing, a placeholder default swaparoo'''
-  yield []
+    '''Does nothing, a placeholder default swaparoo'''
+    yield []
+
 
 def docker_build(directory, repo, projects, path, image_tag):
-  '''run a `docker_build -t image_tag .` in the current directory, handling any private repos'''
-  sourcePath = "{0}/{1}/".format(directory, repo)
-  if os.path.isdir(sourcePath):
+    '''run a `docker_build -t image_tag .` in the current directory, handling any private repos'''
+    sourcePath = "{0}/{1}/".format(directory, repo)
+    if os.path.isdir(sourcePath):
+        os.chdir(sourcePath)
+
+    if projects != 'none':
+        download_private_repos(projects)
+
     os.chdir(sourcePath)
+    if path != 'none':
+        docker_path = sourcePath + "/{0}".format(path)
+        os.chdir(docker_path)
 
-  if projects != 'none':
-    download_private_repos(projects)
+    if os.path.isfile('package.json'):
+        swaparoo = packagejson_swaparoo
+    elif os.path.isfile('Gemfile'):
+        swaparoo = gemfile_swaparoo
+    else:
+        swaparoo = null_swaparoo
 
-  os.chdir(sourcePath)
-  if path != 'none':
-    docker_path = sourcePath+"/{0}".format(path)
-    os.chdir(docker_path)
-
-  if os.path.isfile('package.json'):
-    swaparoo = packagejson_swaparoo
-  elif os.path.isfile('Gemfile'):
-    swaparoo = gemfile_swaparoo
-  else:
-    swaparoo = null_swaparoo
-
-  with swaparoo():
-    os.system('docker build -t {} .'.format(image_tag))
+    with swaparoo():
+        os.system('docker build -t {} .'.format(image_tag))
 
 if __name__ == "__main__":
-  docker_build(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+    docker_build(sys.argv[1], sys.argv[2], sys.argv[
+                 3], sys.argv[4], sys.argv[5])

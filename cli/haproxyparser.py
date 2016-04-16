@@ -9,53 +9,57 @@ import re
 from appconfig import AppConfig
 from settings import Settings
 
+
 class HAProxyParser:
 
-  path_begin_values = {}
-  backend_services_tcp_ports = {}
-
-  def get_haproxy_config(self, environment):
-    haproxy_config = ""
-    settingObj = Settings()
-    appObj = AppConfig()
-    config_dir = settingObj.getConfigDir()
-    roger_env = appObj.getRogerEnv(config_dir)
-    host = roger_env['environments'][environment]['host']
-    haproxy_config_path = roger_env['environments'][environment]['haproxy_config_path']
-    url = "{}{}".format(host, haproxy_config_path)
-    haproxy_config = requests.get(url, stream=True) 
-    return haproxy_config.text
-
-  def parseConfig(self, environment):
     path_begin_values = {}
-    backend_tcp_ports = {}
-    config = self.get_haproxy_config(environment)
+    backend_services_tcp_ports = {}
 
-    acl_pattern = re.compile("^( ).*acl (.*)-aclrule path_beg -i (.*)", re.MULTILINE)
-    aclrules = acl_pattern.findall(config)
-    backend_service_pattern = re.compile("^listen (.*)-cluster-tcp-(.*) :(.*)", flags=re.MULTILINE)
-    backends_service_names = backend_service_pattern.findall(config)
-    for acl in aclrules:
-      acl_name = acl[1].replace("::","/")
-      path_begin_value = acl[2]
-      path_begin_values[path_begin_value] = acl_name
+    def get_haproxy_config(self, environment):
+        haproxy_config = ""
+        settingObj = Settings()
+        appObj = AppConfig()
+        config_dir = settingObj.getConfigDir()
+        roger_env = appObj.getRogerEnv(config_dir)
+        host = roger_env['environments'][environment]['host']
+        haproxy_config_path = roger_env['environments'][
+            environment]['haproxy_config_path']
+        url = "{}{}".format(host, haproxy_config_path)
+        haproxy_config = requests.get(url, stream=True)
+        return haproxy_config.text
 
-    for service in backends_service_names:
-      backend_service_name = service[0].replace("::","/")
-      tcp_port = service[2]
-      backend_tcp_ports[tcp_port] = backend_service_name
+    def parseConfig(self, environment):
+        path_begin_values = {}
+        backend_tcp_ports = {}
+        config = self.get_haproxy_config(environment)
 
-    self.set_path_begin_values(path_begin_values)
-    self.set_backend_tcp_ports(backend_tcp_ports)
+        acl_pattern = re.compile(
+            "^( ).*acl (.*)-aclrule path_beg -i (.*)", re.MULTILINE)
+        aclrules = acl_pattern.findall(config)
+        backend_service_pattern = re.compile(
+            "^listen (.*)-cluster-tcp-(.*) :(.*)", flags=re.MULTILINE)
+        backends_service_names = backend_service_pattern.findall(config)
+        for acl in aclrules:
+            acl_name = acl[1].replace("::", "/")
+            path_begin_value = acl[2]
+            path_begin_values[path_begin_value] = acl_name
 
-  def set_path_begin_values(self, path_begin_values_aclnames):
-    self.path_begin_values = path_begin_values_aclnames
+        for service in backends_service_names:
+            backend_service_name = service[0].replace("::", "/")
+            tcp_port = service[2]
+            backend_tcp_ports[tcp_port] = backend_service_name
 
-  def get_path_begin_values(self):
-    return self.path_begin_values
+        self.set_path_begin_values(path_begin_values)
+        self.set_backend_tcp_ports(backend_tcp_ports)
 
-  def set_backend_tcp_ports(self, backend_services_tcp_ports):
-    self.backend_services_tcp_ports = backend_services_tcp_ports
+    def set_path_begin_values(self, path_begin_values_aclnames):
+        self.path_begin_values = path_begin_values_aclnames
 
-  def get_backend_tcp_ports(self):
-    return self.backend_services_tcp_ports
+    def get_path_begin_values(self):
+        return self.path_begin_values
+
+    def set_backend_tcp_ports(self, backend_services_tcp_ports):
+        self.backend_services_tcp_ports = backend_services_tcp_ports
+
+    def get_backend_tcp_ports(self):
+        return self.backend_services_tcp_ports
