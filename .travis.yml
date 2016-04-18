@@ -11,7 +11,13 @@ install:
     - pip install mock
     - pip install mockito
     - pip install gitpython
+    - pip install pep8
 
 script:
     - export PATH=$PATH:/home/travis/build/seomoz/roger-mesos-tools/bin:/home/travis/build/seomoz/roger-mesos-tools/cli
     - python setup.py test
+    - num_errors=`find . -name \*.py -exec pep8 --ignore=E501,E402 {} + | wc -l`
+    - |
+        if (( $num_errors > 0 )); then
+          exit;
+        fi

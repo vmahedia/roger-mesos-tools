@@ -4,7 +4,9 @@
 # Useful for debugging why your deployment isn't working
 #
 
-import json, sys
+import json
+import sys
+
 
 def shellquote(s):
     return "'" + s.replace("'", "'\\''") + "'"
@@ -34,4 +36,3 @@ if 'cmd' in j:
     cmdline += ' ' + ' '.join([shellquote(s) for s in j['cmd'].split(" ")])
 
 print cmdline
-

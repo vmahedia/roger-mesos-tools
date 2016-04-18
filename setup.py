@@ -12,6 +12,7 @@ from setuptools.command.test import test as TestCommand
 
 here = path.abspath(path.dirname(__file__))
 
+
 class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
 
@@ -25,7 +26,7 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
-        #import here, cause outside the eggs aren't loaded
+        # import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
@@ -68,7 +69,7 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(),
     tests_require=['pytest'],
-    cmdclass = {'test': PyTest},
+    cmdclass={'test': PyTest},
     # Including test_suite to executable
     test_suite="tests",
 
@@ -76,16 +77,18 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['argparse', 'setuptools', 'requests', 'mock', 'mockito', 'tabulate', 'slackclient', 'Jinja2'],
+    install_requires=['argparse', 'setuptools', 'requests',
+        'mock', 'mockito', 'tabulate', 'slackclient', 'Jinja2'],
 
-    # Include the folders listed in the MANIFEST.in file as a part of the package
-    include_package_data = True,
+    # Include the folders listed in the MANIFEST.in file as a part of the
+    # package
+    include_package_data=True,
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    #data_files=[('my_data', ['data/data_file'])],
+    # data_files=[('my_data', ['data/data_file'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
