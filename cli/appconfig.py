@@ -6,6 +6,7 @@ import os.path
 import sys
 import json
 import yaml
+from settings import Settings
 
 
 class AppConfig:
@@ -41,7 +42,11 @@ class AppConfig:
         if repo.startswith('git@github.com'):
             return repo
         else:
-            return str(('git@github.com:seomoz/{}.git').format(repo))
+            settingObj = Settings()
+            config_dir = settingObj.getConfigDir()
+            roger_env = self.getRogerEnv(config_dir)
+            prefix = roger_env['default_github_repo_prefix']
+            return str(prefix + '{}.git'.format(repo))
 
     def getRepoName(self, repo):
         if 'git@github' in repo:
