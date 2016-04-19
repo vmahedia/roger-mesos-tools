@@ -262,12 +262,13 @@ class RogerPush(object):
                 if "PWD" in os.environ:
                     cur_dir = os.environ.get('PWD')
                 abs_path = os.path.abspath(args.directory)
+                repo_name = appObj.getRepoName(repo)
                 if abs_path == args.directory:
                     app_path = "{0}/{1}/{2}".format(args.directory,
-                                                    repo, data['template_path'])
+                                                    repo_name, data['template_path'])
                 else:
                     app_path = "{0}/{1}/{2}/{3}".format(
-                        cur_dir, args.directory, repo, data['template_path'])
+                        cur_dir, args.directory, repo_name, data['template_path'])
 
             if not app_path.endswith('/'):
                 app_path = app_path + '/'

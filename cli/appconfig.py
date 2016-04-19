@@ -36,3 +36,16 @@ class AppConfig:
         if app_name in config['apps']:
             app_data = config['apps'][app_name]
         return app_data
+
+    def getRepoUrl(self, repo):
+        if repo.startswith('git@github.com'):
+            return repo
+        else:
+            return str(('git@github.com:seomoz/{}.git').format(repo))
+
+    def getRepoName(self, repo):
+        if 'git@github' in repo:
+            repo_name = repo.split("/")[1]
+            repo_name = repo_name.split(".")[0]
+            return str(repo_name)
+        return repo
