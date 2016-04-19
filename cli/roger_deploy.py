@@ -110,7 +110,7 @@ class RogerDeploy(object):
         exists = os.path.exists(os.path.abspath(work_dir))
         if exists and (temp_dir_created is True):
             shutil.rmtree(work_dir)
-            print("Deleting temporary dir:{0}".format(work_dir))
+            print("Deleted temporary dir:{0}".format(work_dir))
 
     def getNextVersion(self, config, roger_env, application, branch, work_dir, repo, args, gitObj):
         sha = getGitSha(work_dir, repo, branch, gitObj)
@@ -202,15 +202,7 @@ class RogerDeploy(object):
         push_args.directory = work_dir
         roger_push = RogerPush()
 
-        try:
-            roger_push.main(settingObj, appObj, frameworkUtils,
-                            hooksObj, push_args)
-        except (Exception, IOError) as e:
-            print("The folowing error occurred.(Error: %s).\n" %
-                  e, file=sys.stderr)
-            self.removeDirTree(work_dir, args, temp_dir_created)
-            raise SystemExit('Exiting')
-        return 0
+        roger_push.main(settingObj, appObj, frameworkUtils, hooksObj, push_args)
 
     def pullRepo(self, root, app, work_dir, config_file, branch, args, settingObj, appObj, hooksObj, gitObj):
 
@@ -218,15 +210,7 @@ class RogerDeploy(object):
         args.directory = work_dir
         roger_gitpull = RogerGitPull()
 
-        try:
-            exit_code = roger_gitpull.main(
-                settingObj, appObj, gitObj, hooksObj, args)
-            return exit_code
-        except (IOError) as e:
-            print("The folowing error occurred.(Error: %s).\n" %
-                  e, file=sys.stderr)
-            self.removeDirTree(work_dir, args, temp_dir_created)
-            raise SystemExit('Exiting')
+        roger_gitpull.main(settingObj, appObj, gitObj, hooksObj, args)
 
     def main(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, args):
         settingObj = settingObject
@@ -284,9 +268,21 @@ class RogerDeploy(object):
         if args.branch is not None:
             branch = args.branch
 
-        for app in apps:
-            self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config, roger_env,
-                           work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
+        try:
+            for app in apps:
+                try:
+                    print("Deploying {} ...".format(app))
+                    self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config, roger_env,
+                                work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
+                except (IOError, ValueError) as e:
+                    print("The folowing error occurred.(Error: %s).\n" %
+                          e, file=sys.stderr)
+                    pass # try deploying the next app
+        except (Exception) as e:
+            print("The folowing error occurred.(Error: %s).\n" %
+                  e, file=sys.stderr)
+        finally:
+            self.removeDirTree(work_dir, args, temp_dir_created)
 
     def deployApp(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo, temp_dir_created):
 
@@ -309,17 +305,8 @@ class RogerDeploy(object):
         image = ''
 
         # get/update target source(s)
-        try:
-            exit_code = self.pullRepo(root, app, os.path.abspath(
+        self.pullRepo(root, app, os.path.abspath(
                 work_dir), config_file, branch, args, settingObj, appObj, hooksObj, gitObj)
-            if exit_code != 0:
-                self.removeDirTree(work_dir, args, temp_dir_created)
-                raise SystemExit('Exiting')
-        except (IOError) as e:
-            print("The folowing error occurred.(Error: %s).\n" %
-                  e, file=sys.stderr)
-            self.removeDirTree(work_dir, args, temp_dir_created)
-            raise SystemExit('Exiting')
 
         skip_build = False
         if args.skip_build is not None:
@@ -364,30 +351,13 @@ class RogerDeploy(object):
             build_args.config_file = config_file
             build_args.push = True
             roger_build = RogerBuild()
+            roger_build.main(settingObj, appObject, hooksObj, build_args)
 
-            try:
-                roger_build.main(settingObj, appObject, hooksObj, build_args)
-            except (ValueError, IOError) as e:
-                print("The folowing error occurred.(Error: %s).\n" %
-                      e, file=sys.stderr)
-                self.removeDirTree(work_dir, args, temp_dir_created)
-                raise SystemExit('Exiting')
         print("Version is:" + image_name)
 
         # Deploying the app to framework
-        try:
-            exit_code = self.push(root, app, os.path.abspath(
-                work_dir), image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args)
-            if exit_code != 0:
-                self.removeDirTree(work_dir, args, temp_dir_created)
-                raise SystemExit('Exiting')
-        except (IOError) as e:
-            print("The folowing error occurred.(Error: %s).\n" %
-                  e, file=sys.stderr)
-            self.removeDirTree(work_dir, args, temp_dir_created)
-            raise SystemExit('Exiting')
-
-        self.removeDirTree(work_dir, args, temp_dir_created)
+        self.push(root, app, os.path.abspath(
+            work_dir), image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args)
 
         deployTime = datetime.now() - startTime
 

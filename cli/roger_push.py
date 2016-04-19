@@ -194,7 +194,7 @@ class RogerPush(object):
 
         if 'registry' not in roger_env.keys():
             raise ValueError(
-                'Registry not found in roger-env.json file.Exiting...')
+                'Registry not found in roger-env.json file.')
 
         environment = roger_env.get('default', '')
         if args.env is None:
@@ -212,7 +212,7 @@ class RogerPush(object):
 
         if environment not in roger_env['environments']:
             raise ValueError(
-                'Environment not found in roger-env.json file.Exiting...')
+                'Environment not found in roger-env.json file.')
 
         environmentObj = roger_env['environments'][environment]
         common_repo = config.get('repo', '')
