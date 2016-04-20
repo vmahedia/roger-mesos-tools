@@ -200,11 +200,10 @@ class RogerDeploy(object):
         push_args.env = environment
         push_args.app_name = app
         push_args.directory = work_dir
-        roger_push = RogerPush()
 
         try:
-            roger_push.main(settingObj, appObj, frameworkUtils,
-                            hooksObj, push_args)
+            RogerPush(settingObj, appObj, frameworkUtils,
+                            hooksObj, push_args).main()
         except (Exception, IOError) as e:
             print("The folowing error occurred.(Error: %s).\n" %
                   e, file=sys.stderr)
