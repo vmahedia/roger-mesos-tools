@@ -135,28 +135,22 @@ class RogerPush(object):
         return json_str
 
     def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_dict, container_name):
-        output = ''
-        variables = {}
-        variables['environment'] = environment
-        variables['image'] = image
+        variables = { 'environment': environment, 'image': image }
 
         # Copy variables from config-wide, app-wide, then container-wide variable
         # configs, each one from "global" and then environment-specific.
         for obj in [config, app_data, container]:
             if type(obj) == 'dict' and 'vars' in obj:
-                for global_var in obj['vars'].get('global', {}):
-                    variables[global_var] = vars_obj['global'][global_var]
-                for env_var in obj['vars'].get('environment', {}).get(environment, {}):
-                    variables[env_var] = vars_obj['environment'][environment][env_var]
+                variables.update(obj['vars'].get('global', {}))
+                variables.update(obj['vars'].get('environment', {}).get(environment, {}))
 
         try:
-            output = template.render(variables)
+            return template.render(variables)
         except exceptions.UndefinedError as e:
-            print("The folowing error occurred.(Error: %s).\n" %
-                  e, file=sys.stderr)
-            failed_container_dict[container_name] = (
-                "The folowing error occurred.(Error: %s).\n" % e)
-        return output
+            error_str = "The folowing error occurred.(Error: %s).\n" % e
+            print(error_str, file=sys.stderr)
+            failed_container_dict[container_name] = error_str
+            return ''
 
 
     def repo_relative_path(self, repo, path):
@@ -177,6 +171,9 @@ class RogerPush(object):
         # TODO: this seems like a weird choice of default relative path, and
         # is awkward here as it gives this function a side-effect
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+        # TODO: most of this function is just setting various variables (environment, repo, data, extra_vars)...
+        # It would be great to break this out into memoized environment(), repo(), etc. functions
 
         config_dir = self.settings.getConfigDir()
 
