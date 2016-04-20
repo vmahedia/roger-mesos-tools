@@ -6,6 +6,7 @@ import os.path
 import sys
 import json
 import yaml
+from settings import Settings
 
 
 class AppConfig:
@@ -36,3 +37,23 @@ class AppConfig:
         if app_name in config['apps']:
             app_data = config['apps'][app_name]
         return app_data
+
+    def getRepoUrl(self, repo):
+        if repo.startswith('git@github.com'):
+            return repo
+        else:
+            settingObj = Settings()
+            config_dir = settingObj.getConfigDir()
+            roger_env = self.getRogerEnv(config_dir)
+            if 'default_github_repo_prefix' in roger_env.keys():
+                prefix = roger_env['default_github_repo_prefix']
+            else:
+                raise ValueError("Could not determine github repo.Please provide defualt \"github repo prefix\" or ensure repo startswith git@github.com")
+            return str(prefix + '{}.git'.format(repo))
+
+    def getRepoName(self, repo):
+        if 'git@github' in repo:
+            repo_name = repo.split("/")[1]
+            repo_name = repo_name.split(".")[0]
+            return str(repo_name)
+        return repo
