@@ -428,7 +428,7 @@ class TestPush(unittest.TestCase):
             roger_push.main(settings, appConfig,
                             frameworkUtils, mockedHooks, args)
 
-    def test_roger_push_with_incorect_container_name(self):
+    def test_roger_push_with_incorrect_container_name(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
         roger_push = RogerPush()
@@ -458,11 +458,27 @@ class TestPush(unittest.TestCase):
         roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
-        roger_env = self.roger_env
-        config = self.config
         frameworkUtils = mock(FrameworkUtils)
+        roger_env = self.roger_env
+        appdata = self.data
+        config = self.config
+        when(frameworkUtils).getFramework(any()).thenReturn(marathon)
+        when(settings).getComponentsDir().thenReturn(
+            self.base_dir + "/tests/components")
+        when(settings).getSecretsDir().thenReturn(
+            self.base_dir + "/tests/secrets")
+        when(settings).getTemplatesDir().thenReturn(
+            self.base_dir + "/tests/templates")
         when(settings).getConfigDir().thenReturn(self.configs_dir)
+        when(settings).getCliDir().thenReturn(self.base_dir)
+        when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+        when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+
+        appdata["hooks"] = dict([("post_push", "some command")])
+        when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
+        when(appConfig).getConfig(any(), any()).thenReturn(config)
+
         when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
         when(appConfig).getConfig(any(), any()).thenReturn(config)
 
@@ -473,7 +489,8 @@ class TestPush(unittest.TestCase):
         args.app_name = 'grafana_test_app:grafana'
         args.config_file = 'test.json'
 
-        verify(frameworkUtils, times=0).getFramework(any())
+        roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        verify(frameworkUtils).getFramework(any())
 
     def test_roger_push_env_from_ROGER_ENV_VAR(self):
         settings = mock(Settings)
