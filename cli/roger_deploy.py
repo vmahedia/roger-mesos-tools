@@ -207,7 +207,7 @@ class RogerDeploy(object):
         except (Exception, IOError) as e:
             print("The folowing error occurred.(Error: %s).\n" %
                   e, file=sys.stderr)
-            self.removeDirTree(work_dir, args, temp_dir_created)
+            self.removeDirTree(work_dir, args, temp_dir_created) # FIXME: temp_dir_created not defined here
             raise SystemExit('Exiting')
         return 0
 

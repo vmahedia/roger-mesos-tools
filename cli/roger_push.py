@@ -149,7 +149,7 @@ class RogerPush(object):
         try:
             return template.render(variables)
         except exceptions.UndefinedError as e:
-            error_str = "The folowing error occurred.(Error: %s).\n" % e
+            error_str = "The following error occurred.(Error: %s).\n" % e
             print(error_str, file=sys.stderr)
             failed_container_dict[container_name] = error_str
             return ''
@@ -244,7 +244,9 @@ class RogerPush(object):
 
             if 'extra_variables_path' in data:
                 # TODO: would be cool to support multiple files and/or different environments
-                extra_vars = self.repo_relative_path(repo, data['extra_variables_path'])
+                ev_path = self.repo_relative_path(repo, data['extra_variables_path'])
+                with open(ev_path) as f:
+                  extra_vars = json.load(f)
             else:
                 extra_vars = {}
 
