@@ -76,3 +76,5 @@ target/
 
 # pyenv
 .python-version
+
+tests/templates/roger-test_app.json
