@@ -216,10 +216,23 @@ class RogerPush(object):
 
         environmentObj = roger_env['environments'][environment]
         common_repo = config.get('repo', '')
-        data = appObj.getAppData(config_dir, args.config_file, args.app_name)
+        app_name = args.app_name
+        container_list = []
+        if ':' in app_name:
+            tokens = app_name.split(':')
+            app_name = tokens[0]
+            if ',' in tokens[1]:
+                container_list = tokens[1].split(',')
+            else:
+                container_list.append(tokens[1])
+
+        data = appObj.getAppData(config_dir, args.config_file, app_name)
         if not data:
             raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(
-                args.app_name, config_dir, args.config_file))
+                app_name, config_dir, args.config_file))
+
+        if not set(container_list) <= set(data['containers']):
+            raise ValueError('List of containers [{}] passed do not match list of acceptable containers: [{}]'.format(container_list, data['containers']))
 
         frameworkObj = frameworkUtils.getFramework(data)
         framework = frameworkObj.getName()
@@ -228,14 +241,17 @@ class RogerPush(object):
         if common_repo != '':
             repo = data.get('repo', common_repo)
         else:
-            repo = data.get('repo', args.app_name)
+            repo = data.get('repo', app_name)
 
         comp_dir = settingObj.getComponentsDir()
         templ_dir = settingObj.getTemplatesDir()
         secrets_dir = settingObj.getSecretsDir()
 
         # template marathon files
-        data_containers = data['containers']
+        if not container_list:
+            data_containers = data['containers']
+        else:
+            data_containers = container_list
 
         failed_container_dict = {}
 
