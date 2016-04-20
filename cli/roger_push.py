@@ -134,7 +134,7 @@ class RogerPush(object):
             return "StandardError"
         return json_str
 
-    def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_dict, container_name):
+    def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_dict, container_name, extra_vars):
         variables = { 'environment': environment, 'image': image }
 
         # Copy variables from config-wide, app-wide, then container-wide variable
@@ -143,6 +143,8 @@ class RogerPush(object):
             if type(obj) == 'dict' and 'vars' in obj:
                 variables.update(obj['vars'].get('global', {}))
                 variables.update(obj['vars'].get('environment', {}).get(environment, {}))
+
+        variables.update(extra_vars)
 
         try:
             return template.render(variables)
@@ -240,6 +242,12 @@ class RogerPush(object):
             else:
                 app_path = templ_dir
 
+            if 'extra_variables_path' in data:
+                # TODO: would be cool to support multiple files and/or different environments
+                extra_vars = self.repo_relative_path(repo, data['extra_variables_path'])
+            else:
+                extra_vars = {}
+
             if not app_path.endswith('/'):
                 app_path = app_path + '/'
 
@@ -260,7 +268,7 @@ class RogerPush(object):
             print("Rendering content from template {} for environment [{}]".format(
                 template_with_path, environment))
             output = self.renderTemplate(
-                template, environment, image_path, data, config, container, failed_container_dict, container_name)
+                template, environment, image_path, data, config, container, failed_container_dict, container_name, extra_vars)
             # Adding check to see if all jinja variables git resolved fot the
             # container
             if container_name not in failed_container_dict:
