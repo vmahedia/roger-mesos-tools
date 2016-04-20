@@ -140,7 +140,7 @@ class RogerPush(object):
         # Copy variables from config-wide, app-wide, then container-wide variable
         # configs, each one from "global" and then environment-specific.
         for obj in [config, app_data, container]:
-            if type(obj) == 'dict' and 'vars' in obj:
+            if type(obj) == dict and 'vars' in obj:
                 variables.update(obj['vars'].get('global', {}))
                 variables.update(obj['vars'].get('environment', {}).get(environment, {}))
 
