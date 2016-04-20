@@ -19,3 +19,12 @@ Tools to connect to and work with [RogerOS](https://github.com/seomoz/roger-meso
 ### Use
 * `roger -h`
 * `roger <command> -h`
+
+### With virtualenv
+```
+virtualenv venv
+source venv/bin/activate
+python setup.py install
+# run roger commands
+deactivate
+```
