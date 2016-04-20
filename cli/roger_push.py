@@ -262,6 +262,14 @@ class RogerPush(object):
             else:
                 app_path = templ_dir
 
+            if 'extra_variables_path' in data:
+                # TODO: would be cool to support multiple files and/or different environments
+                ev_path = self.repo_relative_path(repo, data['extra_variables_path'])
+                with open(ev_path) as f:
+                  extra_vars = json.load(f)
+            else:
+                extra_vars = {}
+
             if not app_path.endswith('/'):
                 app_path = app_path + '/'
 
@@ -282,7 +290,7 @@ class RogerPush(object):
             print("Rendering content from template {} for environment [{}]".format(
                 template_with_path, environment))
             output = self.renderTemplate(
-                template, environment, image_path, data, config, container, failed_container_dict, container_name)
+                template, environment, image_path, data, config, container, failed_container_dict, container_name, extra_vars)
             # Adding check to see if all jinja variables git resolved fot the
             # container
             if container_name not in failed_container_dict:
