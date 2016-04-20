@@ -158,10 +158,28 @@ class RogerPush(object):
                 "The folowing error occurred.(Error: %s).\n" % e)
         return output
 
+
+    def repo_relative_path(self, repo, path):
+        '''Returns a path relative to the repo, assumed to be under [args.directory]/[repo]'''
+        abs_path = os.path.abspath(self.args.directory)
+        if abs_path == self.args.directory:
+            return "{0}/{1}/{2}".format(self.args.directory, repo, path)
+        else:
+            return "{0}/{1}/{2}/{3}".format(cur_dir, self.args.directory, repo, data['template_path'])
+
+
     def main(self):
+        '''Run roger-push. Side effects: changes directory to directory of this source file,
+        as all relative PATHS (if work_dir, component_dir, etc. is relative) are assumed
+        to be relative to this.'''
+        # Required for when work_dir,component_dir,template_dir or
+        # secret_env_dir is something like '.' or './temp"
+        # TODO: this seems like a weird choice of default relative path, and
+        # is awkward here as it gives this function a side-effect
+        os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
         config_dir = self.settings.getConfigDir()
 
-        cur_file_path = os.path.dirname(os.path.realpath(__file__))
         config = self.appConfig.getConfig(config_dir, self.args.config_file)
         roger_env = self.appConfig.getRogerEnv(config_dir)
 
@@ -188,7 +206,6 @@ class RogerPush(object):
                 'Environment not found in roger-env.json file.Exiting...')
 
         environmentObj = roger_env['environments'][environment]
-        common_repo = config.get('repo', '')
         data = self.appConfig.getAppData(config_dir, self.args.config_file, self.args.app_name)
         if not data:
             raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(
@@ -197,11 +214,7 @@ class RogerPush(object):
         frameworkObj = self.frameworkObject.getFramework(data)
         framework = frameworkObj.getName()
 
-        repo = ''
-        if common_repo != '':
-            repo = data.get('repo', common_repo)
-        else:
-            repo = data.get('repo', self.args.app_name)
+        repo = data.get('repo', config.get('repo', self.args.app_name))
 
         comp_dir = self.settings.getComponentsDir()
         templ_dir = self.settings.getTemplatesDir()
@@ -224,23 +237,11 @@ class RogerPush(object):
                     config['name'], container)
 
             template = ''
-            # Required for when work_dir,component_dir,template_dir or
-            # secret_env_dir is something like '.' or './temp"
-            os.chdir(cur_file_path)
-            app_path = ''
-            if 'template_path' not in data:
-                app_path = templ_dir
+
+            if 'template_path' in data:
+                app_path = self.repo_relative_path(repo, data['template_path'])
             else:
-                cur_dir = ''
-                if "PWD" in os.environ:
-                    cur_dir = os.environ.get('PWD')
-                abs_path = os.path.abspath(self.args.directory)
-                if abs_path == self.args.directory:
-                    app_path = "{0}/{1}/{2}".format(self.args.directory,
-                                                    repo, data['template_path'])
-                else:
-                    app_path = "{0}/{1}/{2}/{3}".format(
-                        cur_dir, self.args.directory, repo, data['template_path'])
+                app_path = templ_dir
 
             if not app_path.endswith('/'):
                 app_path = app_path + '/'
