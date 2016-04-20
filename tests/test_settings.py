@@ -29,9 +29,9 @@ class TestSettings(unittest.TestCase):
         del os.environ['ROGER_CONFIG_DIR']
         try:
             config_dir = self.settingObj.getConfigDir()
-        except (SystemExit) as e:
+        except (ValueError) as e:
             assert (
-                "Environment variable $ROGER_CONFIG_DIR is not set. Exiting." in e)
+                "Environment variable $ROGER_CONFIG_DIR is not set." in e)
         if set_config_dir.strip() != '':
             os.environ["ROGER_CONFIG_DIR"] = "{}".format(set_config_dir)
 
@@ -45,9 +45,9 @@ class TestSettings(unittest.TestCase):
         del os.environ['ROGER_COMPONENTS_DIR']
         try:
             comp_dir = self.settingObj.getComponentsDir()
-        except (SystemExit) as e:
+        except (ValueError) as e:
             assert (
-                "Environment variable $ROGER_COMPONENTS_DIR is not set. Exiting." in e)
+                "Environment variable $ROGER_COMPONENTS_DIR is not set." in e)
         if set_comp_dir.strip() != '':
             os.environ["ROGER_COMPONENTS_DIR"] = "{}".format(set_comp_dir)
 
@@ -61,9 +61,9 @@ class TestSettings(unittest.TestCase):
         del os.environ['ROGER_TEMPLATES_DIR']
         try:
             temp_dir = self.settingObj.getTemplatesDir()
-        except (SystemExit) as e:
+        except (ValueError) as e:
             assert (
-                "Environment variable $ROGER_TEMPLATES_DIR is not set.Exiting." in e)
+                "Environment variable $ROGER_TEMPLATES_DIR is not set." in e)
         if set_temp_dir.strip() != '':
             os.environ["ROGER_TEMPLATES_DIR"] = "{}".format(set_temp_dir)
 
@@ -77,9 +77,9 @@ class TestSettings(unittest.TestCase):
         del os.environ['ROGER_SECRETS_DIR']
         try:
             sect_dir = self.settingObj.getSecretsDir()
-        except (SystemExit) as e:
+        except (ValueError) as e:
             assert (
-                "Environment variable $ROGER_SECRETS_DIR is not set. Exiting." in e)
+                "Environment variable $ROGER_SECRETS_DIR is not set." in e)
         if set_sect_dir.strip() != '':
             os.environ["ROGER_SECRETS_DIR"] = "{}".format(set_sect_dir)
 

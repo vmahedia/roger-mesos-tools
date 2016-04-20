@@ -176,10 +176,10 @@ class RogerPush(object):
         try:
             output = template.render(variables)
         except exceptions.UndefinedError as e:
-            print("The folowing error occurred.(Error: %s).\n" %
+            print("The folowing error occurred: %s." %
                   e, file=sys.stderr)
             failed_container_dict[container_name] = (
-                "The folowing error occurred.(Error: %s).\n" % e)
+                "The folowing error occurred: %s." % e)
         return output
 
     def main(self, settings, appConfig, frameworkObject, hooksObj, args):
@@ -194,7 +194,7 @@ class RogerPush(object):
 
         if 'registry' not in roger_env.keys():
             raise ValueError(
-                'Registry not found in roger-env.json file.Exiting...')
+                'Registry not found in roger-env.json file.')
 
         environment = roger_env.get('default', '')
         if args.env is None:
@@ -212,7 +212,7 @@ class RogerPush(object):
 
         if environment not in roger_env['environments']:
             raise ValueError(
-                'Environment not found in roger-env.json file.Exiting...')
+                'Environment not found in roger-env.json file.')
 
         environmentObj = roger_env['environments'][environment]
         common_repo = config.get('repo', '')
@@ -338,15 +338,16 @@ class RogerPush(object):
                     containerConfig = "{0}-{1}.json".format(
                         config['name'], container)
 
-                config_file_path = "{0}/{1}/{2}".format(
-                    comp_dir, environment, containerConfig)
-
-                result = frameworkObj.runDeploymentChecks(
-                    config_file_path, environment)
                 if container_name in failed_container_dict:
-                    print("Failed push to {} framework for container {} as Unresolved Jinja variables present in template.".format(
+                    print("Failed push to {} framework for container {} as unresolved Jinja variables present in template.".format(
                         framework, container))
                 else:
+                    config_file_path = "{0}/{1}/{2}".format(
+                        comp_dir, environment, containerConfig)
+
+                    result = frameworkObj.runDeploymentChecks(
+                        config_file_path, environment)
+
                     if args.force_push or result is True:
                         frameworkObj.put(
                             config_file_path, environmentObj, container_name, environment)

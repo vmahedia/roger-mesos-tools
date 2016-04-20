@@ -146,7 +146,7 @@ class RogerPS(object):
             environment = args.env
 
         if environment not in roger_env['environments']:
-            raise SystemExit('Environment not found in roger-env.json file.')
+            raise ValueError('Environment not found in roger-env.json file.')
 
         app_details = self.get_app_details(
             framework, haproxyparser, environment, args, roger_env)
