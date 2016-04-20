@@ -15,6 +15,8 @@ Tools to connect to and work with [RogerOS](https://github.com/seomoz/roger-meso
 
 ### Install
 `$ python setup.py install`
+OR
+`pip install -e .`
 
 ### Use
 * `roger -h`
@@ -28,3 +30,6 @@ python setup.py install
 # run roger commands
 deactivate
 ```
+
+### Uninstall
+`pip uninstall roger_mesos_tools`
