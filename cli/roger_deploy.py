@@ -200,9 +200,8 @@ class RogerDeploy(object):
         push_args.env = environment
         push_args.app_name = app
         push_args.directory = work_dir
-        roger_push = RogerPush()
 
-        roger_push.main(settingObj, appObj, frameworkUtils, hooksObj, push_args)
+        RogerPush(settingObj, appObj, frameworkUtils, hooksObj, push_args).main()
 
     def pullRepo(self, root, app, work_dir, config_file, branch, args, settingObj, appObj, hooksObj, gitObj):
 

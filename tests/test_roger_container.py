@@ -52,7 +52,6 @@ class Testcontainer(unittest.TestCase):
         appConfig = mock(AppConfig)
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
-        roger_push = RogerPush()
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
         roger_env = self.roger_env
         config = self.config
@@ -84,7 +83,7 @@ class Testcontainer(unittest.TestCase):
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'tests/v0.1.0'
 
-        roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        RogerPush(settings, appConfig, frameworkUtils, mockedHooks, args).main()
 
         with open(self.base_dir + '/tests/components/dev/roger-single-container-var-tests.json') as output:
             output = json.load(output)

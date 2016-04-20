@@ -63,7 +63,6 @@ class TestPush(unittest.TestCase):
     def test_roger_push_grafana_test_app(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -93,7 +92,7 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
-        roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        RogerPush(settings, appConfig, frameworkUtils, mockedHooks, args).main()
         with open(self.base_dir + '/tests/templates/test-app-grafana.json') as output:
             output = json.load(output)
         assert output['container']['docker'][
@@ -107,7 +106,6 @@ class TestPush(unittest.TestCase):
     def test_container_resolution(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -139,7 +137,7 @@ class TestPush(unittest.TestCase):
         args.directory = self.base_dir + '/tests/testrepo'
         args.config_file = 'test.json'
         args.image_name = 'grafana/grafana:2.1.3'
-        roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        RogerPush(settings, appConfig, frameworkUtils, mockedHooks, args).main()
         with open(self.base_dir + '/tests/templates/test-app-grafana.json') as output:
             output = json.load(output)
         assert output['container']['docker'][
@@ -163,7 +161,6 @@ class TestPush(unittest.TestCase):
     def test_roger_push_with_no_app_fails(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -190,13 +187,12 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.env = 'some_test_env'
         with self.assertRaises(ValueError):
-            roger_push.main(settings, appConfig,
-                            frameworkUtils, mockedHooks, args)
+            RogerPush(settings, appConfig, frameworkUtils, mockedHooks,
+                    args).main()
 
     def test_roger_push_with_no_registry_fails(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -232,13 +228,12 @@ class TestPush(unittest.TestCase):
         # Remove registry key from dictionary
         del roger_env['registry']
         with self.assertRaises(ValueError):
-            roger_push.main(settings, appConfig,
-                            frameworkUtils, mockedHooks, args)
+            RogerPush(settings, appConfig, frameworkUtils, mockedHooks,
+                    args).main()
 
     def test_roger_push_with_no_environment_fails(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -271,8 +266,8 @@ class TestPush(unittest.TestCase):
         args.image_name = 'grafana/grafana:2.1.3'
 
         with self.assertRaises(ValueError):
-            roger_push.main(settings, appConfig,
-                            frameworkUtils, mockedHooks, args)
+            RogerPush(settings, appConfig, frameworkUtils, mockedHooks,
+                    args).main()
 
     def test_unresolved_jinja_variable_fails(self):
 
@@ -287,7 +282,6 @@ class TestPush(unittest.TestCase):
 
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
@@ -320,14 +314,13 @@ class TestPush(unittest.TestCase):
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'tests/v0.1.0'
 
-        return_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        return_code = RogerPush(
+            settings, appConfig, frameworkUtils, mockedHooks, args).main()
         verify(frameworkUtils, times=0).put(any(), any(), any(), any())
 
     def test_roger_push_calls_prepush_hook_when_present(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         frameworkUtils = mock(FrameworkUtils)
@@ -358,14 +351,13 @@ class TestPush(unittest.TestCase):
         args.directory = '/tmp'
         args.secrets_file = ""
         args.skip_push = True
-        return_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        return_code = RogerPush(
+            settings, appConfig, frameworkUtils, mockedHooks, args).main()
         verify(mockedHooks).run_hook("pre_push", any(), any())
 
     def test_roger_push_calls_postpush_hook_when_present(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         frameworkUtils = mock(FrameworkUtils)
@@ -396,14 +388,13 @@ class TestPush(unittest.TestCase):
         args.directory = '/tmp'
         args.secrets_file = ""
         args.skip_push = True
-        return_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        return_code = RogerPush(
+            settings, appConfig, frameworkUtils, mockedHooks, args).main()
         verify(mockedHooks).run_hook("post_push", any(), any())
 
     def test_roger_push_verify_default_env_use(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         roger_env = self.roger_env
@@ -425,13 +416,12 @@ class TestPush(unittest.TestCase):
         roger_env["default"] = "test_env"
 
         with self.assertRaises(ValueError):
-            roger_push.main(settings, appConfig,
-                            frameworkUtils, mockedHooks, args)
+            RogerPush(settings, appConfig,
+                            frameworkUtils, mockedHooks, args).main()
 
     def test_roger_push_with_incorrect_container_name(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         roger_env = self.roger_env
@@ -450,12 +440,11 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
 
         with self.assertRaises(ValueError):
-            roger_push.main(settings, appConfig,frameworkUtils, mockedHooks, args)
+            RogerPush(settings, appConfig,frameworkUtils, mockedHooks, args).main()
 
     def test_roger_push_with_correct_container_name(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         frameworkUtils = mock(FrameworkUtils)
@@ -490,13 +479,12 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.image_name = 'grafana/grafana:2.1.3'
 
-        roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        RogerPush(settings, appConfig, frameworkUtils, mockedHooks, args).main()
         verify(frameworkUtils).getFramework(any())
 
     def test_roger_push_env_from_ROGER_ENV_VAR(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         roger_env = self.roger_env
@@ -520,13 +508,12 @@ class TestPush(unittest.TestCase):
         os.environ["ROGER_ENV"] = "test_env"
 
         with self.assertRaises(ValueError):
-            roger_push.main(settings, appConfig,
-                            frameworkUtils, mockedHooks, args)
+            RogerPush(settings, appConfig,
+                            frameworkUtils, mockedHooks, args).main()
 
     def test_push_happens_with_validation_error_when_force_push_set(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         roger_env = self.roger_env
@@ -558,12 +545,12 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
-        roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        RogerPush(settings, appConfig, frameworkUtils, mockedHooks,
+                args).main()
 
     def test_roger_push_skip_push_set(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         roger_env = self.roger_env
@@ -594,14 +581,13 @@ class TestPush(unittest.TestCase):
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
 
-        return_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        return_code = RogerPush(
+            settings, appConfig, frameworkUtils, mockedHooks, args).main
         verify(frameworkUtils, times=0).runDeploymentChecks(any(), any())
 
     def test_push_fails_with_validation_error(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         roger_env = self.roger_env
@@ -631,14 +617,13 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
-        return_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        return_code = RogerPush(
+            settings, appConfig, frameworkUtils, mockedHooks, args).main()
         verify(frameworkUtils, times=0).put(any(), any(), any(), any())
 
     def test_roger_push_secrets_replaced(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        roger_push = RogerPush()
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         roger_env = self.roger_env
@@ -668,8 +653,8 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
-        exit_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        exit_code = RogerPush(
+            settings, appConfig, frameworkUtils, mockedHooks, args).main()
         file_path = ("{0}/{1}/{2}".format(self.components_dir,
                                           args.env, args.config_file))
         assert (os.path.isfile(file_path) is not True)
