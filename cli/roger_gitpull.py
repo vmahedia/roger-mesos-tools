@@ -76,7 +76,7 @@ class RogerGitPull(object):
         hookname = "pre_gitpull"
         exit_code = hooksObj.run_hook(hookname, data, args.directory)
         if exit_code != 0:
-            raise SystemExit('{} hook failed. Exiting.'.format(hookname))
+            raise ValueError('{} hook failed.'.format(hookname))
 
         # get/update target source(s)
         repo_name = appObj.getRepoName(repo)
@@ -89,14 +89,12 @@ class RogerGitPull(object):
                 exit_code = gitObj.gitShallowClone(repo, branch)
 
         if exit_code != 0:
-            raise SystemExit('gitpull failed. Exiting.')
+            raise ValueError('gitpull failed.')
 
         hookname = "post_gitpull"
         exit_code = hooksObj.run_hook(hookname, data, args.directory)
         if exit_code != 0:
-            raise SystemExit('{} hook failed. Exiting.'.format(hookname))
-
-        return exit_code
+            raise ValueError('{} hook failed.'.format(hookname))
 
 if __name__ == "__main__":
     settingObj = Settings()

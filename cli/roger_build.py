@@ -90,7 +90,7 @@ class RogerBuild(object):
         hookname = "pre_build"
         exit_code = hooksObj.run_hook(hookname, data, file_path)
         if exit_code != 0:
-            raise SystemExit('{} hook failed. Exiting.'.format(hookname))
+            raise ValueError('{} hook failed.'.format(hookname))
 
         file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
@@ -104,33 +104,33 @@ class RogerBuild(object):
                         root, args.directory, repo, projects, docker_path, image))
                     if exit_code != 0:
                         raise ValueError(
-                            'Docker build failed. Exiting from build.')
+                            'Docker build failed.')
                 else:
                     exit_code = os.system("{0}/cli/docker_build.py '{1}/{2}' '{3}' '{4}' '{5}' '{6}'".format(
                         root, cur_dir, args.directory, repo, projects, docker_path, image))
                     if exit_code != 0:
                         raise ValueError(
-                            'Docker build failed. Exiting from build.')
+                            'Docker build failed.')
                 build_message = "Image {0} built".format(image)
                 if(args.push):
                     exit_code = os.system("docker push {0}".format(image))
                     if exit_code != 0:
                         raise ValueError(
-                            'Docker push failed. Exiting from build.')
+                            'Docker push failed.')
                     build_message += " and pushed to registry {}".format(roger_env[
                                                                          'registry'])
                 print(build_message)
             except (IOError) as e:
                 print("The folowing error occurred.(Error: %s).\n" %
                       e, file=sys.stderr)
-                raise ValueError('Exiting from build.')
+                raise
         else:
             print("Dockerfile does not exist in dir: {}".format(file_path))
 
         hookname = "post_build"
         exit_code = hooksObj.run_hook(hookname, data, file_path)
         if exit_code != 0:
-            raise SystemExit('{} hook failed. Exiting.'.format(hookname))
+            raise ValueError('{} hook failed.'.format(hookname))
 
 if __name__ == "__main__":
     settingObj = Settings()
