@@ -27,14 +27,22 @@ class GitUtils:
 
     def gitShallowClone(self, repo, branch):
         appObj = AppConfig()
-        repo_url = appObj.getRepoUrl(repo)
+        try:
+            repo_url = appObj.getRepoUrl(repo)
+        except (ValueError) as e:
+            print("The folowing error occurred.(Error: %s).\n" %
+                  e, file=sys.stderr)
         exit_code = os.system(
             "git clone --depth 1 --branch {} {}".format(branch, repo_url))
         return exit_code
 
     def gitClone(self, repo, branch):
         appObj = AppConfig()
-        repo_url = appObj.getRepoUrl(repo)
+        try:
+            repo_url = appObj.getRepoUrl(repo)
+        except (ValueError) as e:
+            print("The folowing error occurred.(Error: %s).\n" %
+                  e, file=sys.stderr)
         exit_code = os.system(
             "git clone --branch {} {}".format(branch, repo_url))
         return exit_code
