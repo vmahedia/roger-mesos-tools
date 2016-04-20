@@ -11,18 +11,18 @@ import json
 import os
 import requests
 import sys
-from roger_build import RogerBuild
-from roger_gitpull import RogerGitPull
+from cli.roger_build import RogerBuild
+from cli.roger_gitpull import RogerGitPull
 import re
 import shutil
-from roger_push import RogerPush
-from settings import Settings
-from appconfig import AppConfig
-from hooks import Hooks
-from marathon import Marathon
-from chronos import Chronos
-from frameworkUtils import FrameworkUtils
-from gitutils import GitUtils
+from cli.roger_push import RogerPush
+from cli.settings import Settings
+from cli.appconfig import AppConfig
+from cli.hooks import Hooks
+from cli.marathon import Marathon
+from cli.chronos import Chronos
+from cli.frameworkUtils import FrameworkUtils
+from cli.gitutils import GitUtils
 
 import contextlib
 

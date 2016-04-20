@@ -9,10 +9,10 @@ import requests
 import subprocess
 import sys
 from tabulate import tabulate
-from settings import Settings
-from appconfig import AppConfig
-from marathon import Marathon
-from haproxyparser import HAProxyParser
+from cli.settings import Settings
+from cli.appconfig import AppConfig
+from cli.marathon import Marathon
+from cli.haproxyparser import HAProxyParser
 
 
 def describe():

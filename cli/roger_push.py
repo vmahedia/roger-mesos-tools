@@ -10,12 +10,12 @@ import os
 import sys
 import traceback
 import logging
-from settings import Settings
-from appconfig import AppConfig
-from marathon import Marathon
-from hooks import Hooks
-from chronos import Chronos
-from frameworkUtils import FrameworkUtils
+from cli.settings import Settings
+from cli.appconfig import AppConfig
+from cli.marathon import Marathon
+from cli.hooks import Hooks
+from cli.chronos import Chronos
+from cli.frameworkUtils import FrameworkUtils
 
 import contextlib
 

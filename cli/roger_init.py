@@ -5,7 +5,7 @@ import argparse
 import json
 import os
 import sys
-from settings import Settings
+from cli.settings import Settings
 
 import contextlib
 

@@ -5,9 +5,9 @@ import argparse
 import json
 import os
 import sys
-from settings import Settings
-from appconfig import AppConfig
-from hooks import Hooks
+from cli.settings import Settings
+from cli.appconfig import AppConfig
+from cli.hooks import Hooks
 
 import contextlib
 

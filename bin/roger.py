@@ -56,14 +56,16 @@ def getCommands(files):
 
 
 def getScriptCall(root, command, command_args):
-    script_call = "{}/cli/roger_{}.py".format(root, command)
-    exists = os.path.exists(script_call)
-    if exists == True:
-        for command_arg in command_args:
-            script_call = script_call + " {}".format(command_arg)
-        return script_call
-    else:
-        raise SystemExit("Command does not exist. Exiting.")
+    #script_call = "{}/cli/roger_{}.py".format(root, command)
+    script_call = "roger_{}.py".format(command)
+
+    #exists = os.path.exists(script_call)
+    #if exists == True:
+    for command_arg in command_args:
+        script_call = script_call + " {}".format(command_arg)
+    return script_call
+    #else:
+    #    raise SystemExit("Command does not exist. Exiting.")
 
 
 def main():

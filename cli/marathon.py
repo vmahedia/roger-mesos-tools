@@ -5,11 +5,11 @@ import os
 import sys
 import requests
 import json
-from framework import Framework
+from cli.framework import Framework
 from utils import Utils
-from settings import Settings
-from marathonvalidator import MarathonValidator
-from haproxyparser import HAProxyParser
+from cli.settings import Settings
+from cli.marathonvalidator import MarathonValidator
+from cli.haproxyparser import HAProxyParser
 
 utils = Utils()
 settings = Settings()
