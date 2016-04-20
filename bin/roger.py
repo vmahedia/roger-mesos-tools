@@ -7,13 +7,19 @@ import sys
 import subprocess
 import re
 import importlib
-
+from pkg_resources import get_distribution
 
 def roger_version(root_dir):
-    with open(os.path.join(root_dir, "VERSION")) as f:
-        version = f.read().strip()
-    print(version)
-
+    version = "Unknown!"
+    try:
+        version = get_distribution('roger_mesos_tools').version
+    except Exception:
+        fname = os.path.join(root_dir, "VERSION")
+        if(os.path.isfile(fname)):
+            with open(os.path.join(root_dir, "VERSION")) as f:
+                version = f.read().strip()
+    finally:
+        print(version)
 
 def print_help_opt(opt, desc):
     print("  {} {}".format(opt.ljust(13), desc))
