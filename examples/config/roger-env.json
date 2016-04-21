@@ -6,26 +6,7 @@
       "host": "http://localmesos01",
       "haproxy_config_path": ":8000/config",
       "chronos_endpoint": "http://localmesos01:4400"
-    },
-    "dev": {
-      "marathon_endpoint": "http://daldevmesoszk01:8080",
-      "host": "http://test.roger.dal.moz.com",
-      "haproxy_config_path": ":8000/config",
-      "chronos_endpoint": "http://daldevmesoszk01:4400"
-    },
-    "stage": {
-      "marathon_endpoint": "http://dalstgmesoszk01:8080",
-      "host": "http://staging.roger.dal.moz.com",
-      "haproxy_config_path": ":8000/config",
-      "chronos_endpoint": "http://dalstgmesoszk01:4400"
-    },
-    "prod": {
-      "marathon_endpoint": "http://dalmesoszk01:8080",
-      "host": "http://prod.roger.dal.moz.com",
-      "haproxy_config_path": ":8000/config",
-      "chronos_endpoint": "http://dalmesoszk01:4400"
     }
   },
-  "default": "dev",
-  "default_github_repo_prefix": "git@github.com:seomoz/"
+  "default": "local"
 }

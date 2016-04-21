@@ -14,7 +14,7 @@ apps:
   # Required
   sleep-app:
    name: sleep
-   repo: roger-mesos-tools
+   repo: git@github.com:seomoz/roger-mesos-tools.git
    template_path: examples/templates
    containers:
      - roger-sleep-app
