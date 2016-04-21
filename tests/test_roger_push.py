@@ -488,6 +488,7 @@ class TestPush(unittest.TestCase):
         args.skip_push = True
         args.app_name = 'grafana_test_app:grafana'
         args.config_file = 'test.json'
+        args.image_name = 'grafana/grafana:2.1.3'
 
         roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         verify(frameworkUtils).getFramework(any())

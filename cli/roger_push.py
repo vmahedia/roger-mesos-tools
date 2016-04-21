@@ -40,8 +40,8 @@ class RogerPush(object):
     def parse_args(self):
         self.parser = argparse.ArgumentParser(
             prog='roger push', description=describe())
-        self.parser.add_argument('app_name', metavar='app_name',
-                                 help="application to push. Example: 'agora' or 'grafana'")
+        self.parser.add_argument('app_name', metavar='app_name', help="application to push. Can also push specific" \
+                        " containers(comma seperated). Example: 'agora' or 'app_name:container1,container2'")
         self.parser.add_argument('-e', '--env', metavar='env',
                                  help="environment to push to. Example: 'dev' or 'prod'")
         self.parser.add_argument('directory', metavar='directory',
@@ -231,8 +231,14 @@ class RogerPush(object):
             raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(
                 app_name, config_dir, args.config_file))
 
-        if not set(container_list) <= set(data['containers']):
-            raise ValueError('List of containers [{}] passed do not match list of acceptable containers: [{}]'.format(container_list, data['containers']))
+        configured_container_list = []
+        for task in data['containers']:
+            if type(task) == dict:
+                configured_container_list.append(task.keys()[0])
+            else:
+                configured_container_list.append(task)
+        if not set(container_list) <= set(configured_container_list):
+            raise ValueError('List of containers [{}] passed do not match list of acceptable containers: [{}]'.format(container_list, configured_container_list))
 
         frameworkObj = frameworkUtils.getFramework(data)
         framework = frameworkObj.getName()

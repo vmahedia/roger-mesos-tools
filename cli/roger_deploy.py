@@ -170,8 +170,8 @@ class RogerDeploy(object):
             prog='roger deploy', description=describe())
         self.parser.add_argument('-e', '--environment', metavar='env',
                                  help="environment to deploy to. Example: 'dev' or 'stage'")
-        self.parser.add_argument('application', metavar='application',
-                                 help="application to deploy. Example: 'all' or 'kairos'")
+        self.parser.add_argument('application', metavar='application',help="application to deploy. Can also push specific" \
+                                " containers(comma seperated). Example: 'all' or 'kairos' or 'app_name:container1,container2'")
         self.parser.add_argument('-b', '--branch', metavar='branch',
                                  help="branch to pull code from. Defaults to master. Example: 'production' or 'master'")
         self.parser.add_argument('-s', '--skip-build', action="store_true",
