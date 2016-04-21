@@ -262,7 +262,7 @@ class RogerPush(object):
         failed_container_dict = {}
 
         hookname = "pre_push"
-        exit_code = self.hooksObj.run_hook(hookname, data, app_path)
+        exit_code = hooksObj.run_hook(hookname, data, app_path)
         if exit_code != 0:
             raise ValueError('{} hook failed.'.format(hookname))
 
