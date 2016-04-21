@@ -6,8 +6,8 @@ import requests
 import subprocess
 import sys
 import re
-from appconfig import AppConfig
-from settings import Settings
+from cli.appconfig import AppConfig
+from cli.settings import Settings
 
 
 class HAProxyParser:

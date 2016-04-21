@@ -3,8 +3,8 @@
 from __future__ import print_function
 import os
 import sys
-from marathon import Marathon
-from chronos import Chronos
+from cli.marathon import Marathon
+from cli.chronos import Chronos
 
 
 class FrameworkUtils:

@@ -8,9 +8,9 @@ import os
 import requests
 import subprocess
 import sys
-from settings import Settings
-from appconfig import AppConfig
-from containerconfig import ContainerConfig
+from cli.settings import Settings
+from cli.appconfig import AppConfig
+from cli.containerconfig import ContainerConfig
 
 
 def describe():

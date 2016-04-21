@@ -77,7 +77,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['argparse', 'setuptools', 'requests',
+    install_requires=['argparse', 'setuptools', 'requests', 'pyyaml', 
         'mock', 'mockito', 'tabulate', 'slackclient', 'Jinja2'],
 
     # Include the folders listed in the MANIFEST.in file as a part of the
@@ -95,7 +95,8 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'roger=roger:main'
-        ],
+            'roger=bin.roger:main', 'j2y=bin.j2y:main'
+        ]
     },
+    scripts={ 'cli/roger_build.py', 'cli/roger_deploy.py', 'cli/roger_gitpull.py', 'cli/roger_init.py', 'cli/roger_logs.py', 'cli/roger_ps.py', 'cli/roger_push.py', 'cli/roger_shell.py' }
 )

@@ -1,4 +1,5 @@
 **/.DS_Store
+venv*/
 .vagrant
 dist/
 components
@@ -75,3 +76,5 @@ target/
 
 # pyenv
 .python-version
+
+tests/templates/roger-test_app.json

@@ -5,8 +5,8 @@ import os
 import sys
 import requests
 import json
-from framework import Framework
-from utils import Utils
+from cli.framework import Framework
+from cli.utils import Utils
 utils = Utils()
 
 
