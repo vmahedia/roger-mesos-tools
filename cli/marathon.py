@@ -6,7 +6,7 @@ import sys
 import requests
 import json
 from cli.framework import Framework
-from utils import Utils
+from cli.utils import Utils
 from cli.settings import Settings
 from cli.marathonvalidator import MarathonValidator
 from cli.haproxyparser import HAProxyParser
