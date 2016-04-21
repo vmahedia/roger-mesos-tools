@@ -26,7 +26,7 @@ OR
 ```
 virtualenv venv
 source venv/bin/activate
-python setup.py install
+pip install -e .
 # run roger commands
 deactivate
 ```
