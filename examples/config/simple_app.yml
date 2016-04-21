@@ -1,0 +1,20 @@
+# Required
+name: moz
+
+notifications:
+  # This is the slack channel details
+  channel: slack_channel_id
+  emoji: ':rocket:'
+  method: chat.postMessage
+  username: slack_username
+
+repo: git@github.com:seomoz/roger-simple-app.git
+
+apps:
+  # Required
+  sleep-app:
+   name: sleep
+   repo: roger-mesos-tools
+   template_path: examples/templates
+   containers:
+     - roger-sleep-app
