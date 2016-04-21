@@ -170,8 +170,8 @@ class RogerDeploy(object):
             prog='roger deploy', description=describe())
         self.parser.add_argument('-e', '--environment', metavar='env',
                                  help="environment to deploy to. Example: 'dev' or 'stage'")
-        self.parser.add_argument('application', metavar='application',
-                                 help="application to deploy. Example: 'all' or 'kairos'")
+        self.parser.add_argument('application', metavar='application',help="application to deploy. Can also push specific" \
+                                " containers(comma seperated). Example: 'all' or 'kairos' or 'app_name:container1,container2'")
         self.parser.add_argument('-b', '--branch', metavar='branch',
                                  help="branch to pull code from. Defaults to master. Example: 'production' or 'master'")
         self.parser.add_argument('-s', '--skip-build', action="store_true",
@@ -219,7 +219,10 @@ class RogerDeploy(object):
         root = settingObj.getCliDir()
         roger_env = appObj.getRogerEnv(config_dir)
         config = appObj.getConfig(config_dir, args.config_file)
-        if args.application not in config['apps']:
+        app_name = args.application
+        if ':' in app_name:
+            app_name = app_name.split(':')[0]
+        if app_name not in config['apps']:
             raise ValueError('Application specified not found.')
 
         if 'registry' not in roger_env:
@@ -229,10 +232,11 @@ class RogerDeploy(object):
         slack = Slack(config['notifications'],
                       '/home/vagrant/.roger_cli.conf.d/slack_token')
 
+        apps = []
         if args.application == 'all':
             apps = config['apps'].keys()
         else:
-            apps = [args.application]
+            apps.append(app_name)
 
         common_repo = config.get('repo', '')
         environment = roger_env.get('default', '')
@@ -276,7 +280,7 @@ class RogerDeploy(object):
                                 work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
                 except (IOError, ValueError) as e:
                     print("The folowing error occurred when deploying {}: {}.".format(app, e), file=sys.stderr)
-                    pass # try deploying the next app
+                    pass    # try deploying the next app
         except (Exception) as e:
             print("The folowing error occurred: %s" %
                   e, file=sys.stderr)
@@ -298,14 +302,13 @@ class RogerDeploy(object):
         if common_repo != '':
             repo = data.get('repo', common_repo)
         else:
-            repo = data.get('repo', args.application)
+            repo = data.get('repo', app)
 
         image_name = ''
         image = ''
 
         # get/update target source(s)
-        self.pullRepo(root, app, os.path.abspath(
-                work_dir), config_file, branch, args, settingObj, appObj, hooksObj, gitObj)
+        self.pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, settingObj, appObj, hooksObj, gitObj)
 
         skip_build = False
         if args.skip_build is not None:
@@ -355,7 +358,7 @@ class RogerDeploy(object):
         print("Version is:" + image_name)
 
         # Deploying the app to framework
-        self.push(root, app, os.path.abspath(
+        self.push(root, args.application, os.path.abspath(
             work_dir), image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args)
 
         deployTime = datetime.now() - startTime

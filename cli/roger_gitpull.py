@@ -79,7 +79,8 @@ class RogerGitPull(object):
             raise ValueError('{} hook failed.'.format(hookname))
 
         # get/update target source(s)
-        path = "{0}/{1}".format(args.directory, repo)
+        repo_name = appObj.getRepoName(repo)
+        path = "{0}/{1}".format(args.directory, repo_name)
         if os.path.isdir(path):
             with chdir(path):
                 exit_code = gitObj.gitPull(branch)

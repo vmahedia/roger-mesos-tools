@@ -40,8 +40,8 @@ class RogerPush(object):
     def parse_args(self):
         self.parser = argparse.ArgumentParser(
             prog='roger push', description=describe())
-        self.parser.add_argument('app_name', metavar='app_name',
-                                 help="application to push. Example: 'agora' or 'grafana'")
+        self.parser.add_argument('app_name', metavar='app_name', help="application to push. Can also push specific" \
+                        " containers(comma seperated). Example: 'agora' or 'app_name:container1,container2'")
         self.parser.add_argument('-e', '--env', metavar='env',
                                  help="environment to push to. Example: 'dev' or 'prod'")
         self.parser.add_argument('directory', metavar='directory',
@@ -216,10 +216,29 @@ class RogerPush(object):
 
         environmentObj = roger_env['environments'][environment]
         common_repo = config.get('repo', '')
-        data = appObj.getAppData(config_dir, args.config_file, args.app_name)
+        app_name = args.app_name
+        container_list = []
+        if ':' in app_name:
+            tokens = app_name.split(':')
+            app_name = tokens[0]
+            if ',' in tokens[1]:
+                container_list = tokens[1].split(',')
+            else:
+                container_list.append(tokens[1])
+
+        data = appObj.getAppData(config_dir, args.config_file, app_name)
         if not data:
             raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(
-                args.app_name, config_dir, args.config_file))
+                app_name, config_dir, args.config_file))
+
+        configured_container_list = []
+        for task in data['containers']:
+            if type(task) == dict:
+                configured_container_list.append(task.keys()[0])
+            else:
+                configured_container_list.append(task)
+        if not set(container_list) <= set(configured_container_list):
+            raise ValueError('List of containers [{}] passed do not match list of acceptable containers: [{}]'.format(container_list, configured_container_list))
 
         frameworkObj = frameworkUtils.getFramework(data)
         framework = frameworkObj.getName()
@@ -228,14 +247,17 @@ class RogerPush(object):
         if common_repo != '':
             repo = data.get('repo', common_repo)
         else:
-            repo = data.get('repo', args.app_name)
+            repo = data.get('repo', app_name)
 
         comp_dir = settingObj.getComponentsDir()
         templ_dir = settingObj.getTemplatesDir()
         secrets_dir = settingObj.getSecretsDir()
 
         # template marathon files
-        data_containers = data['containers']
+        if not container_list:
+            data_containers = data['containers']
+        else:
+            data_containers = container_list
 
         failed_container_dict = {}
 
@@ -262,12 +284,13 @@ class RogerPush(object):
                 if "PWD" in os.environ:
                     cur_dir = os.environ.get('PWD')
                 abs_path = os.path.abspath(args.directory)
+                repo_name = appObj.getRepoName(repo)
                 if abs_path == args.directory:
                     app_path = "{0}/{1}/{2}".format(args.directory,
-                                                    repo, data['template_path'])
+                                                    repo_name, data['template_path'])
                 else:
                     app_path = "{0}/{1}/{2}/{3}".format(
-                        cur_dir, args.directory, repo, data['template_path'])
+                        cur_dir, args.directory, repo_name, data['template_path'])
 
             if not app_path.endswith('/'):
                 app_path = app_path + '/'

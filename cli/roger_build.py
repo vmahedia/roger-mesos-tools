@@ -73,18 +73,19 @@ class RogerBuild(object):
         if "PWD" in os.environ:
             cur_dir = os.environ.get('PWD')
         abs_path = os.path.abspath(args.directory)
+        repo_name = appObj.getRepoName(repo)
         if docker_path != 'none':
             if abs_path == args.directory:
                 file_path = "{0}/{1}/{2}".format(args.directory,
-                                                 repo, docker_path)
+                                                 repo_name, docker_path)
             else:
                 file_path = "{0}/{1}/{2}/{3}".format(
-                    cur_dir, args.directory, repo, docker_path)
+                    cur_dir, args.directory, repo_name, docker_path)
         else:
             if abs_path == args.directory:
-                file_path = "{0}/{1}".format(args.directory, repo)
+                file_path = "{0}/{1}".format(args.directory, repo_name)
             else:
-                file_path = "{0}/{1}/{2}".format(cur_dir, args.directory, repo)
+                file_path = "{0}/{1}/{2}".format(cur_dir, args.directory, repo_name)
 
         hookname = "pre_build"
         exit_code = hooksObj.run_hook(hookname, data, file_path)
