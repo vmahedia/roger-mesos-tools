@@ -261,6 +261,29 @@ class RogerPush(object):
 
         failed_container_dict = {}
 
+        template = ''
+        # Required for when work_dir,component_dir,template_dir or
+        # secret_env_dir is something like '.' or './temp"
+        os.chdir(cur_file_path)
+        app_path = ''
+        if 'template_path' not in data:
+            app_path = templ_dir
+        else:
+            cur_dir = ''
+            if "PWD" in os.environ:
+                cur_dir = os.environ.get('PWD')
+            abs_path = os.path.abspath(args.directory)
+            repo_name = appObj.getRepoName(repo)
+            if abs_path == args.directory:
+                app_path = "{0}/{1}/{2}".format(args.directory,
+                                                repo_name, data['template_path'])
+            else:
+                app_path = "{0}/{1}/{2}/{3}".format(
+                    cur_dir, args.directory, repo_name, data['template_path'])
+
+        if not app_path.endswith('/'):
+            app_path = app_path + '/'
+
         hookname = "pre_push"
         exit_code = hooksObj.run_hook(hookname, data, app_path)
         if exit_code != 0:
@@ -276,29 +299,6 @@ class RogerPush(object):
                 container_name = container
                 containerConfig = "{0}-{1}.json".format(
                     config['name'], container)
-
-            template = ''
-            # Required for when work_dir,component_dir,template_dir or
-            # secret_env_dir is something like '.' or './temp"
-            os.chdir(cur_file_path)
-            app_path = ''
-            if 'template_path' not in data:
-                app_path = templ_dir
-            else:
-                cur_dir = ''
-                if "PWD" in os.environ:
-                    cur_dir = os.environ.get('PWD')
-                abs_path = os.path.abspath(args.directory)
-                repo_name = appObj.getRepoName(repo)
-                if abs_path == args.directory:
-                    app_path = "{0}/{1}/{2}".format(args.directory,
-                                                    repo_name, data['template_path'])
-                else:
-                    app_path = "{0}/{1}/{2}/{3}".format(
-                        cur_dir, args.directory, repo_name, data['template_path'])
-
-            if not app_path.endswith('/'):
-                app_path = app_path + '/'
 
             env = Environment(loader=FileSystemLoader(
                 "{}".format(app_path)), undefined=StrictUndefined)
@@ -345,11 +345,6 @@ class RogerPush(object):
                         logging.error(traceback.format_exc())
                     with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
                         fh.write(output)
-
-        hookname = "pre_push"
-        exit_code = hooksObj.run_hook(hookname, data, app_path)
-        if exit_code != 0:
-            raise ValueError('{} hook failed.'.format(hookname))
 
         if args.skip_push:
             print("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(
