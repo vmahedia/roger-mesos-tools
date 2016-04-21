@@ -77,7 +77,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['argparse', 'setuptools', 'requests', 'pyyaml', 'jsonschema', 'keyring',
+    install_requires=['argparse', 'setuptools', 'requests', 'pyyaml', 
         'mock', 'mockito', 'tabulate', 'slackclient', 'Jinja2'],
 
     # Include the folders listed in the MANIFEST.in file as a part of the
