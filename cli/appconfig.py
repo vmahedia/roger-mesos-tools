@@ -6,7 +6,7 @@ import os.path
 import sys
 import json
 import yaml
-from settings import Settings
+from cli.settings import Settings
 
 
 class AppConfig:

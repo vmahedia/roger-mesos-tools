@@ -4,7 +4,7 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
-from appconfig import AppConfig
+from cli.appconfig import AppConfig
 import contextlib
 
 

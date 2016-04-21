@@ -8,7 +8,7 @@ import json
 import os
 import re
 from copy import deepcopy
-from appconfig import AppConfig
+from cli.appconfig import AppConfig
 
 import contextlib
 
