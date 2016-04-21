@@ -22,6 +22,9 @@ OR
 * `roger -h`
 * `roger <command> -h`
 
+### Uninstall
+`pip uninstall roger_mesos_tools`
+
 ### With virtualenv
 ```
 virtualenv venv
@@ -30,6 +33,3 @@ pip install -e .
 # run roger commands
 deactivate
 ```
-
-### Uninstall
-`pip uninstall roger_mesos_tools`
