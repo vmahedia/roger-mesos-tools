@@ -30,46 +30,38 @@ def chdir(dirname):
     finally:
         os.chdir(curdir)
 
+
 def describe():
     return 'pushes the application into roger mesos.'
 
-class RogerPushArgParser(argparse.ArgumentParser):
-    '''ArgumentParser with all the Roger Args loaded. Run parse_args() on a
-    new instance to parse args from command-line.'''
-
-    def __init__(self):
-        super(RogerPushArgParser, self).__init__(
-                prog='roger push', description=describe())
-        parser.add_argument('app_name', metavar='app_name', help="application to push. Can also push specific" \
-                " containers(comma separated). Example: 'agora' or 'app_name:container1,container2'")
-        parser.add_argument('-e', '--env', metavar='env',
-                help="environment to push to. Example: 'dev' or 'prod'")
-        parser.add_argument('directory', metavar='directory',
-                help="working directory. Example: '/home/vagrant/work_dir'")
-        parser.add_argument('image_name', metavar='image_name',
-                help="image name that includes version to use. Example: 'roger-collectd-v0.20' or 'elasticsearch-v0.07'")
-        parser.add_argument('config_file', metavar='config_file',
-                help="configuration file to use. Example: 'content.json' or 'kwe.json'")
-        parser.add_argument(
-                '--skip-push', '-s', help="skips push. Only generates components for review. Defaults to false.", action="store_true")
-        parser.add_argument(
-                '--force-push', '-f', help="force push. Not Recommended. Forces push even if validation checks failed. Defaults to false.", action="store_true")
-        parser.add_argument('--secrets-file', '-S',
-                help="specifies an optional secrets file for deploy runtime variables.")
-
 
 class RogerPush(object):
-    def __init__(self, settings, appConfig, frameworkObject, hooksObj, args):
-        self.settings = settings
-        self.appConfig = appConfig
-        self.frameworkObject = frameworkObject
-        self.hooksObj = hooksObj
-        self.args = args
 
-    def loadSecretsJson(self, secrets_dir, json_file_name, environment):
-        if self.args.secrets_file is not None:
-            print("Using specified secrets file: {}".format(self.args.secrets_file))
-            json_file_name = self.args.secrets_file
+    def parse_args(self):
+        self.parser = argparse.ArgumentParser(
+            prog='roger push', description=describe())
+        self.parser.add_argument('app_name', metavar='app_name', help="application to push. Can also push specific" \
+                        " containers(comma seperated). Example: 'agora' or 'app_name:container1,container2'")
+        self.parser.add_argument('-e', '--env', metavar='env',
+                                 help="environment to push to. Example: 'dev' or 'prod'")
+        self.parser.add_argument('directory', metavar='directory',
+                                 help="working directory. Example: '/home/vagrant/work_dir'")
+        self.parser.add_argument('image_name', metavar='image_name',
+                                 help="image name that includes version to use. Example: 'roger-collectd-v0.20' or 'elasticsearch-v0.07'")
+        self.parser.add_argument('config_file', metavar='config_file',
+                                 help="configuration file to use. Example: 'content.json' or 'kwe.json'")
+        self.parser.add_argument(
+            '--skip-push', '-s', help="skips push. Only generates components for review. Defaults to false.", action="store_true")
+        self.parser.add_argument(
+            '--force-push', '-f', help="force push. Not Recommended. Forces push even if validation checks failed. Defaults to false.", action="store_true")
+        self.parser.add_argument('--secrets-file', '-S',
+                                 help="specifies an optional secrets file for deploy runtime variables.")
+        return self.parser
+
+    def loadSecretsJson(self, secrets_dir, json_file_name, args, environment):
+        if args.secrets_file is not None:
+            print("Using specified secrets file: {}".format(args.secrets_file))
+            json_file_name = args.secrets_file
         exists = os.path.exists(secrets_dir)
         if exists is False:
             os.makedirs(secrets_dir)
@@ -173,8 +165,9 @@ class RogerPush(object):
         if 'registry' not in roger_env.keys():
             raise ValueError(
                 'Registry not found in roger-env.json file.')
+
         environment = roger_env.get('default', '')
-        if self.args.env is None:
+        if args.env is None:
             if "ROGER_ENV" in os.environ:
                 env_var = os.environ.get('ROGER_ENV')
                 if env_var.strip() == '':
@@ -185,14 +178,15 @@ class RogerPush(object):
                         "Using value {} from environment variable $ROGER_ENV".format(env_var))
                     environment = env_var
         else:
-            environment = self.args.env
+            environment = args.env
 
         if environment not in roger_env['environments']:
             raise ValueError(
                 'Environment not found in roger-env.json file.')
 
         environmentObj = roger_env['environments'][environment]
-        app_name = self.args.app_name
+        common_repo = config.get('repo', '')
+        app_name = args.app_name
         container_list = []
         if ':' in app_name:
             tokens = app_name.split(':')
@@ -202,10 +196,10 @@ class RogerPush(object):
             else:
                 container_list.append(tokens[1])
 
-        data = self.appConfig.getAppData(config_dir, self.args.config_file, app_name)
+        data = appObj.getAppData(config_dir, args.config_file, app_name)
         if not data:
             raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(
-                app_name, config_dir, self.args.config_file))
+                app_name, config_dir, args.config_file))
 
         configured_container_list = []
         for task in data['containers']:
@@ -216,14 +210,18 @@ class RogerPush(object):
         if not set(container_list) <= set(configured_container_list):
             raise ValueError('List of containers [{}] passed do not match list of acceptable containers: [{}]'.format(container_list, configured_container_list))
 
-        frameworkObj = self.frameworkObject.getFramework(data)
+        frameworkObj = frameworkUtils.getFramework(data)
         framework = frameworkObj.getName()
 
-        repo = data.get('repo', config.get('repo', app_name))
+        repo = ''
+        if common_repo != '':
+            repo = data.get('repo', common_repo)
+        else:
+            repo = data.get('repo', app_name)
 
-        comp_dir = self.settings.getComponentsDir()
-        templ_dir = self.settings.getTemplatesDir()
-        secrets_dir = self.settings.getSecretsDir()
+        comp_dir = settingObj.getComponentsDir()
+        templ_dir = settingObj.getTemplatesDir()
+        secrets_dir = settingObj.getSecretsDir()
 
         # template marathon files
         if not container_list:
@@ -281,7 +279,7 @@ class RogerPush(object):
                     "Error while reading template from {} - {}".format(template_with_path, e))
 
             image_path = "{0}/{1}".format(
-                roger_env['registry'], self.args.image_name)
+                roger_env['registry'], args.image_name)
             print("Rendering content from template {} for environment [{}]".format(
                 template_with_path, environment))
             try:
@@ -304,7 +302,7 @@ class RogerPush(object):
 
                 if 'SECRET' in output:
                     output = self.mergeSecrets(output, self.loadSecretsJson(
-                        secrets_dir, containerConfig, environment))
+                        secrets_dir, containerConfig, args, environment))
                 if output != "StandardError":
                     try:
                         comp_exists = os.path.exists("{0}".format(comp_dir))
@@ -345,7 +343,7 @@ class RogerPush(object):
                     result = frameworkObj.runDeploymentChecks(
                         config_file_path, environment)
 
-                    if self.args.force_push or result is True:
+                    if args.force_push or result is True:
                         frameworkObj.put(
                             config_file_path, environmentObj, container_name, environment)
                     else:
@@ -353,7 +351,7 @@ class RogerPush(object):
                             framework, container))
 
         hookname = "post_push"
-        exit_code = self.hooksObj.run_hook(hookname, data, app_path)
+        exit_code = hooksObj.run_hook(hookname, data, app_path)
         if exit_code != 0:
             raise ValueError('{} hook failed.'.format(hookname))
 
@@ -363,5 +361,8 @@ if __name__ == "__main__":
     appObj = AppConfig()
     frameworkUtils = FrameworkUtils()
     hooksObj = Hooks()
-    args = RogerPushArgParser().parse_args()
-    RogerPush(settingObj, appObj, frameworkUtil, hooksObj, args).main()
+    roger_push = RogerPush()
+    roger_push.parser = roger_push.parse_args()
+    roger_push.args = roger_push.parser.parse_args()
+    roger_push.main(settingObj, appObj, frameworkUtils,
+                    hooksObj, roger_push.args)
