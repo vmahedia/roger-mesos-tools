@@ -134,7 +134,8 @@ class RogerPush(object):
             return "StandardError"
         return json_str
 
-    def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_dict, container_name, extra_vars):
+    def renderTemplate(self, template, environment, image, app_data, config, container, container_name, extra_vars):
+
         variables = { 'environment': environment, 'image': image }
 
         # Copy variables from config-wide, app-wide, then container-wide variable
@@ -143,37 +144,31 @@ class RogerPush(object):
             if type(obj) == dict and 'vars' in obj:
                 variables.update(obj['vars'].get('global', {}))
                 variables.update(obj['vars'].get('environment', {}).get(environment, {}))
-
+        
         variables.update(extra_vars)
 
-        try:
-            return template.render(variables)
-        except exceptions.UndefinedError as e:
-            error_str = "The following error occurred. %s.\n" % e
-            print(error_str, file=sys.stderr)
-            failed_container_dict[container_name] = error_str
-            return ''
+        return template.render(variables)
 
-
-    def repo_relative_path(self, repo, path):
+    def repo_relative_path(self, appConfig, args, repo, path):
         '''Returns a path relative to the repo, assumed to be under [args.directory]/[repo name]'''
-        repo_name = self.appConfig.getRepoName(repo)
-        abs_path = os.path.abspath(self.args.directory)
-        if abs_path == self.args.directory:
-            return "{0}/{1}/{2}".format(self.args.directory, repo_name, path)
+        repo_name = appConfig.getRepoName(repo)
+        abs_path = os.path.abspath(args.directory)
+        if abs_path == args.directory:
+            return "{0}/{1}/{2}".format(args.directory, repo_name, path)
         else:
             return "{0}/{1}/{2}/{3}".format(os.environ.get('PWD', ''),
-                    self.args.directory, repo_name, data['template_path'])
+                    args.directory, repo_name, path)
 
 
-    def main(self):
-        # TODO: most of this function is just setting various variables (environment, repo, data, extra_vars)...
-        # It would be great to break this out into memoized environment(), repo(), etc. functions
+    def main(self, settings, appConfig, frameworkObject, hooksObj, args):
+        settingObj = settings
+        appObj = appConfig
+        frameworkUtils = frameworkObject
+        config_dir = settingObj.getConfigDir()
 
-        config_dir = self.settings.getConfigDir()
-
-        config = self.appConfig.getConfig(config_dir, self.args.config_file)
-        roger_env = self.appConfig.getRogerEnv(config_dir)
+        cur_file_path = os.path.dirname(os.path.realpath(__file__))
+        config = appObj.getConfig(config_dir, args.config_file)
+        roger_env = appObj.getRogerEnv(config_dir)
 
         if 'registry' not in roger_env.keys():
             raise ValueError(
@@ -238,6 +233,30 @@ class RogerPush(object):
 
         failed_container_dict = {}
 
+        template = ''
+        # Required for when work_dir,component_dir,template_dir or
+        # secret_env_dir is something like '.' or './temp"
+        os.chdir(cur_file_path)
+        app_path = ''
+        if 'template_path' in data:
+            app_path = self.repo_relative_path(appObj, args, repo, data['template_path'])
+        else:
+            app_path = templ_dir
+
+        extra_vars = {}
+        if 'extra_variables_path' in data:
+            ev_path = self.repo_relative_path(appObj, args, repo, data['extra_variables_path'])
+            with open(ev_path) as f:
+                extra_vars = json.load(f)
+
+        if not app_path.endswith('/'):
+            app_path = app_path + '/'
+
+        hookname = "pre_push"
+        exit_code = hooksObj.run_hook(hookname, data, app_path)
+        if exit_code != 0:
+            raise ValueError('{} hook failed.'.format(hookname))
+
         for container in data_containers:
             if type(container) == dict:
                 container_name = str(container.keys()[0])
@@ -248,30 +267,6 @@ class RogerPush(object):
                 container_name = container
                 containerConfig = "{0}-{1}.json".format(
                     config['name'], container)
-
-            # Required for when work_dir,component_dir,template_dir or
-            # secret_env_dir is something like '.' or './temp"
-            # TODO: this seems like a weird choice of default relative path, and
-            # is awkward here as it gives this function a side-effect. Also I don't see how
-            # it is doing what the comment says it is, as os.chdir does not effect PWD env var
-            # used in self.repo_relative_path.
-            os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
-            if 'template_path' in data:
-                app_path = self.repo_relative_path(repo, data['template_path'])
-            else:
-                app_path = templ_dir
-
-            if 'extra_variables_path' in data:
-                # TODO: would be cool to support multiple files and/or different environments
-                ev_path = self.repo_relative_path(repo, data['extra_variables_path'])
-                with open(ev_path) as f:
-                  extra_vars = json.load(f)
-            else:
-                extra_vars = {}
-
-            if not app_path.endswith('/'):
-                app_path = app_path + '/'
 
             env = Environment(loader=FileSystemLoader(
                 "{}".format(app_path)), undefined=StrictUndefined)
@@ -289,8 +284,14 @@ class RogerPush(object):
                 roger_env['registry'], self.args.image_name)
             print("Rendering content from template {} for environment [{}]".format(
                 template_with_path, environment))
-            output = self.renderTemplate(
-                template, environment, image_path, data, config, container, failed_container_dict, container_name, extra_vars)
+            try:
+                output = self.renderTemplate(template, environment, image_path, data, config, container, container_name, extra_vars)
+            except exceptions.UndefinedError as e:
+                error_str = "The following error occurred. %s.\n" % e
+                print(error_str, file=sys.stderr)
+                failed_container_dict[container_name] = error_str
+                pass
+
             # Adding check to see if all jinja variables git resolved fot the
             # container
             if container_name not in failed_container_dict:
@@ -319,12 +320,7 @@ class RogerPush(object):
                     with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
                         fh.write(output)
 
-        hookname = "pre_push"
-        exit_code = self.hooksObj.run_hook(hookname, data, app_path)
-        if exit_code != 0:
-            raise ValueError('{} hook failed.'.format(hookname))
-
-        if self.args.skip_push:
+        if args.skip_push:
             print("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(
                 framework, comp_dir, environment))
         else:
