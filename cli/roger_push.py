@@ -126,7 +126,7 @@ class RogerPush(object):
             return "StandardError"
         return json_str
 
-    def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_dict, container_name):
+    def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_dict, container_name, extra_vars):
 
         variables = { 'environment': environment, 'image': image }
 
@@ -136,7 +136,8 @@ class RogerPush(object):
             if type(obj) == dict and 'vars' in obj:
                 variables.update(obj['vars'].get('global', {}))
                 variables.update(obj['vars'].get('environment', {}).get(environment, {}))
-
+        
+        variables.update(extra_vars)
 
         try:
             return template.render(variables)
@@ -145,6 +146,17 @@ class RogerPush(object):
             print(error_str, file=sys.stderr)
             failed_container_dict[container_name] = error_str
             return ''
+
+    def repo_relative_path(self, appConfig, args, repo, path):
+        '''Returns a path relative to the repo, assumed to be under [args.directory]/[repo name]'''
+        repo_name = appConfig.getRepoName(repo)
+        abs_path = os.path.abspath(args.directory)
+        if abs_path == args.directory:
+            return "{0}/{1}/{2}".format(args.directory, repo_name, path)
+        else:
+            return "{0}/{1}/{2}/{3}".format(os.environ.get('PWD', ''),
+                    args.directory, repo_name, path)
+
 
     def main(self, settings, appConfig, frameworkObject, hooksObj, args):
         settingObj = settings
@@ -230,20 +242,16 @@ class RogerPush(object):
         # secret_env_dir is something like '.' or './temp"
         os.chdir(cur_file_path)
         app_path = ''
-        if 'template_path' not in data:
-            app_path = templ_dir
+        if 'template_path' in data:
+            app_path = self.repo_relative_path(appObj, args, repo, data['template_path'])
         else:
-            cur_dir = ''
-            if "PWD" in os.environ:
-                cur_dir = os.environ.get('PWD')
-            abs_path = os.path.abspath(args.directory)
-            repo_name = appObj.getRepoName(repo)
-            if abs_path == args.directory:
-                app_path = "{0}/{1}/{2}".format(args.directory,
-                                                repo_name, data['template_path'])
-            else:
-                app_path = "{0}/{1}/{2}/{3}".format(
-                    cur_dir, args.directory, repo_name, data['template_path'])
+            app_path = templ_dir
+
+        extra_vars = {}
+        if 'extra_variables_path' in data:
+            ev_path = self.repo_relative_path(appObj, args, repo, data['extra_variables_path'])
+            with open(ev_path) as f:
+                extra_vars = json.load(f)
 
         if not app_path.endswith('/'):
             app_path = app_path + '/'
@@ -281,7 +289,7 @@ class RogerPush(object):
             print("Rendering content from template {} for environment [{}]".format(
                 template_with_path, environment))
             output = self.renderTemplate(
-                template, environment, image_path, data, config, container, failed_container_dict, container_name)
+                template, environment, image_path, data, config, container, failed_container_dict, container_name, extra_vars)
             # Adding check to see if all jinja variables git resolved fot the
             # container
             if container_name not in failed_container_dict:
