@@ -63,76 +63,63 @@ class TestPush(unittest.TestCase):
 
     def test_template_render_for_extra_variables(self):
         roger_push = RogerPush()
-        failed_container_dict = {}
         app_data = self.config['apps']['grafana_test_app']
         container = app_data['containers'][1]['grafana1']
         extra_vars = self.extra_vars
         extra_vars['env_value1'] = "100"
         extra_vars['env_value2'] = "200"
-        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, failed_container_dict, "grafana1", extra_vars)
-        print(output)
+        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, "grafana1", extra_vars)
         result = json.loads(output)
         assert result['env']['ENV_VAR1'] == '100'
         assert result['env']['ENV_VAR2'] == '200'
-        assert not failed_container_dict
 
     def test_template_render_for_config_level_variables(self):
         roger_push = RogerPush()
-        failed_container_dict = {}
         app_data = self.config['apps']['test_app']
         container = "container_name1"
-        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, failed_container_dict, "container_name1", self.extra_vars)
+        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, "container_name1", self.extra_vars)
         result = json.loads(output)
         assert result['env']['ENV_VAR1'] == '4'
         assert result['env']['ENV_VAR2'] == '8'
-        assert not failed_container_dict
 
     def test_template_render_for_app_level_variables(self):
         roger_push = RogerPush()
-        failed_container_dict = {}
         app_data = self.config['apps']['test_app1']
         container = "container_name1"
         # Passing environment that doesn't exist
-        output = roger_push.renderTemplate(self.template, "non_existing_env", "test_image", app_data, self.config, container, failed_container_dict, "container_name1", self.extra_vars)
+        output = roger_push.renderTemplate(self.template, "non_existing_env", "test_image", app_data, self.config, container, "container_name1", self.extra_vars)
         result = json.loads(output)
         assert result['env']['ENV_VAR1'] == '12'
         assert result['env']['ENV_VAR2'] == '16'
-        assert not failed_container_dict
         # Existing environment
-        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, failed_container_dict, "container_name1", self.extra_vars)
+        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, "container_name1", self.extra_vars)
         result = json.loads(output)
         assert result['env']['ENV_VAR1'] == '20'
         assert result['env']['ENV_VAR2'] == '24'
-        assert not failed_container_dict
 
     def test_template_render_for_container_level_variables(self):
         roger_push = RogerPush()
-        failed_container_dict = {}
         app_data = self.config['apps']['grafana_test_app']
         container = "grafana"
         # Passing environment that doesn't exist
-        output = roger_push.renderTemplate(self.template, "non_existing_env", "test_image", app_data, self.config, container, failed_container_dict, "grafana", self.extra_vars)
+        output = roger_push.renderTemplate(self.template, "non_existing_env", "test_image", app_data, self.config, container, "grafana", self.extra_vars)
         result = json.loads(output)
         assert result['env']['ENV_VAR1'] == '3'
         assert result['env']['ENV_VAR2'] == '3'
-        assert not failed_container_dict
         # Existing environment
-        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, failed_container_dict, "grafana", self.extra_vars)
+        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, "grafana", self.extra_vars)
         result = json.loads(output)
         assert result['env']['ENV_VAR1'] == '4'
         assert result['env']['ENV_VAR2'] == '8'
-        assert not failed_container_dict
         container = app_data['containers'][1]['grafana1']
-        output = roger_push.renderTemplate(self.template, "non_existing_env", "test_image", app_data, self.config, container, failed_container_dict, "grafana1", self.extra_vars)
+        output = roger_push.renderTemplate(self.template, "non_existing_env", "test_image", app_data, self.config, container, "grafana1", self.extra_vars)
         result = json.loads(output)
         assert result['env']['ENV_VAR1'] == '30'
         assert result['env']['ENV_VAR2'] == '54'
-        assert not failed_container_dict
-        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, failed_container_dict, "grafana1", self.extra_vars)
+        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, "grafana1", self.extra_vars)
         result = json.loads(output)
         assert result['env']['ENV_VAR1'] == '64'
         assert result['env']['ENV_VAR2'] == '128'
-        assert not failed_container_dict
 
     def test_roger_push_grafana_test_app(self):
         settings = mock(Settings)
@@ -394,8 +381,7 @@ class TestPush(unittest.TestCase):
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'tests/v0.1.0'
 
-        with self.assertRaises(ValueError):
-            roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         verify(frameworkUtils, times=0).put(any(), any(), any(), any())
 
     def test_roger_push_calls_prepush_hook_when_present(self):

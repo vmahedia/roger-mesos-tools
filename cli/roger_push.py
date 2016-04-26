@@ -126,7 +126,7 @@ class RogerPush(object):
             return "StandardError"
         return json_str
 
-    def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_dict, container_name, extra_vars):
+    def renderTemplate(self, template, environment, image, app_data, config, container, container_name, extra_vars):
 
         variables = { 'environment': environment, 'image': image }
 
@@ -139,13 +139,7 @@ class RogerPush(object):
         
         variables.update(extra_vars)
 
-        try:
-            return template.render(variables)
-        except exceptions.UndefinedError as e:
-            error_str = "The following error occurred. %s.\n" % e
-            print(error_str, file=sys.stderr)
-            failed_container_dict[container_name] = error_str
-            raise ValueError('Rendering the template for container [{}] failed.'.format(container))
+        return template.render(variables)
 
     def repo_relative_path(self, appConfig, args, repo, path):
         '''Returns a path relative to the repo, assumed to be under [args.directory]/[repo name]'''
@@ -288,8 +282,14 @@ class RogerPush(object):
                 roger_env['registry'], args.image_name)
             print("Rendering content from template {} for environment [{}]".format(
                 template_with_path, environment))
-            output = self.renderTemplate(
-                template, environment, image_path, data, config, container, failed_container_dict, container_name, extra_vars)
+            try:
+                output = self.renderTemplate(template, environment, image_path, data, config, container, container_name, extra_vars)
+            except exceptions.UndefinedError as e:
+                error_str = "The following error occurred. %s.\n" % e
+                print(error_str, file=sys.stderr)
+                failed_container_dict[container_name] = error_str
+                pass
+
             # Adding check to see if all jinja variables git resolved fot the
             # container
             if container_name not in failed_container_dict:
