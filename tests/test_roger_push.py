@@ -4,6 +4,7 @@ from __future__ import print_function
 import unittest
 import os
 import argparse
+from jinja2 import Template, exceptions
 import json
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(
@@ -42,12 +43,9 @@ class TestPush(unittest.TestCase):
 
         config = {u'repo': u'roger', u'notifications': {u'username': u'Roger Deploy', u'method': u'chat.postMessage', u'channel': u'Channel ID', u'emoji': u':rocket:'},
                   u'apps': {u'test_app': {u'imageBase': u'test_app_base', u'name': u'test_app', u'containers': [u'container_name1', u'container_name2']},
-                            u'test_app1': {u'framework': u'chronos', u'name': u'test_app1', u'containers': [u'container_name1', u'container_name2'], u'imageBase': u'test_app_base'},
-                            u'grafana_test_app': {u'imageBase': u'test_app_base', u'name': u'test_app_grafana', u'containers': [u'grafana', {u'grafana1': {u'vars': {u'environment': {u'prod': {u'mem': u'2048', u'cpus': u'2'}, u'dev': {u'mem': u'512', u'cpus': u'0.5'}},
-                                                                                                                                                                     u'global': {u'mem': u'128', u'cpus': u'0.1'}}}}, {u'grafana2': {u'vars': {u'environment': {u'prod': {u'mem': u'2048', u'cpus': u'2'},
-                                                                                                                                                                                                                                                                u'dev': {u'mem': u'1024', u'cpus': u'1'}}, u'global': {u'mem': u'128', u'cpus': u'0.1'}}}}]}}, u'name': u'test-app',
-                  u'vars': {u'environment': {u'prod': {u'mem': u'2048', u'cpus': u'2'}, u'dev': {u'mem': u'512', u'cpus': u'1'},
-                                             u'stage': {u'mem': u'1024', u'cpus': u'1'}}, u'global': {u'instances': u'1', u'network': u'BRIDGE'}}}
+                            u'test_app1': { u'vars': { u'global': {u'env_value1': u'12', u'env_value2': u'16'}, u'environment': {u'test': {u'env_value1': u'20', u'env_value2': u'24'}}}, u'framework': u'chronos', u'name': u'test_app1', u'containers': [u'container_name1', u'container_name2'], u'imageBase': u'test_app_base'},
+                            u'grafana_test_app': {u'imageBase': u'test_app_base', u'name': u'test_app_grafana', u'containers': [u'grafana', {u'grafana1': {u'vars': {u'environment': {u'prod': {u'mem': u'2048', u'cpus': u'2'}, u'dev': {u'mem': u'512', u'cpus': u'0.5'}, u'test': {u'env_value1': u'64', u'env_value2': u'128'}}, u'global': {u'mem': u'128', u'cpus': u'0.1', u'env_value1': u'30', u'env_value2': u'54'}}}}, {u'grafana2': {u'vars': {u'environment': {u'prod': {u'mem': u'2048', u'cpus': u'2'}, u'dev': {u'mem': u'1024', u'cpus': u'1'}}, u'global': {u'mem': u'128', u'cpus': u'0.1'}}}}]}}, u'name': u'test-app',
+                  u'vars': {u'environment': {u'prod': {u'mem': u'2048', u'cpus': u'2'}, u'test': {u'env_value1': u'4', u'env_value2': u'8'}, u'dev': {u'mem': u'512', u'cpus': u'1'}, u'stage': {u'mem': u'1024', u'cpus': u'1'}}, u'global': {u'instances': u'1', u'network': u'BRIDGE', u'env_value1': u'3', u'env_value2': u'3'}}}
 
         with open(self.configs_dir + '/roger-env.json') as roger:
             roger_env = json.load(roger)
@@ -59,6 +57,69 @@ class TestPush(unittest.TestCase):
         test_data = test_config['apps']['grafana_test_app']
         self.test_config = test_config
         self.test_data = test_data
+        template = Template('{ "env": { "ENV_VAR1": "{{ env_value1 }}", "ENV_VAR2": "{{ env_value2 }}" }}') 
+        self.template = template
+
+    def test_template_render_for_config_level_variables(self):
+        args = self.args
+        roger_push = RogerPush()
+        failed_container_dict = {}
+        app_data = self.config['apps']['test_app']
+        container = "container_name1"
+        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, failed_container_dict, "container_name1")
+        result = json.loads(output)
+        assert result['env']['ENV_VAR1'] == '4'
+        assert result['env']['ENV_VAR2'] == '8'
+        assert not failed_container_dict
+
+    def test_template_render_for_app_level_variables(self):
+        args = self.args
+        roger_push = RogerPush()
+        failed_container_dict = {}
+        app_data = self.config['apps']['test_app1']
+        container = "container_name1"
+        # Passing environment that doesn't exist
+        output = roger_push.renderTemplate(self.template, "non_existing_env", "test_image", app_data, self.config, container, failed_container_dict, "container_name1")
+        result = json.loads(output)
+        assert result['env']['ENV_VAR1'] == '12'
+        assert result['env']['ENV_VAR2'] == '16'
+        assert not failed_container_dict
+        # Existing environment
+        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, failed_container_dict, "container_name1")
+        result = json.loads(output)
+        assert result['env']['ENV_VAR1'] == '20'
+        assert result['env']['ENV_VAR2'] == '24'
+        assert not failed_container_dict
+
+    def test_template_render_for_container_level_variables(self):
+        args = self.args
+        roger_push = RogerPush()
+        failed_container_dict = {}
+        app_data = self.config['apps']['grafana_test_app']
+        container = "grafana"
+        # Passing environment that doesn't exist
+        output = roger_push.renderTemplate(self.template, "non_existing_env", "test_image", app_data, self.config, container, failed_container_dict, "grafana")
+        result = json.loads(output)
+        assert result['env']['ENV_VAR1'] == '3'
+        assert result['env']['ENV_VAR2'] == '3'
+        assert not failed_container_dict
+        # Existing environment
+        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, failed_container_dict, "grafana")
+        result = json.loads(output)
+        assert result['env']['ENV_VAR1'] == '4'
+        assert result['env']['ENV_VAR2'] == '8'
+        assert not failed_container_dict
+        container = app_data['containers'][1]['grafana1']
+        output = roger_push.renderTemplate(self.template, "non_existing_env", "test_image", app_data, self.config, container, failed_container_dict, "grafana1")
+        result = json.loads(output)
+        assert result['env']['ENV_VAR1'] == '30'
+        assert result['env']['ENV_VAR2'] == '54'
+        assert not failed_container_dict
+        output = roger_push.renderTemplate(self.template, "test", "test_image", app_data, self.config, container, failed_container_dict, "grafana1")
+        result = json.loads(output)
+        assert result['env']['ENV_VAR1'] == '64'
+        assert result['env']['ENV_VAR2'] == '128'
+        assert not failed_container_dict
 
     def test_roger_push_grafana_test_app(self):
         settings = mock(Settings)

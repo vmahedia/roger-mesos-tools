@@ -127,60 +127,24 @@ class RogerPush(object):
         return json_str
 
     def renderTemplate(self, template, environment, image, app_data, config, container, failed_container_dict, container_name):
-        output = ''
-        variables = {}
-        variables['environment'] = environment
-        variables['image'] = image
 
-        # Adding Global and environment variables for all apps
-        if 'vars' in config:
-            if 'global' in config['vars']:
-                for global_var in config['vars']['global']:
-                    variables[global_var] = config[
-                        'vars']['global'][global_var]
+        variables = { 'environment': environment, 'image': image }
 
-            if 'environment' in config['vars']:
-                if environment in config['vars']['environment']:
-                    for env_var in config['vars']['environment'][environment]:
-                        variables[env_var] = config['vars'][
-                            'environment'][environment][env_var]
+        # Copy variables from config-wide, app-wide, then container-wide variable
+        # configs, each one from "global" and then environment-specific.
+        for obj in [config, app_data, container]:
+            if type(obj) == dict and 'vars' in obj:
+                variables.update(obj['vars'].get('global', {}))
+                variables.update(obj['vars'].get('environment', {}).get(environment, {}))
 
-        # Adding Global and environment variables for specific app.
-        # If the same variable is already present in "variables" dictonary,it
-        # will get overriden
-        if 'vars' in app_data:
-            if 'global' in app_data['vars']:
-                for global_var in app_data['vars']['global']:
-                    variables[global_var] = app_data[
-                        'vars']['global'][global_var]
-
-            if 'environment' in app_data['vars']:
-                if environment in app_data['vars']['environment']:
-                    for env_var in app_data['vars']['environment'][environment]:
-                        variables[env_var] = app_data['vars'][
-                            'environment'][environment][env_var]
-
-        if type(container) == dict:
-            if 'vars' in container:
-                container_vars = container['vars']
-                if 'global' in container_vars:
-                    for global_var in container_vars['global']:
-                        variables[global_var] = container_vars[
-                            'global'][global_var]
-                if 'environment' in container_vars:
-                    if environment in container_vars['environment']:
-                        for env_var in container_vars['environment'][environment]:
-                            variables[env_var] = container_vars[
-                                'environment'][environment][env_var]
 
         try:
-            output = template.render(variables)
+            return template.render(variables)
         except exceptions.UndefinedError as e:
-            print("The folowing error occurred: %s." %
-                  e, file=sys.stderr)
-            failed_container_dict[container_name] = (
-                "The folowing error occurred: %s." % e)
-        return output
+            error_str = "The following error occurred. %s.\n" % e
+            print(error_str, file=sys.stderr)
+            failed_container_dict[container_name] = error_str
+            return ''
 
     def main(self, settings, appConfig, frameworkObject, hooksObj, args):
         settingObj = settings
