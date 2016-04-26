@@ -49,7 +49,7 @@ class AppConfig:
                 prefix = roger_env['default_github_repo_prefix']
             else:
                 raise ValueError(
-                    "Could not determine github repo.Please provide defualt \"github repo prefix\" or ensure repo startswith git@github.com")
+                    "Could not determine github repo.Please provide default \"github repo prefix\" or ensure repo startswith git@github.com")
             return str(prefix + '{}.git'.format(repo))
 
     def getRepoName(self, repo):
