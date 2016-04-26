@@ -14,6 +14,8 @@ from settings import Settings
 from mockito import mock, when, verify
 from mockito.matchers import any
 from hooks import Hooks
+from cli.dockerutils import DockerUtils
+from cli.docker_build import Docker
 
 # Test basic functionalities of roger-build script
 
@@ -51,6 +53,8 @@ class TestBuild(unittest.TestCase):
     def test_roger_build_with_no_app_fails(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
+        dockerUtilsObj = mock(DockerUtils)
+        dockerObj = mock(Docker)
         roger_build = RogerBuild()
         mockedHooks = mock(Hooks)
         roger_env = self.roger_env
@@ -75,11 +79,14 @@ class TestBuild(unittest.TestCase):
         args.config_file = 'app.json'
 
         with self.assertRaises(ValueError):
-            roger_build.main(settings, appConfig, mockedHooks, args)
+            roger_build.main(settings, appConfig, mockedHooks,
+                             dockerUtilsObj, dockerObj, args)
 
     def test_roger_build_calls_prebuild_hook_when_present(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
+        dockerUtilsObj = mock(DockerUtils)
+        dockerObj = mock(Docker)
         roger_build = RogerBuild()
         mockedHooks = mock(Hooks)
         roger_env = {}
@@ -95,12 +102,15 @@ class TestBuild(unittest.TestCase):
         args.app_name = 'any app'
         args.directory = '/tmp'
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
-        return_code = roger_build.main(settings, appConfig, mockedHooks, args)
+        return_code = roger_build.main(
+            settings, appConfig, mockedHooks, dockerUtilsObj, dockerObj, args)
         verify(mockedHooks).run_hook("pre_build", any(), any())
 
     def test_roger_build_calls_postbuild_hook_when_present(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
+        dockerUtilsObj = mock(DockerUtils)
+        dockerObj = mock(Docker)
         roger_build = RogerBuild()
         mockedHooks = mock(Hooks)
         roger_env = {}
@@ -116,7 +126,8 @@ class TestBuild(unittest.TestCase):
         args.app_name = 'any app'
         args.directory = '/tmp'
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
-        return_code = roger_build.main(settings, appConfig, mockedHooks, args)
+        return_code = roger_build.main(
+            settings, appConfig, mockedHooks, dockerUtilsObj, dockerObj, args)
         verify(mockedHooks).run_hook("post_build", any(), any())
 
     def tearDown(self):

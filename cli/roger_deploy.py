@@ -23,6 +23,8 @@ from cli.marathon import Marathon
 from cli.chronos import Chronos
 from cli.frameworkUtils import FrameworkUtils
 from cli.gitutils import GitUtils
+from cli.dockerutils import DockerUtils
+from cli.docker_build import Docker
 
 import contextlib
 
@@ -170,8 +172,8 @@ class RogerDeploy(object):
             prog='roger deploy', description=describe())
         self.parser.add_argument('-e', '--environment', metavar='env',
                                  help="environment to deploy to. Example: 'dev' or 'stage'")
-        self.parser.add_argument('application', metavar='application',help="application to deploy. Can also push specific" \
-                                " containers(comma seperated). Example: 'all' or 'kairos' or 'app_name:container1,container2'")
+        self.parser.add_argument('application', metavar='application', help="application to deploy. Can also push specific"
+                                 " containers(comma seperated). Example: 'all' or 'kairos' or 'app_name:container1,container2'")
         self.parser.add_argument('-b', '--branch', metavar='branch',
                                  help="branch to pull code from. Defaults to master. Example: 'production' or 'master'")
         self.parser.add_argument('-s', '--skip-build', action="store_true",
@@ -202,7 +204,8 @@ class RogerDeploy(object):
         push_args.directory = work_dir
         roger_push = RogerPush()
 
-        roger_push.main(settingObj, appObj, frameworkUtils, hooksObj, push_args)
+        roger_push.main(settingObj, appObj, frameworkUtils,
+                        hooksObj, push_args)
 
     def pullRepo(self, root, app, work_dir, config_file, branch, args, settingObj, appObj, hooksObj, gitObj):
 
@@ -277,9 +280,10 @@ class RogerDeploy(object):
                 try:
                     print("Deploying {} ...".format(app))
                     self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config, roger_env,
-                                work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
+                                   work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
                 except (IOError, ValueError) as e:
-                    print("The folowing error occurred when deploying {}: {}.".format(app, e), file=sys.stderr)
+                    print("The folowing error occurred when deploying {}: {}.".format(
+                        app, e), file=sys.stderr)
                     pass    # try deploying the next app
         except (Exception) as e:
             print("The folowing error occurred: %s" %
@@ -308,7 +312,8 @@ class RogerDeploy(object):
         image = ''
 
         # get/update target source(s)
-        self.pullRepo(root, app, os.path.abspath(work_dir), config_file, branch, args, settingObj, appObj, hooksObj, gitObj)
+        self.pullRepo(root, app, os.path.abspath(work_dir), config_file,
+                      branch, args, settingObj, appObj, hooksObj, gitObj)
 
         skip_build = False
         if args.skip_build is not None:
@@ -352,8 +357,14 @@ class RogerDeploy(object):
             build_args.tag_name = image_name
             build_args.config_file = config_file
             build_args.push = True
+            dockerUtilsObj = DockerUtils()
+            dockerObj = Docker()
             roger_build = RogerBuild()
-            roger_build.main(settingObj, appObject, hooksObj, build_args)
+            try:
+                roger_build.main(settingObj, appObject, hooksObj,
+                                 dockerUtilsObj, dockerObj, build_args)
+            except ValueError:
+                raise
 
         print("Version is:" + image_name)
 
