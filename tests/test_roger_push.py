@@ -394,8 +394,8 @@ class TestPush(unittest.TestCase):
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'tests/v0.1.0'
 
-        return_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        with self.assertRaises(ValueError):
+            roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         verify(frameworkUtils, times=0).put(any(), any(), any(), any())
 
     def test_roger_push_calls_prepush_hook_when_present(self):

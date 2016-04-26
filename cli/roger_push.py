@@ -145,7 +145,7 @@ class RogerPush(object):
             error_str = "The following error occurred. %s.\n" % e
             print(error_str, file=sys.stderr)
             failed_container_dict[container_name] = error_str
-            return ''
+            raise ValueError('Rendering the template for container [{}] failed.'.format(container))
 
     def repo_relative_path(self, appConfig, args, repo, path):
         '''Returns a path relative to the repo, assumed to be under [args.directory]/[repo name]'''
