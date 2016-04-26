@@ -31,19 +31,24 @@ class TestBuild(unittest.TestCase):
         self.config = config
 
     def test_docker_build(self):
-        appObj = mock(AppConfig)
-        dockerUtilsObj = mock(DockerUtils)
-        dockerObj = Docker()
-        when(appObj).getRepoName(any()).thenReturn('roger')
-        when(dockerUtilsObj).docker_build(any()).thenReturn(True)
-        directory = self.base_dir + '/tests/testrepo'
-        config = self.config
-        repo = config['repo']
-        projects = 'none'
-        path = ''
-        image_tag = 'test_image_tag'
-        dockerObj.docker_build(dockerUtilsObj, appObj,
-                               directory, repo, projects, path, image_tag)
+        raised_exception = False
+        try:
+            appObj = mock(AppConfig)
+            dockerUtilsObj = mock(DockerUtils)
+            dockerObj = Docker()
+            when(appObj).getRepoName(any()).thenReturn('roger')
+            when(dockerUtilsObj).docker_build(any()).thenReturn(True)
+            directory = self.base_dir + '/tests/testrepo'
+            config = self.config
+            repo = config['repo']
+            projects = 'none'
+            path = ''
+            image_tag = 'test_image_tag'
+            dockerObj.docker_build(dockerUtilsObj, appObj,
+                                   directory, repo, projects, path, image_tag)
+        except:
+            raised_exception = True
+        self.assertFalse(raised_exception)
 
     def tearDown(self):
         pass
