@@ -450,7 +450,8 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
 
         with self.assertRaises(ValueError):
-            roger_push.main(settings, appConfig,frameworkUtils, mockedHooks, args)
+            roger_push.main(settings, appConfig,
+                            frameworkUtils, mockedHooks, args)
 
     def test_roger_push_with_correct_container_name(self):
         settings = mock(Settings)

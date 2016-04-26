@@ -9,6 +9,7 @@ import os
 import re
 from copy import deepcopy
 from cli.appconfig import AppConfig
+from cli.dockerutils import DockerUtils
 
 import contextlib
 
@@ -184,32 +185,36 @@ def null_swaparoo():
     yield []
 
 
-def docker_build(directory, repo, projects, path, image_tag):
-    '''run a `docker_build -t image_tag .` in the current directory, handling any private repos'''
-    appObj = AppConfig()
-    repo_name = appObj.getRepoName(repo)
-    sourcePath = "{0}/{1}/".format(directory, repo_name)
-    if os.path.isdir(sourcePath):
+class Docker(object):
+
+    def docker_build(self, dockerUtilsObj, appObj, directory, repo, projects, path, image_tag):
+        '''run a `docker_build -t image_tag .` in the current directory, handling any private repos'''
+        repo_name = appObj.getRepoName(repo)
+        sourcePath = "{0}/{1}/".format(directory, repo_name)
+        if os.path.isdir(sourcePath):
+            os.chdir(sourcePath)
+
+        if projects != 'none':
+            download_private_repos(projects)
+
         os.chdir(sourcePath)
+        if path != 'none':
+            docker_path = sourcePath + "/{0}".format(path)
+            os.chdir(docker_path)
 
-    if projects != 'none':
-        download_private_repos(projects)
+        if os.path.isfile('package.json'):
+            swaparoo = packagejson_swaparoo
+        elif os.path.isfile('Gemfile'):
+            swaparoo = gemfile_swaparoo
+        else:
+            swaparoo = null_swaparoo
 
-    os.chdir(sourcePath)
-    if path != 'none':
-        docker_path = sourcePath + "/{0}".format(path)
-        os.chdir(docker_path)
-
-    if os.path.isfile('package.json'):
-        swaparoo = packagejson_swaparoo
-    elif os.path.isfile('Gemfile'):
-        swaparoo = gemfile_swaparoo
-    else:
-        swaparoo = null_swaparoo
-
-    with swaparoo():
-        os.system('docker build -t {} .'.format(image_tag))
+        with swaparoo():
+            dockerUtilsObj.docker_build(image_tag)
 
 if __name__ == "__main__":
-    docker_build(sys.argv[1], sys.argv[2], sys.argv[
-                 3], sys.argv[4], sys.argv[5])
+    dockerObj = Docker()
+    dockerUtilsObj = DockerUtils()
+    appObj = AppConfig()
+    dockerObj.docker_build(dockerUtilsObj, appObj, sys.argv[1], sys.argv[2], sys.argv[
+        3], sys.argv[4], sys.argv[5])
