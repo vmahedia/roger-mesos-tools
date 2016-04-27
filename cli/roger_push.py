@@ -117,6 +117,8 @@ class RogerPush(object):
         '''Given a JSON string and an object of secret environment variables, replaces
         parses the JSON keys with the secret variables. Returns back
         a JSON string. Raises an error if there are any SECRET variables still exists.'''
+        print("WARNING - The use of \"SECRET\" is deprecated. Please switch to using Jinja variables. To do so," \
+              " use '{{ <actual variable name> }}' instead of \"SECRET\" in the target file.")
         output_dict = json.loads(json_str)
         json_str = json.dumps(self.replaceSecrets(
             output_dict, secrets), indent=4)
