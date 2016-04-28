@@ -117,6 +117,8 @@ class RogerPush(object):
         '''Given a JSON string and an object of secret environment variables, replaces
         parses the JSON keys with the secret variables. Returns back
         a JSON string. Raises an error if there are any SECRET variables still exists.'''
+        print("WARNING - The use of \"SECRET\" is deprecated. Please switch to using Jinja variables. To do so," \
+              " use '{{ <actual variable name> }}' instead of \"SECRET\" in the target file.")
         output_dict = json.loads(json_str)
         json_str = json.dumps(self.replaceSecrets(
             output_dict, secrets), indent=4)
@@ -126,7 +128,7 @@ class RogerPush(object):
             return "StandardError"
         return json_str
 
-    def renderTemplate(self, template, environment, image, app_data, config, container, container_name, extra_vars):
+    def renderTemplate(self, template, environment, image, app_data, config, container, container_name, additional_vars):
 
         variables = { 'environment': environment, 'image': image }
 
@@ -137,7 +139,7 @@ class RogerPush(object):
                 variables.update(obj['vars'].get('global', {}))
                 variables.update(obj['vars'].get('environment', {}).get(environment, {}))
         
-        variables.update(extra_vars)
+        variables.update(additional_vars)
 
         return template.render(variables)
 
@@ -279,12 +281,17 @@ class RogerPush(object):
                 raise ValueError(
                     "Error while reading template from {} - {}".format(template_with_path, e))
 
+            additional_vars = {}
+            additional_vars.update(extra_vars)
+            secret_vars = self.loadSecretsJson(secrets_dir, containerConfig, args, environment)
+            additional_vars.update(secret_vars)
+
             image_path = "{0}/{1}".format(
                 roger_env['registry'], args.image_name)
             print("Rendering content from template {} for environment [{}]".format(
                 template_with_path, environment))
             try:
-                output = self.renderTemplate(template, environment, image_path, data, config, container, container_name, extra_vars)
+                output = self.renderTemplate(template, environment, image_path, data, config, container, container_name, additional_vars)
             except exceptions.UndefinedError as e:
                 error_str = "The following error occurred. %s.\n" % e
                 print(error_str, file=sys.stderr)
