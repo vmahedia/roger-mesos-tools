@@ -44,8 +44,10 @@ class TestBuild(unittest.TestCase):
             projects = 'none'
             path = ''
             image_tag = 'test_image_tag'
+            custom_docker_file_exists = False
+            docker_file = ''
             dockerObj.docker_build(dockerUtilsObj, appObj,
-                                   directory, repo, projects, path, image_tag)
+                                   directory, repo, projects, path, image_tag, custom_docker_file_exists, docker_file)
         except:
             raised_exception = True
         self.assertFalse(raised_exception)
