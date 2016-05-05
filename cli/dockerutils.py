@@ -4,7 +4,6 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
-from cli.appconfig import AppConfig
 import contextlib
 
 
@@ -21,9 +20,10 @@ def chdir(dirname):
 
 class DockerUtils:
 
-    def docker_build(self, image_tag, custom_docker_file_exists, docker_file):
-        if custom_docker_file_exists:
-            exit_code = os.system('docker build -f {} -t {} .'.format(docker_file, image_tag))
+    def docker_build(self, image_tag, docker_file):
+        if docker_file is not 'Dockerfile':
+            exit_code = os.system(
+                'docker build -f {} -t {} .'.format(docker_file, image_tag))
         else:
             exit_code = os.system('docker build -t {} .'.format(image_tag))
         if exit_code is not 0:
