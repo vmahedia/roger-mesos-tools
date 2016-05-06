@@ -210,10 +210,7 @@ class Docker(object):
             swaparoo = null_swaparoo
 
         with swaparoo():
-            try:
-                dockerUtilsObj.docker_build(image_tag, docker_file)
-            except ValueError:
-                raise
+            dockerUtilsObj.docker_build(image_tag, docker_file)
 
 if __name__ == "__main__":
     dockerObj = Docker()
