@@ -99,6 +99,8 @@ class RogerBuild(object):
             build_filename = ("{0}/{1}".format(file_path, data['build_filename']))
             file_exists = os.path.exists(
                 "{0}/{1}".format(file_path, build_filename))
+            if not file_exists:
+                raise ValueError("Specified build file: {} does not exist. Exiting build.".format(build_filename))
         else:
             file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
