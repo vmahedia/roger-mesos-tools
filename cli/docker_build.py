@@ -187,7 +187,7 @@ def null_swaparoo():
 
 class Docker(object):
 
-    def docker_build(self, dockerUtilsObj, appObj, directory, repo, projects, path, image_tag):
+    def docker_build(self, dockerUtilsObj, appObj, directory, repo, projects, path, image_tag, docker_file='Dockerfile'):
         '''run a `docker_build -t image_tag .` in the current directory, handling any private repos'''
         repo_name = appObj.getRepoName(repo)
         sourcePath = "{0}/{1}/".format(directory, repo_name)
@@ -211,7 +211,7 @@ class Docker(object):
 
         with swaparoo():
             try:
-                dockerUtilsObj.docker_build(image_tag)
+                dockerUtilsObj.docker_build(image_tag, docker_file)
             except ValueError:
                 raise
 
@@ -220,4 +220,4 @@ if __name__ == "__main__":
     dockerUtilsObj = DockerUtils()
     appObj = AppConfig()
     dockerObj.docker_build(dockerUtilsObj, appObj, sys.argv[1], sys.argv[2], sys.argv[
-        3], sys.argv[4], sys.argv[5])
+        3], sys.argv[4], sys.argv[5], 'Dockerfile')
