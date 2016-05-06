@@ -95,7 +95,12 @@ class RogerBuild(object):
         if exit_code != 0:
             raise ValueError('{} hook failed.'.format(hookname))
 
-        file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
+        if 'build_filename' in data:
+            build_filename = ("{0}/{1}".format(file_path, data['build_filename']))
+            file_exists = os.path.exists(
+                "{0}/{1}".format(file_path, build_filename))
+        else:
+            file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
         if file_exists:
             if 'registry' not in roger_env:
@@ -105,7 +110,7 @@ class RogerBuild(object):
                 if abs_path == args.directory:
                     try:
                         dockerObj.docker_build(
-                            dockerUtilsObj, appObj, args.directory, repo, projects, docker_path, image)
+                            dockerUtilsObj, appObj, args.directory, repo, projects, docker_path, image, build_filename)
                     except ValueError:
                         print('Docker build failed.')
                         raise
@@ -113,7 +118,7 @@ class RogerBuild(object):
                     directory = '{0}/{1}'.format(cur_dir, args.directory)
                     try:
                         dockerObj.docker_build(
-                            dockerUtilsObj, appObj, directory, repo, projects, docker_path, image)
+                            dockerUtilsObj, appObj, directory, repo, projects, docker_path, image, build_filename)
                     except ValueError:
                         print('Docker build failed.')
                         raise
