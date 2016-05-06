@@ -374,16 +374,10 @@ class RogerDeploy(object):
 
         deployTime = datetime.now() - startTime
 
-        try:
-            git_username = subprocess.check_output(
-                "git config user.name", shell=True)
-        except subprocess.CalledProcessError as e:
-            print(
-                "git config user.name not found. Setting default git_username as unknown")
-            git_username = "unknown"
+        username = settingObj.getUser()
 
         deployMessage = "{0}'s deploy for {1} / {2} / {3} completed in {4} seconds.".format(
-            git_username.rstrip(), app, environment, branch, deployTime.total_seconds())
+            username.rstrip(), app, environment, branch, deployTime.total_seconds())
         slack.api_call(deployMessage)
         print(deployMessage)
 
