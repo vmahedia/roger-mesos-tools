@@ -132,7 +132,6 @@ class RogerBuild(object):
                 raise
         else:
             print("Dockerfile does not exist in dir: {}".format(file_path))
-            raise ValueError("docker build failed")
 
         hookname = "post_build"
         exit_code = hooksObj.run_hook(hookname, data, file_path)
