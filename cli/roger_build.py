@@ -95,6 +95,8 @@ class RogerBuild(object):
         if exit_code != 0:
             raise ValueError('{} hook failed.'.format(hookname))
 
+        build_filename = 'Dockerfile'
+
         if 'build_filename' in data:
             build_filename = ("{0}/{1}".format(file_path, data['build_filename']))
             file_exists = os.path.exists(
