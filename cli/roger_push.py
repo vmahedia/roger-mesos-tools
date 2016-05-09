@@ -58,22 +58,23 @@ class RogerPush(object):
                                  help="specifies an optional secrets file for deploy runtime variables.")
         return self.parser
 
-    def loadSecretsJson(self, secrets_dir, json_file_name, args, environment):
+    def loadSecrets(self, secrets_dir, file_name, args, environment):
         if args.secrets_file is not None:
             print("Using specified secrets file: {}".format(args.secrets_file))
-            json_file_name = args.secrets_file
+            file_name = args.secrets_file
         exists = os.path.exists(secrets_dir)
         if exists is False:
             os.makedirs(secrets_dir)
 
         # Two possible paths -- first without environment, second with
-        path1 = "{}/{}".format(secrets_dir, json_file_name)
-        path2 = "{}/{}/{}".format(secrets_dir, environment, json_file_name)
+        path1 = "{}/{}".format(secrets_dir, file_name)
+        path2 = "{}/{}/{}".format(secrets_dir, environment, file_name)
         print(" Loading secrets from {} or {}".format(path1, path2))
 
         try:
             with open(path1) as f:
-                return json.load(f)
+                return_file = yaml.load(f) if path1.lower().endswith('.yml') else json.load(f)
+            return return_file
         except IOError:
             pass
         except ValueError as e:
@@ -82,7 +83,8 @@ class RogerPush(object):
 
         try:
             with open(path2) as f:
-                return json.load(f)
+                return_file = yaml.load(f) if path2.lower().endswith('.yml') else json.load(f)
+            return return_file
         except IOError:
             print(" Couldn't load secrets file environment in %s or %s\n" %
                   (path1, path2), file=sys.stderr)
@@ -138,7 +140,7 @@ class RogerPush(object):
             if type(obj) == dict and 'vars' in obj:
                 variables.update(obj['vars'].get('global', {}))
                 variables.update(obj['vars'].get('environment', {}).get(environment, {}))
-        
+
         variables.update(additional_vars)
 
         return template.render(variables)
@@ -248,7 +250,8 @@ class RogerPush(object):
         if 'extra_variables_path' in data:
             ev_path = self.repo_relative_path(appObj, args, repo, data['extra_variables_path'])
             with open(ev_path) as f:
-                extra_vars = json.load(f)
+                extra_vars = yaml.load(f) if ev_path.lower(
+                ).endswith('.yml') else json.load(f)
 
         if not app_path.endswith('/'):
             app_path = app_path + '/'
@@ -283,7 +286,7 @@ class RogerPush(object):
 
             additional_vars = {}
             additional_vars.update(extra_vars)
-            secret_vars = self.loadSecretsJson(secrets_dir, containerConfig, args, environment)
+            secret_vars = self.loadSecrets(secrets_dir, containerConfig, args, environment)
             additional_vars.update(secret_vars)
 
             image_path = "{0}/{1}".format(
@@ -309,7 +312,7 @@ class RogerPush(object):
                         "Error while loading json from {} - {}".format(template_with_path, e))
 
                 if 'SECRET' in output:
-                    output = self.mergeSecrets(output, self.loadSecretsJson(
+                    output = self.mergeSecrets(output, self.loadSecrets(
                         secrets_dir, containerConfig, args, environment))
                 if output != "StandardError":
                     try:
