@@ -348,7 +348,7 @@ class RogerDeploy(object):
             build_args.push = True
             try:
                 self.rogerBuildObject.main(settingObj, appObject, hooksObj,
-                                   self.dockerUtilsObject, self.dockerObject, build_args)
+                                           self.dockerUtilsObject, self.dockerObject, build_args)
             except ValueError:
                 raise
 
@@ -359,7 +359,7 @@ class RogerDeploy(object):
         args.config_file = config_file
         args.env = environment
         self.rogerPushObject.main(settingObj, appObj, frameworkUtils,
-                          hooksObj, args)
+                                  hooksObj, args)
 
         deployTime = datetime.now() - startTime
 
