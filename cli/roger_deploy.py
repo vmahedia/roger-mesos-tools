@@ -197,13 +197,6 @@ class RogerDeploy(object):
     def main(self, settingObject, appObject, frameworkUtilsObject, gitObj, gitPullObject, rogerPushObject, rogerBuildObject, dockerUtilsObject, dockerObject, hooksObj, args):
         settingObj = settingObject
         appObj = appObject
-
-        gitPullObj = gitPullObject
-        rogerPushObj = rogerPushObject
-        rogerBuildObj = rogerBuildObject
-        dockerUtilsObj = dockerUtilsObject
-        dockerObj = dockerObject
-
         config_dir = settingObj.getConfigDir()
         root = settingObj.getCliDir()
         roger_env = appObj.getRogerEnv(config_dir)
@@ -265,7 +258,7 @@ class RogerDeploy(object):
             for app in apps:
                 try:
                     print("Deploying {} ...".format(app))
-                    self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, gitPullObj, rogerPushObj, rogerBuildObj, dockerUtilsObj, dockerObj,
+                    self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, gitPullObject, rogerPushObject, rogerBuildObject, dockerUtilsObject, dockerObject,
                                    hooksObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
                 except (IOError, ValueError) as e:
                     print("The folowing error occurred when deploying {}: {}.".format(
@@ -359,7 +352,7 @@ class RogerDeploy(object):
         args.config_file = config_file
         args.env = environment
         rogerPushObj.main(settingObj, appObj, frameworkUtils,
-                          hooksObj, push_args)
+                          hooksObj, args)
 
         deployTime = datetime.now() - startTime
 
@@ -378,7 +371,7 @@ if __name__ == "__main__":
     gitObj = GitUtils()
     hooksObj = Hooks()
 
-    gitPullObject = RogerGitPull()
+    rogerGitPullObject = RogerGitPull()
     rogerPushObject = RogerPush()
     rogerBuildObject = RogerBuild()
     dockerUtilsObject = DockerUtils()
@@ -388,5 +381,5 @@ if __name__ == "__main__":
     roger_deploy.parser = roger_deploy.parseArgs()
     args = roger_deploy.parser.parse_args()
     roger_deploy.main(settingObj, appObj, frameworkUtils,
-                      gitObj, gitPullObject, rogerPushObject,
+                      gitObj, rogerGitPullObject, rogerPushObject,
                       rogerBuildObject, dockerUtilsObject, dockerObject, hooksObj, args)
