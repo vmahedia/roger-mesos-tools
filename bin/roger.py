@@ -9,6 +9,7 @@ import re
 import importlib
 from pkg_resources import get_distribution
 
+
 def roger_version(root_dir):
     version = "Unknown!"
     try:
@@ -20,6 +21,7 @@ def roger_version(root_dir):
                 version = f.read().strip()
     finally:
         print(version)
+
 
 def print_help_opt(opt, desc):
     print("  {} {}".format(opt.ljust(13), desc))

@@ -36,7 +36,7 @@ def main():
     with open(args.target) as tgt_file_obj:
         tgt = yaml.load(tgt_file_obj)
 
-    print("Comparing both data... ",  end="")
+    print("Comparing both data... ", end="")
     if src == tgt:
         print("SUCCESS")
     else:

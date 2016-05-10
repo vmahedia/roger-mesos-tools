@@ -7,7 +7,7 @@ install:
     - pip install pep8
 
 script:
-    - num_errors=`find cli/ tests/ -name \*.py -exec pep8 --ignore=E501,E402 {} + | wc -l`
+    - num_errors=`find cli/ tests/ bin/ -name \*.py -exec pep8 --ignore=E501,E402 {} + | wc -l`
     - |
         if (( $num_errors > 0 )); then
           exit 1;
