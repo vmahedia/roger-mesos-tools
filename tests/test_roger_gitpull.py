@@ -70,6 +70,8 @@ class TestGitPull(unittest.TestCase):
         data = self.data
         config = self.config
         roger_env = self.roger_env
+        repo_name = 'roger'
+
         when(marathon).put(self.components_dir + '/test-roger-grafana.json',
                            roger_env['environments']['dev'], 'grafana_test_app').thenReturn("Response [200]")
         frameworkUtils = mock(FrameworkUtils)
@@ -87,6 +89,8 @@ class TestGitPull(unittest.TestCase):
             self.configs_dir, "app.json").thenReturn(config)
         when(appConfig).getAppData(self.configs_dir,
                                    "app.json", "grafana_test_app").thenReturn(data)
+        when(appConfig).getRepoName(any()).thenReturn(repo_name)
+
         args = self.args
         args.app_name = "grafana_test_app"
         args.config_file = config_file
@@ -116,9 +120,12 @@ class TestGitPull(unittest.TestCase):
         when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
         appdata = {}
         appdata["hooks"] = dict([("pre_gitpull", "some command")])
+        repo_name = 'roger'
+        when(settings).getConfigDir().thenReturn(self.configs_dir)
         when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
         config = self.config
         when(appConfig).getConfig(any(), any()).thenReturn(config)
+        when(appConfig).getRepoName(any()).thenReturn(repo_name)
         args = self.args
         args.config_file = 'any.json'
         args.app_name = 'any app'
@@ -138,13 +145,18 @@ class TestGitPull(unittest.TestCase):
         mockedHooks = mock(Hooks)
         gitObj = mock(GitUtils)
         roger_env = {}
+        repo_name = 'roger'
+        repo_url  = 'test_url'
         roger_env["registry"] = "any registry"
+        when(settings).getConfigDir().thenReturn(self.configs_dir)
         when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
         appdata = {}
         appdata["hooks"] = dict([("post_gitpull", "some command")])
         when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
         config = self.config
         when(appConfig).getConfig(any(), any()).thenReturn(config)
+        when(appConfig).getRepoUrl(any()).thenReturn(repo_name)
+        when(appConfig).getRepoName(any()).thenReturn(repo_name)
         args = self.args
         args.config_file = 'any.json'
         args.app_name = 'any app'

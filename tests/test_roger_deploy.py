@@ -223,8 +223,14 @@ class TestDeploy(unittest.TestCase):
         roger_env = self.roger_env
         config = self.config
         data = self.data
+
+        repo_name = 'roger'
+        repo_url  = 'test_url'
+        random = 'test'
+
         when(marathon).getCurrentImageVersion(
             any(), any(), any()).thenReturn("testversion/v0.1.0")
+        when(marathon).getName().thenReturn('Marathon')
         frameworkUtils = mock(FrameworkUtils)
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
         when(settings).getConfigDir().thenReturn(any())
@@ -233,9 +239,14 @@ class TestDeploy(unittest.TestCase):
         when(appConfig).getConfig(any(), any()).thenReturn(config)
         when(appConfig).getAppData(any(), any(), any()).thenReturn(data)
 
+        when(appConfig).getRepoUrl(any()).thenReturn(repo_name)
+        when(appConfig).getRepoName(any()).thenReturn(repo_name)
+
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
         when(gitObj).gitPull(any()).thenReturn(0)
         when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
+        when(gitObj).gitClone(any(), any()).thenReturn(0)
+        when(gitObj).getGitSha(any(), any(), any()).thenReturn(random)
 
         args = self.args
         args.directory = ""
@@ -247,14 +258,14 @@ class TestDeploy(unittest.TestCase):
         args.skip_build = True
         args.branch = None
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
-        roger_deploy.push = MagicMock(return_value=0)
+        #roger_deploy.push = MagicMock(return_value=0)
         roger_deploy.main(settings, appConfig, frameworkUtils,
                           gitObj, mockedHooks, args)
-        verify(settings, times=2).getConfigDir()
+        verify(settings, times=3).getConfigDir()
         verify(settings).getCliDir()
-        verify(appConfig).getRogerEnv(any())
-        verify(appConfig, times=2).getConfig(any(), any())
-        verify(frameworkUtils).getFramework(data)
+        verify(appConfig, times=2).getRogerEnv(any())
+        verify(appConfig, times=3).getConfig(any(), any())
+        verify(frameworkUtils, times=2).getFramework(data)
         verify(marathon).getCurrentImageVersion(any(), any(), any())
 
     def test_rogerDeploy_with_skip_push(self):
@@ -266,10 +277,16 @@ class TestDeploy(unittest.TestCase):
         mockedHooks = mock(Hooks)
 
         roger_env = self.roger_env
+
+        repo_name = 'roger'
+        repo_url  = 'test_url'
+        random = 'test'
+
         config = self.config
         data = self.data
         when(marathon).getCurrentImageVersion(
             any(), any(), any()).thenReturn("testversion/v0.1.0")
+        when(marathon).getName().thenReturn('Marathon')
         frameworkUtils = mock(FrameworkUtils)
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
         when(settings).getConfigDir().thenReturn(any())
@@ -277,9 +294,16 @@ class TestDeploy(unittest.TestCase):
         when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
         when(appConfig).getConfig(any(), any()).thenReturn(config)
         when(appConfig).getAppData(any(), any(), any()).thenReturn(data)
+
+        when(appConfig).getRepoUrl(any()).thenReturn(repo_name)
+        when(appConfig).getRepoName(any()).thenReturn(repo_name)
+
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+
         when(gitObj).gitPull(any()).thenReturn(0)
         when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
+        when(gitObj).gitClone(any(), any()).thenReturn(0)
+        when(gitObj).getGitSha(any(), any(), any()).thenReturn(random)
 
         args = self.args
         args.directory = ""
@@ -291,14 +315,13 @@ class TestDeploy(unittest.TestCase):
         args.skip_build = True
         args.branch = None
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
-        roger_deploy.push = MagicMock(return_value=0)
         roger_deploy.main(settings, appConfig, frameworkUtils,
                           gitObj, mockedHooks, args)
-        verify(settings, times=2).getConfigDir()
+        verify(settings, times=3).getConfigDir()
         verify(settings).getCliDir()
-        verify(appConfig).getRogerEnv(any())
-        verify(appConfig, times=2).getConfig(any(), any())
-        verify(frameworkUtils).getFramework(data)
+        verify(appConfig, times=2).getRogerEnv(any())
+        verify(appConfig, times=3).getConfig(any(), any())
+        verify(frameworkUtils, times=2).getFramework(data)
         verify(marathon).getCurrentImageVersion(any(), any(), any())
 
     def tearDown(self):

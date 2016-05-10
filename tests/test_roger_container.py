@@ -59,6 +59,7 @@ class Testcontainer(unittest.TestCase):
         data = self.data
         frameworkUtils = mock(FrameworkUtils)
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
+        when(marathon).getName().thenReturn('Marathon')
         when(settings).getComponentsDir().thenReturn(
             self.base_dir + "/tests/components")
         when(settings).getSecretsDir().thenReturn(
@@ -83,6 +84,7 @@ class Testcontainer(unittest.TestCase):
         args.config_file = 'roger_single_container_var_tests.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'tests/v0.1.0'
+        args.secrets_file = 'test'
 
         roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
 
