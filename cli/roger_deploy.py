@@ -377,13 +377,6 @@ if __name__ == "__main__":
     frameworkUtils = FrameworkUtils()
     gitObj = GitUtils()
     hooksObj = Hooks()
-
-    rogerGitPullObject = RogerGitPull()
-    rogerPushObject = RogerPush()
-    rogerBuildObject = RogerBuild()
-    dockerUtilsObject = DockerUtils()
-    dockerObject = Docker()
-
     roger_deploy = RogerDeploy()
     roger_deploy.parser = roger_deploy.parseArgs()
     args = roger_deploy.parser.parse_args()
