@@ -37,7 +37,7 @@ class TestBuild(unittest.TestCase):
             dockerUtilsObj = mock(DockerUtils)
             dockerObj = Docker()
             when(appObj).getRepoName(any()).thenReturn('roger')
-            when(dockerUtilsObj).docker_build(any()).thenReturn(True)
+            when(dockerUtilsObj).docker_build(any(), any()).thenReturn(True)
             directory = self.base_dir + '/tests/testrepo'
             config = self.config
             repo = config['repo']

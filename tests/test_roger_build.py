@@ -50,37 +50,44 @@ class TestBuild(unittest.TestCase):
         self.roger_env = roger_env
         self.data = data
 
-    def test_roger_build_with_no_app_fails(self):
-        settings = mock(Settings)
-        appConfig = mock(AppConfig)
-        dockerUtilsObj = mock(DockerUtils)
-        dockerObj = mock(Docker)
-        roger_build = RogerBuild()
-        mockedHooks = mock(Hooks)
-        roger_env = self.roger_env
-        config = self.config
-        data = self.data
-        when(settings).getComponentsDir().thenReturn(
-            self.base_dir + "/tests/components")
-        when(settings).getSecretsDir().thenReturn(
-            self.base_dir + "/tests/secrets")
-        when(settings).getTemplatesDir().thenReturn(
-            self.base_dir + "/tests/templates")
-        when(settings).getConfigDir().thenReturn(self.configs_dir)
-        when(settings).getCliDir().thenReturn(self.base_dir)
-        when(appConfig).getRogerEnv(self.configs_dir).thenReturn(roger_env)
-        when(appConfig).getConfig(
-            self.configs_dir, "app.json").thenReturn(config)
-        when(appConfig).getAppData(self.configs_dir,
-                                   "app.json", "grafana_test_app").thenReturn(data)
-        args = self.args
-        # Setting app_name as empty
-        args.app_name = ''
-        args.config_file = 'app.json'
+    def test_roger_build(self):
+        try:
+            settings = mock(Settings)
+            appConfig = mock(AppConfig)
+            dockerUtilsObj = mock(DockerUtils)
+            dockerObj = mock(Docker)
+            roger_build = RogerBuild()
+            mockedHooks = mock(Hooks)
+            roger_env = self.roger_env
+            config = self.config
+            data = self.data
+            repo_name = 'test'
+            repo_url = 'test.com'
+            raised_exception = False
 
-        with self.assertRaises(ValueError):
+            when(settings).getConfigDir().thenReturn(any())
+            when(settings).getCliDir().thenReturn(any())
+            when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+            when(appConfig).getConfig(any(), any()).thenReturn(config)
+            when(appConfig).getAppData(any(), any(), any()).thenReturn(data)
+
+            when(appConfig).getRepoUrl(any()).thenReturn(repo_name)
+            when(appConfig).getRepoName(any()).thenReturn(repo_name)
+
+            when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+
+            args = self.args
+            # Setting app_name as empty
+            args.app_name = ''
+            args.config_file = 'app.json'
+            args.directory = self.base_dir
+
+            # with self.assertRaises(ValueError):
             roger_build.main(settings, appConfig, mockedHooks,
                              dockerUtilsObj, dockerObj, args)
+        except:
+            raised_exception = True
+        self.assertFalse(raised_exception)
 
     def test_roger_build_calls_prebuild_hook_when_present(self):
         settings = mock(Settings)
@@ -91,16 +98,25 @@ class TestBuild(unittest.TestCase):
         mockedHooks = mock(Hooks)
         roger_env = {}
         roger_env["registry"] = "any registry"
-        when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
         appdata = {}
         appdata["hooks"] = dict([("pre_build", "some command")])
-        when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
         config = self.config
-        when(appConfig).getConfig(any(), any()).thenReturn(config)
         args = self.args
         args.config_file = 'any.json'
         args.app_name = 'any app'
         args.directory = '/tmp'
+        data = self.data
+        repo_name = 'test'
+        repo_url = 'test.com'
+
+        when(settings).getConfigDir().thenReturn(any())
+        when(settings).getCliDir().thenReturn(any())
+        when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+        when(appConfig).getConfig(any(), any()).thenReturn(config)
+        when(appConfig).getAppData(any(), any(), any()).thenReturn(data)
+        when(appConfig).getRepoUrl(any()).thenReturn(repo_name)
+        when(appConfig).getRepoName(any()).thenReturn(repo_name)
+        when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
         return_code = roger_build.main(
             settings, appConfig, mockedHooks, dockerUtilsObj, dockerObj, args)
@@ -115,17 +131,28 @@ class TestBuild(unittest.TestCase):
         mockedHooks = mock(Hooks)
         roger_env = {}
         roger_env["registry"] = "any registry"
-        when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
         appdata = {}
         appdata["hooks"] = dict([("post_build", "some command")])
-        when(appConfig).getAppData(any(), any(), any()).thenReturn(appdata)
         config = self.config
-        when(appConfig).getConfig(any(), any()).thenReturn(config)
         args = self.args
         args.config_file = 'any.json'
         args.app_name = 'any app'
         args.directory = '/tmp'
+        data = self.data
+        repo_name = 'test'
+        repo_url = 'test.com'
+
+        when(settings).getConfigDir().thenReturn(any())
+        when(settings).getCliDir().thenReturn(any())
+        when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
+        when(appConfig).getConfig(any(), any()).thenReturn(config)
+        when(appConfig).getAppData(any(), any(), any()).thenReturn(data)
+        when(appConfig).getRepoUrl(any()).thenReturn(repo_name)
+        when(appConfig).getRepoName(any()).thenReturn(repo_name)
         when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+        when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+        when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
+
         return_code = roger_build.main(
             settings, appConfig, mockedHooks, dockerUtilsObj, dockerObj, args)
         verify(mockedHooks).run_hook("post_build", any(), any())

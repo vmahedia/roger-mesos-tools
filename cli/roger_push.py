@@ -119,7 +119,7 @@ class RogerPush(object):
         '''Given a JSON string and an object of secret environment variables, replaces
         parses the JSON keys with the secret variables. Returns back
         a JSON string. Raises an error if there are any SECRET variables still exists.'''
-        print("WARNING - The use of \"SECRET\" is deprecated. Please switch to using Jinja variables. To do so," \
+        print("WARNING - The use of \"SECRET\" is deprecated. Please switch to using Jinja variables. To do so,"
               " use '{{ <actual variable name> }}' instead of \"SECRET\" in the target file.")
         output_dict = json.loads(json_str)
         json_str = json.dumps(self.replaceSecrets(
@@ -132,7 +132,7 @@ class RogerPush(object):
 
     def renderTemplate(self, template, environment, image, app_data, config, container, container_name, additional_vars):
 
-        variables = { 'environment': environment, 'image': image }
+        variables = {'environment': environment, 'image': image}
 
         # Copy variables from config-wide, app-wide, then container-wide variable
         # configs, each one from "global" and then environment-specific.
@@ -153,8 +153,7 @@ class RogerPush(object):
             return "{0}/{1}/{2}".format(args.directory, repo_name, path)
         else:
             return "{0}/{1}/{2}/{3}".format(os.environ.get('PWD', ''),
-                    args.directory, repo_name, path)
-
+                                            args.directory, repo_name, path)
 
     def main(self, settings, appConfig, frameworkObject, hooksObj, args):
         settingObj = settings
