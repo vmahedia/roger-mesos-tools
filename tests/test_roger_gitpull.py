@@ -146,7 +146,7 @@ class TestGitPull(unittest.TestCase):
         gitObj = mock(GitUtils)
         roger_env = {}
         repo_name = 'roger'
-        repo_url  = 'test_url'
+        repo_url = 'test_url'
         roger_env["registry"] = "any registry"
         when(settings).getConfigDir().thenReturn(self.configs_dir)
         when(appConfig).getRogerEnv(any()).thenReturn(roger_env)

@@ -10,6 +10,6 @@ script:
     - num_errors=`find . -name \*.py -exec pep8 --ignore=E501,E402 {} + | wc -l`
     - |
         if (( $num_errors > 0 )); then
-          exit;
+          exit 1;
         fi
     - python setup.py test

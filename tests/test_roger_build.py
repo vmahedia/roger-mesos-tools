@@ -62,7 +62,7 @@ class TestBuild(unittest.TestCase):
             config = self.config
             data = self.data
             repo_name = 'test'
-            repo_url  = 'test.com'
+            repo_url = 'test.com'
             raised_exception = False
 
             when(settings).getConfigDir().thenReturn(any())
@@ -76,14 +76,13 @@ class TestBuild(unittest.TestCase):
 
             when(mockedHooks).run_hook(any(), any(), any()).thenReturn(0)
 
-
             args = self.args
             # Setting app_name as empty
             args.app_name = ''
             args.config_file = 'app.json'
             args.directory = self.base_dir
 
-            #with self.assertRaises(ValueError):
+            # with self.assertRaises(ValueError):
             roger_build.main(settings, appConfig, mockedHooks,
                              dockerUtilsObj, dockerObj, args)
         except:
@@ -108,7 +107,7 @@ class TestBuild(unittest.TestCase):
         args.directory = '/tmp'
         data = self.data
         repo_name = 'test'
-        repo_url  = 'test.com'
+        repo_url = 'test.com'
 
         when(settings).getConfigDir().thenReturn(any())
         when(settings).getCliDir().thenReturn(any())
@@ -141,7 +140,7 @@ class TestBuild(unittest.TestCase):
         args.directory = '/tmp'
         data = self.data
         repo_name = 'test'
-        repo_url  = 'test.com'
+        repo_url = 'test.com'
 
         when(settings).getConfigDir().thenReturn(any())
         when(settings).getCliDir().thenReturn(any())

@@ -225,7 +225,7 @@ class TestDeploy(unittest.TestCase):
         data = self.data
 
         repo_name = 'roger'
-        repo_url  = 'test_url'
+        repo_url = 'test_url'
         random = 'test'
 
         when(marathon).getCurrentImageVersion(
@@ -258,7 +258,6 @@ class TestDeploy(unittest.TestCase):
         args.skip_build = True
         args.branch = None
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
-        #roger_deploy.push = MagicMock(return_value=0)
         roger_deploy.main(settings, appConfig, frameworkUtils,
                           gitObj, mockedHooks, args)
         verify(settings, times=3).getConfigDir()
@@ -279,7 +278,7 @@ class TestDeploy(unittest.TestCase):
         roger_env = self.roger_env
 
         repo_name = 'roger'
-        repo_url  = 'test_url'
+        repo_url = 'test_url'
         random = 'test'
 
         config = self.config
