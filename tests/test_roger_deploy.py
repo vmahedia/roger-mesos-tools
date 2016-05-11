@@ -10,6 +10,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 import roger_push
 from roger_deploy import RogerDeploy
+from cli.roger_build import RogerBuild
+from cli.roger_gitpull import RogerGitPull
+from cli.roger_push import RogerPush
 import roger_gitpull
 from marathon import Marathon
 from frameworkUtils import FrameworkUtils
@@ -21,6 +24,8 @@ from mockito.matchers import any
 from mock import MagicMock
 from settings import Settings
 from gitutils import GitUtils
+from cli.dockerutils import DockerUtils
+from cli.docker_build import Docker
 
 # Test basic functionalities of roger-deploy script
 
@@ -114,6 +119,11 @@ class TestDeploy(unittest.TestCase):
         marathon = mock(Marathon)
         gitObj = mock(GitUtils)
         mockedHooks = mock(Hooks)
+        roger_deploy.rogergitPullObject = mock(RogerGitPull)
+        roger_deploy.rogerPushObject = mock(RogerPush)
+        roger_deploy.rogerBuildObject = mock(RogerBuild)
+        roger_deploy.dockerUtilsObject = mock(DockerUtils)
+        roger_deploy.dockerObject = mock(Docker)
         roger_env = self.roger_env
         config = self.config
         data = self.data
@@ -148,6 +158,11 @@ class TestDeploy(unittest.TestCase):
         roger_deploy = RogerDeploy()
         marathon = mock(Marathon)
         gitObj = mock(GitUtils)
+        roger_deploy.rogergitPullObject = mock(RogerGitPull)
+        roger_deploy.rogerPushObject = mock(RogerPush)
+        roger_deploy.rogerBuildObject = mock(RogerBuild)
+        roger_deploy.dockerUtilsObject = mock(DockerUtils)
+        roger_deploy.dockerObject = mock(Docker)
         mockedHooks = mock(Hooks)
         roger_env = self.roger_env
         config = self.config
@@ -186,6 +201,11 @@ class TestDeploy(unittest.TestCase):
         marathon = mock(Marathon)
         mockedHooks = mock(Hooks)
         gitObj = mock(GitUtils)
+        roger_deploy.rogergitPullObject = mock(RogerGitPull)
+        roger_deploy.rogerPushObject = mock(RogerPush)
+        roger_deploy.rogerBuildObject = mock(RogerBuild)
+        roger_deploy.dockerUtilsObject = mock(DockerUtils)
+        roger_deploy.dockerObject = mock(Docker)
         roger_env = self.roger_env
         config = self.config
         data = self.data
@@ -220,6 +240,11 @@ class TestDeploy(unittest.TestCase):
         marathon = mock(Marathon)
         gitObj = mock(GitUtils)
         mockedHooks = mock(Hooks)
+        roger_deploy.rogergitPullObject = mock(RogerGitPull)
+        roger_deploy.rogerPushObject = mock(RogerPush)
+        roger_deploy.rogerBuildObject = mock(RogerBuild)
+        roger_deploy.dockerUtilsObject = mock(DockerUtils)
+        roger_deploy.dockerObject = mock(Docker)
         roger_env = self.roger_env
         config = self.config
         data = self.data
@@ -235,6 +260,7 @@ class TestDeploy(unittest.TestCase):
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
         when(settings).getConfigDir().thenReturn(any())
         when(settings).getCliDir().thenReturn(any())
+        when(settings).getUser().thenReturn('test_user')
         when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
         when(appConfig).getConfig(any(), any()).thenReturn(config)
         when(appConfig).getAppData(any(), any(), any()).thenReturn(data)
@@ -247,6 +273,9 @@ class TestDeploy(unittest.TestCase):
         when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
         when(gitObj).gitClone(any(), any()).thenReturn(0)
         when(gitObj).getGitSha(any(), any(), any()).thenReturn(random)
+
+        when(roger_deploy.rogergitPullObject).main(any(), any(), any(), any(), any()).thenReturn(0)
+        when(roger_deploy.rogerPushObject).main(any(), any(), any(), any(), any()).thenReturn(0)
 
         args = self.args
         args.directory = ""
@@ -258,13 +287,12 @@ class TestDeploy(unittest.TestCase):
         args.skip_build = True
         args.branch = None
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
-        roger_deploy.main(settings, appConfig, frameworkUtils,
-                          gitObj, mockedHooks, args)
-        verify(settings, times=3).getConfigDir()
+        roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
+        verify(settings, times=2).getConfigDir()
         verify(settings).getCliDir()
-        verify(appConfig, times=2).getRogerEnv(any())
-        verify(appConfig, times=3).getConfig(any(), any())
-        verify(frameworkUtils, times=2).getFramework(data)
+        verify(appConfig).getRogerEnv(any())
+        verify(appConfig, times=2).getConfig(any(), any())
+        verify(frameworkUtils).getFramework(data)
         verify(marathon).getCurrentImageVersion(any(), any(), any())
 
     def test_rogerDeploy_with_skip_push(self):
@@ -274,6 +302,11 @@ class TestDeploy(unittest.TestCase):
         marathon = mock(Marathon)
         gitObj = mock(GitUtils)
         mockedHooks = mock(Hooks)
+        roger_deploy.rogergitPullObject = mock(RogerGitPull)
+        roger_deploy.rogerPushObject = mock(RogerPush)
+        roger_deploy.rogerBuildObject = mock(RogerBuild)
+        roger_deploy.dockerUtilsObject = mock(DockerUtils)
+        roger_deploy.dockerObject = mock(Docker)
 
         roger_env = self.roger_env
 
@@ -290,6 +323,7 @@ class TestDeploy(unittest.TestCase):
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
         when(settings).getConfigDir().thenReturn(any())
         when(settings).getCliDir().thenReturn(any())
+        when(settings).getUser().thenReturn('test_user')
         when(appConfig).getRogerEnv(any()).thenReturn(roger_env)
         when(appConfig).getConfig(any(), any()).thenReturn(config)
         when(appConfig).getAppData(any(), any(), any()).thenReturn(data)
@@ -304,6 +338,9 @@ class TestDeploy(unittest.TestCase):
         when(gitObj).gitClone(any(), any()).thenReturn(0)
         when(gitObj).getGitSha(any(), any(), any()).thenReturn(random)
 
+        when(roger_deploy.rogergitPullObject).main(any(), any(), any(), any(), any()).thenReturn(0)
+        when(roger_deploy.rogerPushObject).main(any(), any(), any(), any(), any()).thenReturn(0)
+
         args = self.args
         args.directory = ""
         args.secrets_file = ""
@@ -314,13 +351,12 @@ class TestDeploy(unittest.TestCase):
         args.skip_build = True
         args.branch = None
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
-        roger_deploy.main(settings, appConfig, frameworkUtils,
-                          gitObj, mockedHooks, args)
-        verify(settings, times=3).getConfigDir()
+        roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
+        verify(settings, times=2).getConfigDir()
         verify(settings).getCliDir()
-        verify(appConfig, times=2).getRogerEnv(any())
-        verify(appConfig, times=3).getConfig(any(), any())
-        verify(frameworkUtils, times=2).getFramework(data)
+        verify(appConfig).getRogerEnv(any())
+        verify(appConfig, times=2).getConfig(any(), any())
+        verify(frameworkUtils).getFramework(data)
         verify(marathon).getCurrentImageVersion(any(), any(), any())
 
     def tearDown(self):

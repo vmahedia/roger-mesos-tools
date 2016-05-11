@@ -106,6 +106,13 @@ class Slack:
 
 class RogerDeploy(object):
 
+    def __init__(self):
+        self.rogerGitPullObject = RogerGitPull()
+        self.rogerPushObject = RogerPush()
+        self.rogerBuildObject = RogerBuild()
+        self.dockerUtilsObject = DockerUtils()
+        self.dockerObject = Docker()
+
         # To remove a temporary directory created by roger-deploy if this
         # script exits
     def removeDirTree(self, work_dir, args, temp_dir_created):
@@ -194,27 +201,6 @@ class RogerDeploy(object):
                                  help="working directory. Uses a temporary directory if not specified.")
         return self.parser
 
-    def push(self, root, app, work_dir, image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args):
-        # Prepare push_args to invoke roger_push
-        push_args = args
-        push_args.image_name = image_name
-        push_args.config_file = config_file
-        push_args.env = environment
-        push_args.app_name = app
-        push_args.directory = work_dir
-        roger_push = RogerPush()
-
-        roger_push.main(settingObj, appObj, frameworkUtils,
-                        hooksObj, push_args)
-
-    def pullRepo(self, root, app, work_dir, config_file, branch, args, settingObj, appObj, hooksObj, gitObj):
-
-        args.app_name = app
-        args.directory = work_dir
-        roger_gitpull = RogerGitPull()
-
-        roger_gitpull.main(settingObj, appObj, gitObj, hooksObj, args)
-
     def main(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, args):
         settingObj = settingObject
         appObj = appObject
@@ -279,8 +265,8 @@ class RogerDeploy(object):
             for app in apps:
                 try:
                     print("Deploying {} ...".format(app))
-                    self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config, roger_env,
-                                   work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
+                    self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj,
+                                   root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, args.config_file, common_repo, temp_dir_created)
                 except (IOError, ValueError) as e:
                     print("The folowing error occurred when deploying {}: {}.".format(
                         app, e), file=sys.stderr)
@@ -288,10 +274,12 @@ class RogerDeploy(object):
         except (Exception) as e:
             print("The folowing error occurred: %s" %
                   e, file=sys.stderr)
+            raise
         finally:
             self.removeDirTree(work_dir, args, temp_dir_created)
 
-    def deployApp(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config, roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo, temp_dir_created):
+    def deployApp(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config,
+                  roger_env, work_dir, config_dir, environment, app, branch, slack, config_file, common_repo, temp_dir_created):
 
         startTime = datetime.now()
         settingObj = settingObject
@@ -312,8 +300,9 @@ class RogerDeploy(object):
         image = ''
 
         # get/update target source(s)
-        self.pullRepo(root, app, os.path.abspath(work_dir), config_file,
-                      branch, args, settingObj, appObj, hooksObj, gitObj)
+        args.app_name = app
+        args.directory = work_dir
+        self.rogerGitPullObject.main(settingObj, appObj, gitObj, hooksObj, args)
 
         skip_build = False
         if args.skip_build is not None:
@@ -357,20 +346,20 @@ class RogerDeploy(object):
             build_args.tag_name = image_name
             build_args.config_file = config_file
             build_args.push = True
-            dockerUtilsObj = DockerUtils()
-            dockerObj = Docker()
-            roger_build = RogerBuild()
             try:
-                roger_build.main(settingObj, appObject, hooksObj,
-                                 dockerUtilsObj, dockerObj, build_args)
+                self.rogerBuildObject.main(settingObj, appObject, hooksObj,
+                                           self.dockerUtilsObject, self.dockerObject, build_args)
             except ValueError:
                 raise
 
         print("Version is:" + image_name)
 
         # Deploying the app to framework
-        self.push(root, args.application, os.path.abspath(
-            work_dir), image_name, config_file, environment, settingObj, appObj, hooksObj, frameworkUtils, args)
+        args.image_name = image_name
+        args.config_file = config_file
+        args.env = environment
+        self.rogerPushObject.main(settingObj, appObj, frameworkUtils,
+                                  hooksObj, args)
 
         deployTime = datetime.now() - startTime
 
