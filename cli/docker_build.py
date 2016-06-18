@@ -8,7 +8,6 @@ import json
 import os
 import re
 from copy import deepcopy
-from cli.appconfig import AppConfig
 
 import contextlib
 
@@ -186,9 +185,7 @@ def null_swaparoo():
 
 def docker_build(directory, repo, projects, path, image_tag):
     '''run a `docker_build -t image_tag .` in the current directory, handling any private repos'''
-    appObj = AppConfig()
-    repo_name = appObj.getRepoName(repo)
-    sourcePath = "{0}/{1}/".format(directory, repo_name)
+    sourcePath = "./"
     if os.path.isdir(sourcePath):
         os.chdir(sourcePath)
 
