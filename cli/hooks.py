@@ -60,7 +60,7 @@ class Hooks:
                     commandsSet = ['pull','build', 'push'] # to handle all tag
 
             except (Exception) as e:
-                self.whobj.api_call("The following error occurred : %s" %e , defChannel)
+                self.whobj.api_call("The following error occurred: %s" %e , defChannel)
                 print("The following error occurred: %s" %
                       e, file=sys.stderr)
                 raise
