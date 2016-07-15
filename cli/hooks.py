@@ -48,10 +48,11 @@ class Hooks:
                     channelsSet = [defChannel]
                     envSet = ['dev', 'production', 'staging', 'local'] # default as e
                     commandsSet = ['pull','build', 'push']
-                if list(envSet)[0] is 'all':
+
+                if list(envSet)[0] == 'all':
                     envSet = ['dev', 'production', 'staging', 'local'] # to handle all tag
 
-                if list(commandsSet)[0] is 'all':
+                if list(commandsSet)[0] == 'all':
                     commandsSet = ['pull','build', 'push'] # to handle all tag
 
             except (Exception) as e:
