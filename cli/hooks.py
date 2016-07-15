@@ -30,34 +30,30 @@ class Hooks:
         try:
             exit_code = 0
             function_execution_start_time = datetime.now()
-
+            defChannel = '#deploydefault'
             execution_result = 'SUCCESS'
+            message = 'default message'
             envr = 'NA'
             print (appdata)
             temp = hook_input_metric.split(',')
             action, app_name, config_name, envr, user = temp[0], temp[1], temp[3], temp[4], temp[5]
             action = ''.join(action.split('.')[1])
             action = '-'.join(action.split('_')[0:2])
-
-
             try:
                 channelsSet = Set(appdata['notifications']['channels'])
                 envSet = Set(appdata['notifications']['envs'])
                 commandsSet = Set(appdata['notifications']['commands'])
-            except:
-                self.whobj.api_call('setting default message','#testhook')
-                channelsSet = ['rogerdefault']
-                envSet = [envr]
+            except (Exception) as e:  # in case of exception falls back to defaults
+                message = str(e)
+                self.whobj.api_call(message,defChannel)
+                channelsSet = [defChannel]
+                envSet = [envr] # envr default is same as deployment i.e dev
                 commandsSet = action
-            #import pdb; pdb.set_trace()
 
-            # expecting 'roger-tools.pre_push_time' extraction of pre_push as string from here
-            print (action + ":" + ','.join(commandsSet))
-            print (envr + ":" + ','.join(envSet))
-            #import pdb; pdb.set_trace()
+            '''print (action + ":" + ','.join(commandsSet))
+            print (envr + ":" + ','.join(envSet))'''
             if ('post' in action and envr.split('=')[1] in envSet and action.split('-')[1] in commandsSet):
                 for channel in channelsSet:
-                    print ('Present Sir!')
                     slackMessage = "Completed *" +action.split('-')[1] +"* of *" +app_name.split('=')[1]+ "* on *"+envr.split('=')[1]+"* (triggered by *"+ user.split('=')[1] +"*)"
                     self.whobj.api_call(slackMessage,'#'+channel)
             abs_path = os.path.abspath(path)
