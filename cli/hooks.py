@@ -22,6 +22,8 @@ def chdir(dirname):
 
 class Hooks:
 
+    flag = False
+
     def __init__(self):
         self.utils = Utils()
         self.whobj = WebHook()
@@ -42,12 +44,14 @@ class Hooks:
                 channelsSet = Set(appdata['notifications']['channels'])
                 envSet = Set(appdata['notifications']['envs'])
                 commandsSet = Set(appdata['notifications']['commands'])
-                if len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0:
-                    message = str('Switching to defaults: All channels, all actions')
-                    self.whobj.api_call(message,defChannel)
+                if len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0: # to handle no tag at all
+                    message = str('*Switching to defaults*: All environments, all actions')
+                    if self.flag is False:
+                        self.whobj.api_call(message,defChannel) # Default message  to slack channel just once
                     channelsSet = [defChannel]
                     envSet = ['dev', 'production', 'staging', 'local'] # default as e
                     commandsSet = ['pull','build', 'push']
+                    self.flag = True
 
                 if list(envSet)[0] == 'all':
                     envSet = ['dev', 'production', 'staging', 'local'] # to handle all tag
@@ -57,11 +61,16 @@ class Hooks:
 
             except (Exception) as e:
                 self.whobj.api_call("The following error occurred : %s" %e , defChannel)
+                print("The following error occurred: %s" %
+                      e, file=sys.stderr)
                 raise
 
             if ('post' in action and envr.split('=')[1] in envSet and action.split('-')[1] in commandsSet):
                 for channel in channelsSet:
-                    slackMessage = "Completed *" +action.split('-')[1] +"* of *" +app_name.split('=')[1]+ "* on *"+envr.split('=')[1]+"* (triggered by *"+ user.split('=')[1] +"*)"
+                    slackMessage = ("Completed *" +action.split('-')[1] +"* of *" +app_name.split('=')[1]+
+                    "* on *"+envr.split('=')[1]+ "* in *" +
+                    str((datetime.now() - function_execution_start_time).total_seconds()*1000) +
+                    "* miliseconds (triggered by *"+ user.split('=')[1] +"*)")
                     self.whobj.api_call(slackMessage,'#'+channel)
             abs_path = os.path.abspath(path)
             if "hooks" in appdata and hookname in appdata["hooks"]:
