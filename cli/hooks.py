@@ -5,6 +5,7 @@ import os
 import contextlib
 import sys
 from datetime import datetime
+from cli.webhook import WebHook
 
 
 @contextlib.contextmanager
@@ -22,12 +23,26 @@ class Hooks:
 
     def __init__(self):
         self.utils = Utils()
+        self.whobj = WebHook()
 
     def run_hook(self, hookname, appdata, path, hook_input_metric):
         try:
             exit_code = 0
             function_execution_start_time = datetime.now()
             execution_result = 'SUCCESS'
+            envr = 'NA'
+            print (appdata)
+            print (appdata.keys())
+            #import pdb; pdb.set_trace()
+            temp = hook_input_metric.split(',')
+            action, app_name, config_name, envr, user = temp[0], temp[1], temp[3], temp[4], temp[5]
+            # expecting 'roger-tools.pre_push_time' extraction of pre_push as string from here
+            action = ''.join(action.split('.')[1])
+            action = '-'.join(action.split('_')[0:2])
+            if ('post' in action):
+                slackMessage = "Completed *" +action.split('-')[1] +"* of *" +app_name.split('=')[1]+ "* on *"+envr.split('=')[1]+"* (triggered by *"+ user.split('=')[1] +"*)"
+                #slackMessage = user.split('=')[1]+' is Performing action: '+ action + ' on app: ' + app_name + ' in environment: '+ envr.split('=')[1]
+                self.whobj.api_call(slackMessage,'#testhook')
             abs_path = os.path.abspath(path)
             if "hooks" in appdata and hookname in appdata["hooks"]:
                 command = appdata["hooks"][hookname]
