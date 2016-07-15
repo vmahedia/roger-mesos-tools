@@ -1,11 +1,12 @@
 #!/usr/bin/python
 from __future__ import print_function
-from cli.utils import Utils
 import os
 import contextlib
 import sys
+from sets import Set
 from datetime import datetime
 from cli.webhook import WebHook
+from cli.utils import Utils
 
 
 @contextlib.contextmanager
@@ -29,20 +30,36 @@ class Hooks:
         try:
             exit_code = 0
             function_execution_start_time = datetime.now()
+
             execution_result = 'SUCCESS'
             envr = 'NA'
             print (appdata)
-            print (appdata.keys())
-            #import pdb; pdb.set_trace()
             temp = hook_input_metric.split(',')
             action, app_name, config_name, envr, user = temp[0], temp[1], temp[3], temp[4], temp[5]
-            # expecting 'roger-tools.pre_push_time' extraction of pre_push as string from here
             action = ''.join(action.split('.')[1])
             action = '-'.join(action.split('_')[0:2])
-            if ('post' in action):
-                slackMessage = "Completed *" +action.split('-')[1] +"* of *" +app_name.split('=')[1]+ "* on *"+envr.split('=')[1]+"* (triggered by *"+ user.split('=')[1] +"*)"
-                #slackMessage = user.split('=')[1]+' is Performing action: '+ action + ' on app: ' + app_name + ' in environment: '+ envr.split('=')[1]
-                self.whobj.api_call(slackMessage,'#testhook')
+
+
+            try:
+                channelsSet = Set(appdata['notifications']['channels'])
+                envSet = Set(appdata['notifications']['envs'])
+                commandsSet = Set(appdata['notifications']['commands'])
+            except:
+                self.whobj.api_call('setting default message','#testhook')
+                channelsSet = ['rogerdefault']
+                envSet = [envr]
+                commandsSet = action
+            #import pdb; pdb.set_trace()
+
+            # expecting 'roger-tools.pre_push_time' extraction of pre_push as string from here
+            print (action + ":" + ','.join(commandsSet))
+            print (envr + ":" + ','.join(envSet))
+            #import pdb; pdb.set_trace()
+            if ('post' in action and envr.split('=')[1] in envSet and action.split('-')[1] in commandsSet):
+                for channel in channelsSet:
+                    print ('Present Sir!')
+                    slackMessage = "Completed *" +action.split('-')[1] +"* of *" +app_name.split('=')[1]+ "* on *"+envr.split('=')[1]+"* (triggered by *"+ user.split('=')[1] +"*)"
+                    self.whobj.api_call(slackMessage,'#'+channel)
             abs_path = os.path.abspath(path)
             if "hooks" in appdata and hookname in appdata["hooks"]:
                 command = appdata["hooks"][hookname]
@@ -51,9 +68,10 @@ class Hooks:
                         hookname, command, abs_path))
                     exit_code = os.system(command)
         except (Exception) as e:
-            print("The following error occurred: %s" %
+            print("The following error occurred : %s" %
                   e, file=sys.stderr)
             execution_result = 'FAILURE'
+            self.whobj.api_call("The following error occurred : %s" %e ,'#testhook')
             raise
         finally:
             try:
