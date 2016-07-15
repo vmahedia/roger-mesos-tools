@@ -30,11 +30,10 @@ class Hooks:
         try:
             exit_code = 0
             function_execution_start_time = datetime.now()
-            defChannel = '#deploydefault'
+            defChannel = '#rogeros-deploy'
             execution_result = 'SUCCESS'
             message = 'default message'
             envr = 'NA'
-            print (appdata)
             temp = hook_input_metric.split(',')
             action, app_name, config_name, envr, user = temp[0], temp[1], temp[3], temp[4], temp[5]
             action = ''.join(action.split('.')[1])
@@ -43,12 +42,21 @@ class Hooks:
                 channelsSet = Set(appdata['notifications']['channels'])
                 envSet = Set(appdata['notifications']['envs'])
                 commandsSet = Set(appdata['notifications']['commands'])
-            except (Exception) as e:  # in case of exception falls back to defaults
-                message = str(e)
-                self.whobj.api_call(message,defChannel)
-                channelsSet = [defChannel]
-                envSet = [envr] # envr default is same as deployment i.e dev
-                commandsSet = action
+                if len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0:
+                    message = str('Switching to defaults: All channels, all actions')
+                    self.whobj.api_call(message,defChannel)
+                    channelsSet = [defChannel]
+                    envSet = ['dev', 'production', 'staging', 'local'] # default as e
+                    commandsSet = ['pull','build', 'push']
+                if list(envSet)[0] is 'all':
+                    envSet = ['dev', 'production', 'staging', 'local'] # to handle all tag
+
+                if list(commandsSet)[0] is 'all':
+                    commandsSet = ['pull','build', 'push'] # to handle all tag
+
+            except (Exception) as e:
+                self.whobj.api_call("The following error occurred : %s" %e , defChannel)
+                raise
 
             if ('post' in action and envr.split('=')[1] in envSet and action.split('-')[1] in commandsSet):
                 for channel in channelsSet:
@@ -65,7 +73,7 @@ class Hooks:
             print("The following error occurred : %s" %
                   e, file=sys.stderr)
             execution_result = 'FAILURE'
-            self.whobj.api_call("The following error occurred : %s" %e ,'#testhook')
+            self.whobj.api_call("The following error occurred : %s" %e ,defChannel)
             raise
         finally:
             try:
