@@ -50,8 +50,6 @@ class Hooks:
                 envSet = [envr] # envr default is same as deployment i.e dev
                 commandsSet = action
 
-            '''print (action + ":" + ','.join(commandsSet))
-            print (envr + ":" + ','.join(envSet))'''
             if ('post' in action and envr.split('=')[1] in envSet and action.split('-')[1] in commandsSet):
                 for channel in channelsSet:
                     slackMessage = "Completed *" +action.split('-')[1] +"* of *" +app_name.split('=')[1]+ "* on *"+envr.split('=')[1]+"* (triggered by *"+ user.split('=')[1] +"*)"
