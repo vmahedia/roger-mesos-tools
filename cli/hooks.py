@@ -94,7 +94,7 @@ class Hooks:
                     print("About to run {} hook [{}] at path {}".format(
                         hookname, command, abs_path))
                     exit_code = os.system(command)
-        except (IndexError, Exception) as ie:
+        except (IndexError) as ie:
             print("The following error occurred : %s" %
                   e, file=sys.stderr)
             execution_result = 'FAILURE'
