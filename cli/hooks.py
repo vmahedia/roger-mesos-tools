@@ -82,7 +82,7 @@ class Hooks:
                                     "* on *" + envr.split('=')[1] + "* in *" +
                                     str((datetime.now() -
                                          function_execution_start_time)
-                                        .total_seconds()*1000) +
+                                        .total_seconds() * 1000) +
                                     "* miliseconds (triggered by *" +
                                     user.split('=')[1] + "*)")
                     self.whobj.api_call(slackMessage, '#' + channel)
