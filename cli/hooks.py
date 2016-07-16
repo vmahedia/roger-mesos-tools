@@ -96,10 +96,10 @@ class Hooks:
                     exit_code = os.system(command)
         except (IndexError) as ie:
             print("The following error occurred : %s" %
-                  e, file=sys.stderr)
+                  ie, file=sys.stderr)
             execution_result = 'FAILURE'
             self.whobj.api_call("The following error occurred: %s" %
-                                e, defChannel)
+                                ie, defChannel)
             raise
         except (Exception) as e:
             print("The following error occurred : %s" %
