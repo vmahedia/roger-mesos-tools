@@ -36,6 +36,7 @@ class Hooks:
             execution_result = 'SUCCESS'
             message = 'default message'
             envr = 'NA'
+
             temp = hook_input_metric.split(',')
             action, app_name, config_name, envr, user = (temp[0],
                                                          temp[1], temp[3],
@@ -93,6 +94,13 @@ class Hooks:
                     print("About to run {} hook [{}] at path {}".format(
                         hookname, command, abs_path))
                     exit_code = os.system(command)
+        except (IndexError, Exception) as ie:
+            print("The following error occurred : %s" %
+                  e, file=sys.stderr)
+            execution_result = 'FAILURE'
+            self.whobj.api_call("The following error occurred: %s" %
+                                e, defChannel)
+            raise
         except (Exception) as e:
             print("The following error occurred : %s" %
                   e, file=sys.stderr)
