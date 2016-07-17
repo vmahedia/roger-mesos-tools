@@ -60,27 +60,30 @@ class WebHook:
                 user = var.split('=')[1]
                 continue
         try:
-            channelsSet = Set(appdata['notifications']['channels'])
-            envSet = Set(appdata['notifications']['envs'])
-            commandsSet = Set(appdata['notifications']['commands'])
-            # to handle no tag at all
-            if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
-                message = str('*Switching to defaults*: All environments, all actions')
-                # Default message  to slack channel just once
-                if self.flag is False:
-                    self.api_call(message, self.defChannel)
-                channelsSet = [self.defChannel]
-                envSet = ['dev', 'production', 'staging', 'local']
-                commandsSet = ['pull', 'build', 'push']
-                self.flag = True
 
+            if 'notifications' in appdata:
+                channelsSet = Set(appdata['notifications']['channels'])
+                envSet = Set(appdata['notifications']['envs'])
+                commandsSet = Set(appdata['notifications']['commands'])
+                # to handle no tag at all
+                if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
+                    message = str('*Switching to defaults*: All environments, all actions')
+                    # Default message  to slack channel just once
+                    if self.flag is False:
+                        self.api_call(message, self.defChannel)
+                    channelsSet = [self.defChannel]
+                    envSet = ['dev', 'production', 'staging', 'local']
+                    commandsSet = ['pull', 'build', 'push']
+                    self.flag = True
+            else:
+                print("App data is not valid. notificaton tag missing. Aborting message post to slack!")
+                return
             # to handle all tag for env and commands
             if list(envSet)[0] == 'all':
                 envSet = ['dev', 'production', 'staging', 'local']
 
             if list(commandsSet)[0] == 'all':
                 commandsSet = ['pull', 'build', 'push']
-
 
         except (Exception, KeyError, ValueError) as e:
             # notify to channel and log it as well
