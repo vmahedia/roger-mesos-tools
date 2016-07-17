@@ -38,7 +38,6 @@ class WebHook:
         message = 'default message'
         envr = 'NA'
         temp = hook_input_metric.split(',')
-
         """Default message format:  roger-tools.post_gitpull_time', 'app_name=roger-simpleapp',
         'identifier=1468650484-bb0d3712', 'config_name=moz-roger', 'env=', 'user=manish.ranjan'"""
 
@@ -82,7 +81,8 @@ class WebHook:
             if list(commandsSet)[0] == 'all':
                 commandsSet = ['pull', 'build', 'push']
 
-        except (Exception) as e:
+
+        except (Exception, KeyError, ValueError) as e:
             # notify to channel and log it as well
             self.api_call("The following error occurred: %s" %
                           e, self.defChannel)
