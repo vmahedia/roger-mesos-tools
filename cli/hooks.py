@@ -32,61 +32,8 @@ class Hooks:
         try:
             exit_code = 0
             function_execution_start_time = datetime.now()
-            defChannel = '#rogeros-deploy'
             execution_result = 'SUCCESS'
-            message = 'default message'
-            envr = 'NA'
-
-            temp = hook_input_metric.split(',')
-            action, app_name, config_name, envr, user = (temp[0],
-                                                         temp[1], temp[3],
-                                                         temp[4], temp[5])
-            action = ''.join(action.split('.')[1])
-            action = '-'.join(action.split('_')[0:2])
-            try:
-                channelsSet = Set(appdata['notifications']['channels'])
-                envSet = Set(appdata['notifications']['envs'])
-                commandsSet = Set(appdata['notifications']['commands'])
-                if (len(channelsSet) == 0 or
-                        len(envSet) == 0 or
-                        len(commandsSet) == 0):  # to handle no tag at all
-                    message = str('*Switching to defaults*: \
-                                  All environments, all actions')
-                    # Default message  to slack channel just once
-                    if self.flag is False:
-                        self.whobj.api_call(message, defChannel)
-                    channelsSet = [defChannel]
-                    envSet = ['dev', 'production', 'staging', 'local']
-                    commandsSet = ['pull', 'build', 'push']
-                    self.flag = True
-
-                # to handle all tag for env and commands
-                if list(envSet)[0] == 'all':
-                    envSet = ['dev', 'production', 'staging', 'local']
-
-                if list(commandsSet)[0] == 'all':
-                    commandsSet = ['pull', 'build', 'push']
-
-            except (Exception) as e:
-                # notify to channel and log it as well
-                self.whobj.api_call("The following error occurred: %s" %
-                                    e, defChannel)
-                print("The following error occurred: %s" %
-                      e, file=sys.stderr)
-                raise
-
-            if ('post' in action and envr.split('=')[1] in envSet and
-                    action.split('-')[1] in commandsSet):
-                for channel in channelsSet:
-                    slackMessage = ("Completed *" + action.split('-')[1] +
-                                    "* of *" + app_name.split('=')[1] +
-                                    "* on *" + envr.split('=')[1] + "* in *" +
-                                    str((datetime.now() -
-                                         function_execution_start_time)
-                                        .total_seconds() * 1000) +
-                                    "* miliseconds (triggered by *" +
-                                    user.split('=')[1] + "*)")
-                    self.whobj.api_call(slackMessage, '#' + channel)
+            self.whobj.invoke_webhook(appdata, hook_input_metric)
             abs_path = os.path.abspath(path)
             if "hooks" in appdata and hookname in appdata["hooks"]:
                 command = appdata["hooks"][hookname]
@@ -94,19 +41,10 @@ class Hooks:
                     print("About to run {} hook [{}] at path {}".format(
                         hookname, command, abs_path))
                     exit_code = os.system(command)
-        except (IndexError) as ie:
-            print("The following error occurred : %s" %
-                  ie, file=sys.stderr)
-            execution_result = 'FAILURE'
-            self.whobj.api_call("The following error occurred: %s" %
-                                ie, defChannel)
-            raise
         except (Exception) as e:
             print("The following error occurred : %s" %
                   e, file=sys.stderr)
             execution_result = 'FAILURE'
-            self.whobj.api_call("The following error occurred: %s" %
-                                e, defChannel)
             raise
         finally:
             try:
