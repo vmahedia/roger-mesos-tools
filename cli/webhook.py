@@ -2,6 +2,8 @@ import sys
 import slackweb
 from sets import Set
 from datetime import datetime
+from cli.settings import Settings
+from cli.appconfig import AppConfig
 
 
 class WebHook:
@@ -10,13 +12,23 @@ class WebHook:
 
     def __init__(self):
         '''this flag makes sure if initialization fails, many hook
-        steps wont try to post message again and again'''
+        steps wont try to post message again and again '''
         self.disabled = True
-        self.webhookURL = ('https://hooks.slack.com/services/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')
-        self.username = 'roger-deploy-bot'
         self.emoji = ':rocket:'
-        # default channel unless user overrides
-        self.defChannel = '#rogeros-deploy'
+        settingObj = Settings()
+        config_dir = settingObj.getConfigDir()
+        appconfigObj = AppConfig()
+        roger_env = appconfigObj.getRogerEnv(config_dir)
+        if 'webhook_url' in roger_env.keys():
+            self.webhookURL = roger_env['webhook_url']
+        if 'default_channel' in roger_env.keys():
+            self.defChannel = roger_env['default_channel']
+        if 'default_username' in roger_env.keys():
+            self.username = roger_env['default_username']
+
+        if len(self.username) == 0 or len(self.webhookURL) == 0 or len(self.defChannel) == 0:
+            return
+
         try:
             self.client = slackweb.Slack(url=self.webhookURL)
         except (Exception) as e:
@@ -67,7 +79,8 @@ class WebHook:
                 commandsSet = Set(appdata['notifications']['commands'])
                 # to handle no tag at all
                 if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
-                    message = str('*Switching to defaults*: All environments, all actions')
+                    return
+                '''message = str('*Switching to defaults*: All environments, all actions')
                     # Default message  to slack channel just once
                     if self.flag is False:
                         self.api_call(message, self.defChannel)
@@ -77,7 +90,7 @@ class WebHook:
                     self.flag = True
             else:
                 print("App data is not valid. notificaton tag missing. Aborting message post to slack!")
-                return
+                return'''
             # to handle all tag for env and commands
             if list(envSet)[0] == 'all':
                 envSet = ['dev', 'production', 'staging', 'local']
