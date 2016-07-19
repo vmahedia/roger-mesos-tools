@@ -16,19 +16,25 @@ class WebHook:
         self.disabled = True
         self.emoji = ':rocket:'
         self.settingObj = Settings()
-        config_dir = self.settingObj.getConfigDir()
         self.appconfigObj = AppConfig()
+
+    def webhookSetting(self):
+
+        config_dir = self.settingObj.getConfigDir()
         roger_env = self.appconfigObj.getRogerEnv(config_dir)
-        if 'webhook_url' in roger_env.keys():
-            self.webhookURL = roger_env['webhook_url']
-        if 'default_channel' in roger_env.keys():
-            self.defChannel = roger_env['default_channel']
-        if 'default_username' in roger_env.keys():
-            self.username = roger_env['default_username']
-
-        if len(self.username) == 0 or len(self.webhookURL) == 0 or len(self.defChannel) == 0:
+        try:
+            if 'webhook_url' in roger_env.keys():
+                self.webhookURL = roger_env['webhook_url']
+            if 'default_channel' in roger_env.keys():
+                self.defChannel = roger_env['default_channel']
+            if 'default_username' in roger_env.keys():
+                self.username = roger_env['default_username']
+            if len(self.username) == 0 or len(self.webhookURL) == 0 or len(self.defChannel) == 0:
+                return
+        except (Exception) as e:
+            print("Warning: slackweb basic initialization failed (error: %s).\
+            Not using slack." % e)
             return
-
         try:
             self.client = slackweb.Slack(url=self.webhookURL)
         except (Exception) as e:
@@ -38,7 +44,7 @@ class WebHook:
         self.disabled = False
 
     def api_call(self, text, channel):
-        # this is enable any class to call the method with message and default errorChannel
+        self.webhookSetting()
         if len(channel) == 0:
             channel = self.defChannel
         if not self.disabled:
@@ -46,6 +52,7 @@ class WebHook:
                                icon_emoji=self.emoji, text=text)
 
     def invoke_webhook(self, appdata, hook_input_metric):
+        self.webhookSetting()
         # defChannel = '#rogeros-deploy'
         message = 'default message'
         envr = 'NA'
@@ -81,14 +88,6 @@ class WebHook:
                 if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
                     print("notificaton tag missing. Aborting message post to slack!")
                     return
-                '''message = str('*Switching to defaults*: All environments, all actions')
-                    # Default message  to slack channel just once
-                    if self.flag is False:
-                        self.api_call(message, self.defChannel)
-                    channelsSet = [self.defChannel]
-                    envSet = ['dev', 'production', 'staging', 'local']
-                    commandsSet = ['pull', 'build', 'push']
-                    self.flag = True'''
             else:
                 print("Notificaton tag missing. Aborting message post to slack!")
                 return

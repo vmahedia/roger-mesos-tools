@@ -10,6 +10,7 @@ from mockito import mock, when, verify
 from mockito.matchers import any
 from cli.utils import Utils
 from statsd import StatsClient
+from cli.webhook import WebHook
 
 
 class TestHooks(unittest.TestCase):
@@ -24,6 +25,8 @@ class TestHooks(unittest.TestCase):
         pass
 
     def test_run_hook_returns_zero_when_hook_succeeds(self):
+
+        when(self.hooks.whobj).invoke_webhook(any(), any()).thenReturn()
         sc = mock(StatsClient)
         when(sc).timing(any(), any()).thenReturn(any())
         when(self.hooks.utils).getStatsClient().thenReturn(sc)
@@ -31,6 +34,8 @@ class TestHooks(unittest.TestCase):
         assert self.hooks.run_hook("pre-build", self.appdata, os.getcwd(), "roger-tools.pre-build-test") == 0
 
     def test_run_hook_returns_non_zero_when_hook_fails(self):
+
+        when(self.hooks.whobj).invoke_webhook(any(), any()).thenReturn()
         sc = mock(StatsClient)
         when(sc).timing(any(), any()).thenReturn(any())
         when(self.hooks.utils).getStatsClient().thenReturn(sc)
@@ -39,6 +44,8 @@ class TestHooks(unittest.TestCase):
             "bad-hook-cmd", self.appdata, os.getcwd(), "roger-tools.bad-hook-cmd-test") != 0
 
     def test_run_hook_returns_zero_when_hook_is_absent(self):
+
+        when(self.hooks.whobj).invoke_webhook(any(), any()).thenReturn()
         sc = mock(StatsClient)
         when(sc).timing(any(), any()).thenReturn(any())
         when(self.hooks.utils).getStatsClient().thenReturn(sc)
@@ -47,6 +54,8 @@ class TestHooks(unittest.TestCase):
             "absent-hook", self.appdata, os.getcwd(), "roger-tools.absent-hook-test") == 0
 
     def test_run_hook_preserves_current_directory(self):
+
+        when(self.hooks.whobj).invoke_webhook(any(), any()).thenReturn()
         sc = mock(StatsClient)
         when(sc).timing(any(), any()).thenReturn(any())
         when(self.hooks.utils).getStatsClient().thenReturn(sc)
