@@ -18,7 +18,7 @@ class WebHook:
         self.settingObj = Settings()
         config_dir = self.settingObj.getConfigDir()
         self.appconfigObj = AppConfig()
-        roger_env = self.appconfigObj.getRogerEnv(self.config_dir)
+        roger_env = self.appconfigObj.getRogerEnv(config_dir)
         if 'webhook_url' in roger_env.keys():
             self.webhookURL = roger_env['webhook_url']
         if 'default_channel' in roger_env.keys():
@@ -79,6 +79,7 @@ class WebHook:
                 commandsSet = Set(appdata['notifications']['commands'])
                 # to handle no tag at all
                 if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
+                    print("notificaton tag missing. Aborting message post to slack!")
                     return
                 '''message = str('*Switching to defaults*: All environments, all actions')
                     # Default message  to slack channel just once
@@ -87,10 +88,10 @@ class WebHook:
                     channelsSet = [self.defChannel]
                     envSet = ['dev', 'production', 'staging', 'local']
                     commandsSet = ['pull', 'build', 'push']
-                    self.flag = True
+                    self.flag = True'''
             else:
-                print("App data is not valid. notificaton tag missing. Aborting message post to slack!")
-                return'''
+                print("Notificaton tag missing. Aborting message post to slack!")
+                return
             # to handle all tag for env and commands
             if list(envSet)[0] == 'all':
                 envSet = ['dev', 'production', 'staging', 'local']
