@@ -16,15 +16,15 @@ class WebHook:
         self.disabled = True
         self.emoji = ':rocket:'
         self.settingObj = Settings()
-        config_dir = self.settingObj.getConfigDir()
+        self.config_dir = self.settingObj.getConfigDir()
         self.appconfigObj = AppConfig()
-        roger_env = self.appconfigObj.getRogerEnv(config_dir)
-        if 'webhook_url' in roger_env.keys():
-            self.webhookURL = roger_env['webhook_url']
-        if 'default_channel' in roger_env.keys():
-            self.defChannel = roger_env['default_channel']
-        if 'default_username' in roger_env.keys():
-            self.username = roger_env['default_username']
+        self.roger_env = self.appconfigObj.getRogerEnv(self.config_dir)
+        if 'webhook_url' in self.roger_env.keys():
+            self.webhookURL = self.roger_env['webhook_url']
+        if 'default_channel' in self.roger_env.keys():
+            self.defChannel = self.roger_env['default_channel']
+        if 'default_username' in self.roger_env.keys():
+            self.username = self.roger_env['default_username']
 
         if len(self.username) == 0 or len(self.webhookURL) == 0 or len(self.defChannel) == 0:
             return
