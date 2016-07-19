@@ -15,10 +15,10 @@ class WebHook:
         steps wont try to post message again and again '''
         self.disabled = True
         self.emoji = ':rocket:'
-        settingObj = Settings()
-        config_dir = settingObj.getConfigDir()
-        appconfigObj = AppConfig()
-        roger_env = appconfigObj.getRogerEnv(config_dir)
+        self.settingObj = Settings()
+        config_dir = self.settingObj.getConfigDir()
+        self.appconfigObj = AppConfig()
+        roger_env = self.appconfigObj.getRogerEnv(config_dir)
         if 'webhook_url' in roger_env.keys():
             self.webhookURL = roger_env['webhook_url']
         if 'default_channel' in roger_env.keys():
