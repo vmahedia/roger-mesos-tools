@@ -1,14 +1,12 @@
-import sys
 import slackweb
 from sets import Set
 from datetime import datetime
+
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 
 
 class WebHook:
-
-    flag = False
 
     def __init__(self):
         '''this flag makes sure if initialization fails, many hook
@@ -19,10 +17,9 @@ class WebHook:
         self.appconfigObj = AppConfig()
 
     def webhookSetting(self):
-
-        config_dir = self.settingObj.getConfigDir()
-        roger_env = self.appconfigObj.getRogerEnv(config_dir)
         try:
+            config_dir = self.settingObj.getConfigDir()
+            roger_env = self.appconfigObj.getRogerEnv(config_dir)
             if 'webhook_url' in roger_env.keys():
                 self.webhookURL = roger_env['webhook_url']
             if 'default_channel' in roger_env.keys():
@@ -37,11 +34,11 @@ class WebHook:
             return
         try:
             self.client = slackweb.Slack(url=self.webhookURL)
+            self.disabled = False
         except (Exception) as e:
             print("Warning: slackweb basic initialization failed (error: %s).\
             Not using slack." % e)
             return  # disabled flag remains False
-        self.disabled = False
 
     def api_call(self, text, channel):
         self.webhookSetting()
@@ -53,20 +50,18 @@ class WebHook:
 
     def invoke_webhook(self, appdata, hook_input_metric):
         self.webhookSetting()
-        # defChannel = '#rogeros-deploy'
         message = 'default message'
         envr = 'NA'
         temp = hook_input_metric.split(',')
-        """Default message format:  roger-tools.post_gitpull_time', 'app_name=roger-simpleapp',
-        'identifier=1468650484-bb0d3712', 'config_name=moz-roger', 'env=', 'user=manish.ranjan'"""
+        """roger-tools.rogeros_tools_exec_time,event=pre_build,app_name=roger-simpleapp,
+        identifier=1468986920-bb0d3712,config_name=moz-roger,env=local,user=manish.ranjan'"""
 
         for var in temp:
-            if 'roger-tools' in var:
-                action = ''.join(var.split('.')[1])
-                action = '-'.join(action.split('_')[0:2])
+            varAnother = var.split('=')[0]
+            if varAnother == 'event':
+                action = var.split('=')[1]
                 continue
 
-            varAnother = var.split('=')[0]
             if varAnother == 'app_name':
                 app_name = var.split('=')[1]
                 continue
@@ -79,7 +74,6 @@ class WebHook:
                 user = var.split('=')[1]
                 continue
         try:
-
             if 'notifications' in appdata:
                 channelsSet = Set(appdata['notifications']['channels'])
                 envSet = Set(appdata['notifications']['envs'])
@@ -97,7 +91,6 @@ class WebHook:
 
             if list(commandsSet)[0] == 'all':
                 commandsSet = ['pull', 'build', 'push']
-
         except (Exception, KeyError, ValueError) as e:
             # notify to channel and log it as well
             self.api_call("The following error occurred: %s" %
@@ -105,12 +98,11 @@ class WebHook:
             print("The following error occurred: %s" %
                   e)
             raise
-
         try:
             function_execution_start_time = datetime.now()
-            if ('post' in action and envr in envSet and action.split('-')[1] in commandsSet):
+            if ('post' in action and envr in envSet and action.split('_')[1] in commandsSet):
                 for channel in channelsSet:
-                    slackMessage = ("Completed *" + action.split('-')[1] + "* of *" + app_name +
+                    slackMessage = ("Completed *" + action.split('_')[1] + "* of *" + app_name +
                                     "* on *" + envr + "* in *" +
                                     str((datetime.now() - function_execution_start_time)
                                         .total_seconds() * 1000) +

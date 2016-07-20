@@ -3,8 +3,8 @@ from __future__ import print_function
 import os
 import contextlib
 import sys
-from sets import Set
 from datetime import datetime
+
 from cli.webhook import WebHook
 from cli.utils import Utils
 
