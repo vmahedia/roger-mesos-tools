@@ -13,6 +13,7 @@ class WebHook:
         steps wont try to post message again and again '''
         self.disabled = True
         self.emoji = ':rocket:'
+        self.defChannel = ''
         self.settingObj = Settings()
         self.appconfigObj = AppConfig()
 
@@ -50,29 +51,35 @@ class WebHook:
 
     def invoke_webhook(self, appdata, hook_input_metric):
         self.webhookSetting()
-        message = 'default message'
-        envr = 'NA'
-        temp = hook_input_metric.split(',')
-        """roger-tools.rogeros_tools_exec_time,event=pre_build,app_name=roger-simpleapp,
-        identifier=1468986920-bb0d3712,config_name=moz-roger,env=local,user=manish.ranjan'"""
+        try:
+            action = app_name = envr = user = ''
+            temp = hook_input_metric.split(',')
+            for var in temp:
+                varAnother = var.split('=')[0]
+                if varAnother == 'event':
+                    action = var.split('=')[1]
+                    continue
 
-        for var in temp:
-            varAnother = var.split('=')[0]
-            if varAnother == 'event':
-                action = var.split('=')[1]
-                continue
+                if varAnother == 'app_name':
+                    app_name = var.split('=')[1]
+                    continue
 
-            if varAnother == 'app_name':
-                app_name = var.split('=')[1]
-                continue
+                if varAnother == 'env':
+                    envr = var.split('=')[1]
+                    continue
 
-            if varAnother == 'env':
-                envr = var.split('=')[1]
-                continue
+                if varAnother == 'user':
+                    user = var.split('=')[1]
+                    continue
+            if len(action) == 0 or len(app_name) == 0 or len(envr) == 0 or len(user) == 0:
+                raise ValueError
 
-            if varAnother == 'user':
-                user = var.split('=')[1]
-                continue
+        except (Exception, KeyError, ValueError, IndexError) as e:
+            self.api_call("The following error occurred: %s" %
+                          e, self.defChannel)
+            print("The following error occurred: %s" %
+                  e)
+            raise
         try:
             if 'notifications' in appdata:
                 channelsSet = Set(appdata['notifications']['channels'])
@@ -80,10 +87,10 @@ class WebHook:
                 commandsSet = Set(appdata['notifications']['commands'])
                 # to handle no tag at all
                 if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
-                    print("notificaton tag missing. Aborting message post to slack!")
+                    print("Notificaton tag missing. Not posting message to slack!")
                     return
             else:
-                print("Notificaton tag missing. Aborting message post to slack!")
+                print("Notificaton tag missing. Not posting message to slack!")
                 return
             # to handle all tag for env and commands
             if list(envSet)[0] == 'all':

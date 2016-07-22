@@ -41,7 +41,7 @@ class Hooks:
                         hookname, command, abs_path))
                     exit_code = os.system(command)
         except (Exception) as e:
-            print("The following error occurred : %s" %
+            print("The following error occurred: %s" %
                   e, file=sys.stderr)
             execution_result = 'FAILURE'
             raise

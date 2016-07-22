@@ -1,10 +1,10 @@
 {
-  "id": "roger-simpleapp",
+  "id": "simpleapp",
   "instances": 1,
   "container": {
     "type": "DOCKER",
     "docker":{
-    "image": "registry.roger.dal.moz.com:5000/simpleapp/v0.2.0",
+    "image": "registry.roger.dal.moz.com:5000/moz-roger-roger-simpleapp-297ca6e04adfb1bee7b1ba96a540e1b37742ccb7/v0.1.0",
     "network": "BRIDGE"
     }
   },
