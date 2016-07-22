@@ -47,8 +47,8 @@ class TestWebhook(unittest.TestCase):
     def test_invoke_webhook_when_appdata_is_invalid(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
-        appdata = 'valid-app-data'
-        hook_input_metrics = 'invalid-hook-input-metrics'
+        appdata = 'invalid-app-data'
+        hook_input_metrics = 'hook-input-metrics'
         when(settings).getConfigDir().thenReturn(self.configs_dir)
         when(appConfig).getRogerEnv(any()).thenReturn(self.roger_env)
 
