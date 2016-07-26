@@ -483,13 +483,16 @@ if __name__ == "__main__":
     roger_push.main(settingObj, appObj, frameworkUtils,
                     hooksObj, roger_push.args)
     result_list = []
-    for task_id in roger_push.task_id:
-        statsd_message_list = roger_push.utils.append_task_id(roger_push.statsd_message_list, task_id)
-        result_list.append(statsd_message_list)
     try:
+        for task_id in roger_push.task_id:
+            statsd_message_list = roger_push.utils.append_task_id(roger_push.statsd_message_list, task_id)
+            result_list.append(statsd_message_list)
+
         sc = roger_push.utils.getStatsClient()
+
         for item in roger_push.statsd_push_list:
             sc.timing(item[0], item[1])
+
         for lst in result_list:
             for item in lst:
                 sc.timing(item[0], item[1])
