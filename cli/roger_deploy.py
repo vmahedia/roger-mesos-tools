@@ -474,10 +474,16 @@ if __name__ == "__main__":
     args = roger_deploy.parser.parse_args()
     roger_deploy.main(settingObj, appObj, frameworkUtils,
                       gitObj, hooksObj, args)
-    statsd_message_list = roger_deploy.utils.append_task_id(roger_deploy.statsd_message_list, roger_deploy.rogerPushObject.task_id)
+    result_list = []
+    for task_id in roger_deploy.rogerPushObject.task_id:
+        statsd_message_list = roger_deploy.utils.append_task_id(roger_deploy.statsd_message_list, task_id)
+        result_list.append(statsd_message_list)
     try:
         sc = roger_deploy.utils.getStatsClient()
-        for item in statsd_message_list:
+        for lst in result_list:
+            for item in lst:
+                sc.timing(item[0], item[1])
+        for item in roger_deploy.rogerPushObject.statsd_push_list:
             sc.timing(item[0], item[1])
     except (Exception) as e:
         print("The following error occurred: %s" %

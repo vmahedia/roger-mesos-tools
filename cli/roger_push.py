@@ -42,8 +42,9 @@ class RogerPush(object):
 
     def __init__(self):
         self.utils = Utils()
-        self.task_id = ""
+        self.task_id = []
         self.statsd_message_list = []
+        self.statsd_push_list = []
         self.outcome = 1
 
     def parse_args(self):
@@ -393,7 +394,8 @@ class RogerPush(object):
                                 resp, task_id = frameworkObj.put(
                                     config_file_path, environmentObj, container_name, environment)
 
-                                self.task_id = self.utils.modify_task_id(task_id)
+                                container_task_id = self.utils.modify_task_id(task_id)
+                                self.task_id.extend(container_task_id)
 
                                 if hasattr(resp, "status_code"):
                                     status_code = resp.status_code
@@ -440,14 +442,15 @@ class RogerPush(object):
                                 self.outcome = 0
 
                             time_take_milliseonds = ((datetime.now() - function_execution_start_time).total_seconds() * 1000)
-                            input_metric = "roger-tools.rogeros_tools_exec_time," + "app_name=" + str(args.app_name) + ",event=push" + ",container_name=" + str(container_name) + ",identifier=" + str(self.identifier) + ",outcome=" + str(execution_result) + ",response_code=" + str(status_code) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser())
-                            tup = (input_metric, time_take_milliseonds)
-                            self.statsd_message_list.append(tup)
+                            for task_id in container_task_id:
+                                input_metric = "roger-tools.rogeros_tools_exec_time," + "app_name=" + str(args.app_name) + ",event=push" + ",container_name=" + str(container_name) + ",identifier=" + str(self.identifier) + ",outcome=" + str(execution_result) + ",response_code=" + str(status_code) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser()) + ",task_id=" + task_id
+                                tup = (input_metric, time_take_milliseonds)
+                                self.statsd_push_list.append(tup)
 
-                            if str(status_code).startswith("20"):
-                                metric = input_metric.replace("rogeros_tools_exec_time", "rogeros_events")
-                                metric = metric + ",source=tools" + ",task_id=" + self.task_id
-                                self.statsd_counter_logging(metric)
+                                if str(status_code).startswith("20"):
+                                    metric = input_metric.replace("rogeros_tools_exec_time", "rogeros_events")
+                                    metric = metric + ",source=tools" + ",task_id=" + task_id
+                                    self.statsd_counter_logging(metric)
 
                         except (Exception) as e:
                             print("The following error occurred: %s" %
@@ -476,11 +479,17 @@ if __name__ == "__main__":
     roger_push.args = roger_push.parser.parse_args()
     roger_push.main(settingObj, appObj, frameworkUtils,
                     hooksObj, roger_push.args)
-    statsd_message_list = roger_push.utils.append_task_id(roger_push.statsd_message_list, roger_push.task_id)
+    result_list = []
+    for task_id in roger_push.task_id:
+        statsd_message_list = roger_push.utils.append_task_id(roger_push.statsd_message_list, task_id)
+        result_list.append(statsd_message_list)
     try:
         sc = roger_push.utils.getStatsClient()
-        for item in statsd_message_list:
+        for item in roger_push.statsd_push_list:
             sc.timing(item[0], item[1])
+        for lst in result_list:
+            for item in lst:
+                sc.timing(item[0], item[1])
     except (Exception) as e:
         print("The following error occurred: %s" %
               e, file=sys.stderr)

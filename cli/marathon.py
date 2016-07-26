@@ -72,7 +72,9 @@ class Marathon(Framework):
 
         marathon_message = "{0}: {1}".format(appName, resp)
         print(marathon_message)
-        return resp, appName
+
+        task_id_list = utils.generate_task_id_list(data)
+        return resp, task_id_list
 
     def getGroupDetails(self, data):
         group_details = {}
