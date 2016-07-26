@@ -25,8 +25,8 @@ class WebHook:
                 self.webhookURL = roger_env['slack_webhook_url']
             if 'slack_api_token' in roger_env.keys():
                 self.token = roger_env['slack_api_token']
-            if 'default_slack_channel' in roger_env.keys():
-                self.defChannel = roger_env['default_slack_channel']
+            if 'slack_default_channel' in roger_env.keys():
+                self.defChannel = roger_env['slack_default_channel']
             if 'slack_deploy_botid' in roger_env.keys():
                 self.botid = roger_env['slack_deploy_botid']
         except (Exception) as e:
@@ -57,6 +57,7 @@ class WebHook:
                                            icon_emoji=self.emoji, text=text)
 
     def invoke_webhook(self, appdata, hook_input_metric):
+        function_execution_start_time = datetime.now()
         self.webhookSetting()
         try:
             action = app_name = envr = user = ''
@@ -92,10 +93,8 @@ class WebHook:
                 commandsSet = Set(appdata['notifications']['commands'])
                 # to handle no tag at all
                 if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
-                    print("Notificaton tag missing. Not posting message to slack!")
                     return
             else:
-                print("Notificaton tag missing. Not posting message to slack!")
                 return
             # to handle all tag for env and commands
             if list(envSet)[0] == 'all':
@@ -109,14 +108,11 @@ class WebHook:
                   e)
             raise
         try:
-            function_execution_start_time = datetime.now()
             if ('post' in action and envr in envSet and action.split('_')[1] in commandsSet):
                 for channel in channelsSet:
-                    slackMessage = ("Completed *" + action.split('_')[1] + "* of *" + app_name +
-                                    "* on *" + envr + "* in *" +
-                                    str((datetime.now() - function_execution_start_time)
-                                        .total_seconds() * 1000) +
-                                    "* miliseconds (triggered by *" + user + "*)")
+                    timeElapsed = '{0:.2f}'.format((datetime.now() - function_execution_start_time).total_seconds() * 1000)
+                    unit = 'miliseconds'
+                    slackMessage = ("Completed *" + action.split('_')[1] + "* of *" + app_name + "* on *" + envr + "* in *" + str(timeElapsed) + "* " + unit + " (triggered by *" + user + "*)")
                     self.custom_api_call(slackMessage, '#' + channel)
         except (Exception) as e:
             self.custom_api_call("The following error occurred: %s" % e, self.defChannel)
