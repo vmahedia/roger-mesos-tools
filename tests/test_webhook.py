@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 from mockito import mock, when, verify, verifyZeroInteractions
 from mock import MagicMock
+from slackclient import SlackClient
 from mockito.matchers import any
 from utils import Utils
 from appconfig import AppConfig

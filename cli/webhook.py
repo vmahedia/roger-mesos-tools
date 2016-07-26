@@ -1,6 +1,7 @@
 import slackweb
 from sets import Set
 from datetime import datetime
+from slackclient import SlackClient
 
 from cli.settings import Settings
 from cli.appconfig import AppConfig
@@ -9,11 +10,10 @@ from cli.appconfig import AppConfig
 class WebHook:
 
     def __init__(self):
-        '''this flag makes sure if initialization fails, many hook
-        steps wont try to post message again and again '''
         self.disabled = True
         self.emoji = ':rocket:'
         self.defChannel = ''
+        self.username = 'rogeros-deploy-bot'
         self.settingObj = Settings()
         self.appconfigObj = AppConfig()
 
@@ -21,19 +21,20 @@ class WebHook:
         try:
             config_dir = self.settingObj.getConfigDir()
             roger_env = self.appconfigObj.getRogerEnv(config_dir)
-            if 'webhook_url' in roger_env.keys():
-                self.webhookURL = roger_env['webhook_url']
-            if 'default_channel' in roger_env.keys():
-                self.defChannel = roger_env['default_channel']
-            if 'default_username' in roger_env.keys():
-                self.username = roger_env['default_username']
-            if len(self.username) == 0 or len(self.webhookURL) == 0 or len(self.defChannel) == 0:
-                return
+            if 'slack_webhook_url' in roger_env.keys():
+                self.webhookURL = roger_env['slack_webhook_url']
+            if 'slack_api_token' in roger_env.keys():
+                self.token = roger_env['slack_api_token']
+            if 'default_slack_channel' in roger_env.keys():
+                self.defChannel = roger_env['default_slack_channel']
+            if 'slack_deploy_botid' in roger_env.keys():
+                self.botid = roger_env['slack_deploy_botid']
         except (Exception) as e:
             print("Warning: slackweb basic initialization failed (error: %s).\
             Not using slack." % e)
             return
         try:
+            self.sc = SlackClient(self.token)
             self.client = slackweb.Slack(url=self.webhookURL)
             self.disabled = False
         except (Exception) as e:
@@ -41,13 +42,19 @@ class WebHook:
             Not using slack." % e)
             return  # disabled flag remains False
 
-    def api_call(self, text, channel):
+    def custom_api_call(self, text, channel):
         self.webhookSetting()
         if len(channel) == 0:
             channel = self.defChannel
-        if not self.disabled:
-            self.client.notify(channel=channel, username=self.username,
-                               icon_emoji=self.emoji, text=text)
+        var = self.sc.api_call("channels.list")
+        length = len(var['channels'])
+        for iterator in range(0, length):
+            # getting rid of # for comparison
+            if channel[1:] == var['channels'][iterator]['name']:
+                if self.botid in var['channels'][iterator]['members']:
+                    if not self.disabled:
+                        self.client.notify(channel=channel, username=self.username,
+                                           icon_emoji=self.emoji, text=text)
 
     def invoke_webhook(self, appdata, hook_input_metric):
         self.webhookSetting()
@@ -75,8 +82,6 @@ class WebHook:
                 raise ValueError
 
         except (Exception, KeyError, ValueError, IndexError) as e:
-            self.api_call("The following error occurred: %s" %
-                          e, self.defChannel)
             print("The following error occurred: %s" %
                   e)
             raise
@@ -100,8 +105,6 @@ class WebHook:
                 commandsSet = ['pull', 'build', 'push']
         except (Exception, KeyError, ValueError) as e:
             # notify to channel and log it as well
-            self.api_call("The following error occurred: %s" %
-                          e, self.defChannel)
             print("The following error occurred: %s" %
                   e)
             raise
@@ -114,10 +117,9 @@ class WebHook:
                                     str((datetime.now() - function_execution_start_time)
                                         .total_seconds() * 1000) +
                                     "* miliseconds (triggered by *" + user + "*)")
-                    self.api_call(slackMessage, '#' + channel)
+                    self.custom_api_call(slackMessage, '#' + channel)
         except (Exception) as e:
-            self.api_call("The following error occurred: %s" %
-                          e, self.defChannel)
+            self.custom_api_call("The following error occurred: %s" % e, self.defChannel)
             print("The following error occurred: %s" %
                   e)
             raise
