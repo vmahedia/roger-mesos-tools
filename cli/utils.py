@@ -6,7 +6,6 @@ import sys
 import statsd
 from cli.settings import Settings
 from cli.appconfig import AppConfig
-from copy import deepcopy
 import hashlib
 import time
 import json
@@ -66,15 +65,55 @@ class Utils:
 
     def append_task_id(self, statsd_message_list, task_id):
         modified_message_list = []
-        for item in statsd_message_list:
-            tup = (item[0] + ",task_id=" + task_id, item[1])
-            modified_message_list.append(tup)
-        statsd_message_list = []
-        statsd_message_list = deepcopy(modified_message_list)
-        return statsd_message_list
+        try:
+            for item in statsd_message_list:
+                tup = (item[0] + ",task_id=" + task_id, item[1])
+                modified_message_list.append(tup)
+        except (Exception) as e:
+            print("The following error occurred: %s" %
+                  e, file=sys.stderr)
+        return modified_message_list
 
-    def modify_task_id(self, task_id):
-        if task_id[0] == '/':
-            task_id = task_id[1:]
-        task_id = task_id.replace("/", "_")
-        return task_id
+    def modify_task_id(self, task_id_list):
+        modified_task_id_list = []
+        try:
+            for task_id in task_id_list:
+                if task_id[0] == '/':
+                    task_id = task_id[1:]
+                task_id = task_id.replace("/", "_")
+                modified_task_id_list.append(task_id)
+        except (Exception) as e:
+            print("The following error occurred: %s" %
+                  e, file=sys.stderr)
+        return modified_task_id_list
+
+    def generate_task_id_list(self, data):
+        task_id_list = []
+        try:
+            data_json = json.loads(data)
+            top_level = ""
+            if 'id' in data_json:
+                top_level = data_json['id']
+                if 'groups' in data_json:
+                    for groups in data_json['groups']:
+                        group_level = ""
+                        if 'id' in groups:
+                            group_level = groups['id']
+                        if 'apps' in groups:
+                            app_level = ""
+                            for app in groups['apps']:
+                                if type(app) == list:
+                                    for item in app:
+                                        if 'id' in item:
+                                            app_level = item['id']
+                                            task_id_list.append(str(top_level + "/" + group_level + "/" + app_level))
+                                else:
+                                    if 'id' in app:
+                                        app_level = app['id']
+                                        task_id_list.append(str(top_level + "/" + group_level + "/" + app_level))
+                else:
+                    task_id_list.append(str(top_level))
+        except (Exception) as e:
+            print("The following error occurred: %s" %
+                  e, file=sys.stderr)
+        return task_id_list
