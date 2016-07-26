@@ -434,6 +434,9 @@ class RogerPush(object):
                             if 'settingObj' not in globals() and 'settingObj' not in locals():
                                 settingObj = Settings()
 
+                            if 'container_task_id' not in globals() and 'container_task_id' not in locals():
+                                container_task_id = []
+
                             if not hasattr(self, "identifier"):
                                 self.identifier = self.utils.get_identifier(config_name, settingObj.getUser(), args.app_name)
 
@@ -443,7 +446,7 @@ class RogerPush(object):
 
                             time_take_milliseonds = ((datetime.now() - function_execution_start_time).total_seconds() * 1000)
                             for task_id in container_task_id:
-                                input_metric = "roger-tools.rogeros_tools_exec_time," + "app_name=" + str(args.app_name) + ",event=push" + ",container_name=" + str(container_name) + ",identifier=" + str(self.identifier) + ",outcome=" + str(execution_result) + ",response_code=" + str(status_code) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser()) + ",task_id=" + task_id
+                                input_metric = "roger-tools.rogeros_tools_exec_time," + "app_name=" + str(args.app_name) + ",event=push" + ",container_name=" + str(container_name) + ",identifier=" + str(self.identifier) + ",outcome=" + str(execution_result) + ",response_code=" + str(status_code) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser()) + ",task_id=" + str(task_id)
                                 tup = (input_metric, time_take_milliseonds)
                                 self.statsd_push_list.append(tup)
 
