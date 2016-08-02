@@ -9,17 +9,24 @@ from cli.appconfig import AppConfig
 import hashlib
 import time
 import json
-
-own_dir = os.path.dirname(os.path.realpath(__file__))
-root = os.path.abspath(os.path.join(own_dir, os.pardir))
-sys.path.insert(0, root + "/bin")
-from roger import roger_version
+from pkg_resources import get_distribution
 
 
 class Utils:
 
     def __init__(self):
         self.task_id_value = None
+
+    def roger_version(self, root_dir):
+        version = "Unknown!"
+        try:
+            version = get_distribution('roger_mesos_tools').version
+        except Exception:
+            fname = os.path.join(root_dir, "VERSION")
+            if(os.path.isfile(fname)):
+                with open(os.path.join(root_dir, "VERSION")) as f:
+                    version = f.read().strip()
+        return version
 
     # Expected format:
     #   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
@@ -127,4 +134,6 @@ class Utils:
         return task_id_list
 
     def get_version(self):
-        return roger_version(root)
+        own_dir = os.path.dirname(os.path.realpath(__file__))
+        root = os.path.abspath(os.path.join(own_dir, os.pardir))
+        return self.roger_version(root)

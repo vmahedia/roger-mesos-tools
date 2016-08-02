@@ -7,21 +7,7 @@ import sys
 import subprocess
 import re
 import importlib
-from pkg_resources import get_distribution
-
-
-def roger_version(root_dir):
-    version = "Unknown!"
-    try:
-        version = get_distribution('roger_mesos_tools').version
-    except Exception:
-        fname = os.path.join(root_dir, "VERSION")
-        if(os.path.isfile(fname)):
-            with open(os.path.join(root_dir, "VERSION")) as f:
-                version = f.read().strip()
-    finally:
-        print(version)
-    return version
+from cli.utils import Utils
 
 
 def print_help_opt(opt, desc):
@@ -74,6 +60,7 @@ def getScriptCall(root, command, command_args):
 
 def main():
     root = ''
+    utilsObj = Utils()
     own_dir = os.path.dirname(os.path.realpath(__file__))
     root = os.path.abspath(os.path.join(own_dir, os.pardir))
     files = getFiles("{}/cli/".format(root))
@@ -82,7 +69,8 @@ def main():
         if sys.argv[1] == "-h" or sys.argv[1] == "--help":
             roger_help(root, commands)
         elif sys.argv[1] == "-v" or sys.argv[1] == "--version":
-            version = roger_version(root)
+            version = utilsObj.roger_version(root)
+            print(version)
         else:
             command = sys.argv[1]
             command_args = sys.argv[2:]
