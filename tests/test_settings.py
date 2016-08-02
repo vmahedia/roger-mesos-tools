@@ -16,7 +16,6 @@ class TestSettings(unittest.TestCase):
 
     def setUp(self):
         self.settingObj = Settings()
-        self.settingObj = Settings()
         self.base_dir = self.settingObj.getCliDir()
 
     def test_getConfigDir(self):
