@@ -1,10 +1,12 @@
 #!/usr/bin/python
 from __future__ import print_function
-from cli.utils import Utils
 import os
 import contextlib
 import sys
 from datetime import datetime
+
+from cli.webhook import WebHook
+from cli.utils import Utils
 
 
 @contextlib.contextmanager
@@ -22,6 +24,7 @@ class Hooks:
 
     def __init__(self):
         self.utils = Utils()
+        self.whobj = WebHook()
         self.statsd_message_list = []
 
     def run_hook(self, hookname, appdata, path, hook_input_metric):
@@ -29,6 +32,7 @@ class Hooks:
             exit_code = 0
             function_execution_start_time = datetime.now()
             execution_result = 'SUCCESS'
+            self.whobj.invoke_webhook(appdata, hook_input_metric)
             abs_path = os.path.abspath(path)
             if "hooks" in appdata and hookname in appdata["hooks"]:
                 command = appdata["hooks"][hookname]
