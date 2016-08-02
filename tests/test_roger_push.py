@@ -400,6 +400,7 @@ class TestPush(unittest.TestCase):
         when(roger_push.utils).getStatsClient().thenReturn(sc)
         when(roger_push.utils).get_identifier(any(), any(), any()).thenReturn(any())
         when(roger_push.utils).extract_app_name(any()).thenReturn("test")
+        when(roger_push.utils).get_version().thenReturn(any())
 
         frameworkUtils = mock(FrameworkUtils)
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
@@ -695,6 +696,7 @@ class TestPush(unittest.TestCase):
         when(roger_push.utils).get_identifier(any(), any(), any()).thenReturn(any())
         when(roger_push.utils).extract_app_name(any()).thenReturn("test")
         when(roger_push.utils).modify_task_id(any()).thenReturn([any()])
+        when(roger_push.utils).get_version().thenReturn(any())
 
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
         when(settings).getComponentsDir().thenReturn(
@@ -787,6 +789,7 @@ class TestPush(unittest.TestCase):
         when(roger_push.utils).get_identifier(any(), any(), any()).thenReturn(any())
         when(roger_push.utils).extract_app_name(any()).thenReturn("test")
         when(roger_push.utils).modify_task_id(any()).thenReturn([any()])
+        when(roger_push.utils).get_version().thenReturn(any())
 
         frameworkUtils = mock(FrameworkUtils)
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
