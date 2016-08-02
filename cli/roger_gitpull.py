@@ -172,9 +172,11 @@ if __name__ == "__main__":
     roger_gitpull.parser = roger_gitpull.parse_args()
     args = roger_gitpull.parser.parse_args()
     roger_gitpull.main(settingObj, appObj, gitObj, hooksObj, args)
+    version = roger_gitpull.utils.get_version()
     try:
+        statsd_message_list = roger_gitpull.utils.append_arguments(roger_gitpull.statsd_message_list, tools_version=version)
         sc = roger_gitpull.utils.getStatsClient()
-        for item in roger_gitpull.statsd_message_list:
+        for item in statsd_message_list:
             sc.timing(item[0], item[1])
     except (Exception) as e:
         print("The following error occurred: %s" %

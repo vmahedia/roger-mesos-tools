@@ -9,12 +9,24 @@ from cli.appconfig import AppConfig
 import hashlib
 import time
 import json
+from pkg_resources import get_distribution
 
 
 class Utils:
 
     def __init__(self):
         self.task_id_value = None
+
+    def roger_version(self, root_dir):
+        version = "Unknown!"
+        try:
+            version = get_distribution('roger_mesos_tools').version
+        except Exception:
+            fname = os.path.join(root_dir, "VERSION")
+            if(os.path.isfile(fname)):
+                with open(os.path.join(root_dir, "VERSION")) as f:
+                    version = f.read().strip()
+        return version
 
     # Expected format:
     #   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
@@ -63,11 +75,14 @@ class Utils:
             return value.split("[")[0]
         return value
 
-    def append_task_id(self, statsd_message_list, task_id):
+    def append_arguments(self, statsd_message_list, **kwargs):
         modified_message_list = []
         try:
             for item in statsd_message_list:
-                tup = (item[0] + ",task_id=" + task_id, item[1])
+                input_metric = item[0]
+                for key, value in kwargs.iteritems():
+                    input_metric += "," + key + "=" + value
+                tup = (input_metric, item[1])
                 modified_message_list.append(tup)
         except (Exception) as e:
             print("The following error occurred: %s" %
@@ -117,3 +132,8 @@ class Utils:
             print("The following error occurred: %s" %
                   e, file=sys.stderr)
         return task_id_list
+
+    def get_version(self):
+        own_dir = os.path.dirname(os.path.realpath(__file__))
+        root = os.path.abspath(os.path.join(own_dir, os.pardir))
+        return self.roger_version(root)

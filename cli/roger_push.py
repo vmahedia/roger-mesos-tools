@@ -21,6 +21,7 @@ from datetime import datetime
 
 import contextlib
 import statsd
+import urllib
 
 
 @contextlib.contextmanager
@@ -46,6 +47,8 @@ class RogerPush(object):
         self.statsd_message_list = []
         self.statsd_push_list = []
         self.outcome = 1
+        self.registry = ""
+        self.image_name = ""
 
     def parse_args(self):
         self.parser = argparse.ArgumentParser(
@@ -188,6 +191,11 @@ class RogerPush(object):
             if 'registry' not in roger_env.keys():
                 raise ValueError(
                     'Registry not found in roger-mesos-tools.config file.')
+            else:
+                self.registry = roger_env['registry']
+
+            if hasattr(args, "image_name"):
+                self.image_name = args.image_name
 
             environment = roger_env.get('default_environment', '')
             if args.env is None:
@@ -362,6 +370,10 @@ class RogerPush(object):
                 if 'owner' in config:
                     frameworkObj.act_as_user = config['owner']
 
+                tools_version_value = self.utils.get_version()
+                image_name = self.registry + "/" + args.image_name
+                image_tag_value = urllib.quote("'" + image_name + "'")
+
                 for container in data_containers:
                     try:
                         function_execution_start_time = datetime.now()
@@ -446,7 +458,7 @@ class RogerPush(object):
 
                             time_take_milliseonds = ((datetime.now() - function_execution_start_time).total_seconds() * 1000)
                             for task_id in container_task_id:
-                                input_metric = "roger-tools.rogeros_tools_exec_time," + "app_name=" + str(args.app_name) + ",event=push" + ",container_name=" + str(container_name) + ",identifier=" + str(self.identifier) + ",outcome=" + str(execution_result) + ",response_code=" + str(status_code) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser()) + ",task_id=" + str(task_id)
+                                input_metric = "roger-tools.rogeros_tools_exec_time," + "app_name=" + str(args.app_name) + ",event=push" + ",container_name=" + str(container_name) + ",identifier=" + str(self.identifier) + ",outcome=" + str(execution_result) + ",response_code=" + str(status_code) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser()) + ",task_id=" + str(task_id) + ",tools_version=" + str(tools_version_value) + ",image_tag=" + str(image_tag_value)
                                 tup = (input_metric, time_take_milliseonds)
                                 self.statsd_push_list.append(tup)
 
@@ -483,9 +495,14 @@ if __name__ == "__main__":
     roger_push.main(settingObj, appObj, frameworkUtils,
                     hooksObj, roger_push.args)
     result_list = []
+
+    tools_version_value = roger_push.utils.get_version()
+    image_name = roger_push.registry + "/" + roger_push.image_name
+    image_tag_value = urllib.quote("'" + image_name + "'")
+
     try:
-        for task_id in roger_push.task_id:
-            statsd_message_list = roger_push.utils.append_task_id(roger_push.statsd_message_list, task_id)
+        for task_id_value in roger_push.task_id:
+            statsd_message_list = roger_push.utils.append_arguments(roger_push.statsd_message_list, task_id=task_id_value, tools_version=tools_version_value, image_tag=image_tag_value)
             result_list.append(statsd_message_list)
 
         sc = roger_push.utils.getStatsClient()

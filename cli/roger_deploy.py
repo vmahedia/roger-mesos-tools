@@ -29,6 +29,7 @@ from cli.docker_build import Docker
 
 import contextlib
 import statsd
+import urllib
 
 
 @contextlib.contextmanager
@@ -124,6 +125,8 @@ class RogerDeploy(object):
         self.utils = Utils()
         self.slack = None
         self.statsd_message_list = []
+        self.registry = ""
+        self.image_name = ""
 
         # To remove a temporary directory created by roger-deploy if this
         # script exits
@@ -230,6 +233,8 @@ class RogerDeploy(object):
                 config_name = config['name']
             if 'registry' not in roger_env:
                 raise ValueError('Registry not found in roger-mesos-tools.config file.')
+            else:
+                self.registry = roger_env['registry']
 
             # Setup for Slack-Client, token, and git user
             if 'notifications' in config:
@@ -406,6 +411,8 @@ class RogerDeploy(object):
         if skip_build:
             curr_image_ver = frameworkObj.getCurrentImageVersion(
                 roger_env, environment, app)
+            self.image_name = curr_image_ver
+
             print("Current image version deployed on {0} is :{1}".format(
                 framework, curr_image_ver))
             if curr_image_ver is not None:
@@ -421,6 +428,7 @@ class RogerDeploy(object):
                 config, roger_env, app, branch, work_dir, repo, args, gitObj)
             image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
             print("Bumped up image to version:{0}".format(image_name))
+            self.image_name = image_name
 
             build_args = args
             build_args.app_name = app
@@ -475,9 +483,12 @@ if __name__ == "__main__":
     roger_deploy.main(settingObj, appObj, frameworkUtils,
                       gitObj, hooksObj, args)
     result_list = []
+    tools_version_value = roger_deploy.utils.get_version()
+    image_name = roger_deploy.registry + "/" + roger_deploy.image_name
+    image_tag_value = urllib.quote("'" + image_name + "'")
     try:
-        for task_id in roger_deploy.rogerPushObject.task_id:
-            statsd_message_list = roger_deploy.utils.append_task_id(roger_deploy.statsd_message_list, task_id)
+        for task_id_value in roger_deploy.rogerPushObject.task_id:
+            statsd_message_list = roger_deploy.utils.append_arguments(roger_deploy.statsd_message_list, task_id=task_id_value, tools_version=tools_version_value, image_tag=image_tag_value)
             result_list.append(statsd_message_list)
 
         sc = roger_deploy.utils.getStatsClient()
