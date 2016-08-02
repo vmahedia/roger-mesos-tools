@@ -12,8 +12,9 @@ import json
 
 own_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(own_dir, os.pardir))
-sys.path.insert(0,root+"/bin")
+sys.path.insert(0, root + "/bin")
 from roger import roger_version
+
 
 class Utils:
 
