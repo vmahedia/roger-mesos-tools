@@ -15,6 +15,7 @@ from datetime import datetime
 
 import contextlib
 import statsd
+import urllib
 
 
 @contextlib.contextmanager
@@ -38,6 +39,8 @@ class RogerBuild(object):
         self.utils = Utils()
         self.statsd_message_list = []
         self.outcome = 1
+        self.registry = ""
+        self.tag_name = ""
 
     def parse_args(self):
         self.parser = argparse.ArgumentParser(
@@ -131,6 +134,9 @@ class RogerBuild(object):
             if file_exists:
                 if 'registry' not in roger_env:
                     raise ValueError('Registry not found in roger-mesos-tools.config file.')
+                else:
+                    self.registry = roger_env['registry']
+                self.tag_name = args.tag_name
                 image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
                 try:
                     if abs_path == args.directory:
@@ -223,9 +229,15 @@ if __name__ == "__main__":
     args = roger_build.parser.parse_args()
     roger_build.main(settingObj, appObj, hooksObj,
                      dockerUtilsObj, dockerObj, args)
+
+    tools_version_value = roger_build.utils.get_version()
+    image_name = roger_build.registry + "/" + roger_build.tag_name
+    image_tag_value = urllib.quote("'" + image_name + "'")
+
     try:
         sc = roger_build.utils.getStatsClient()
-        for item in roger_build.statsd_message_list:
+        statsd_message_list = roger_build.utils.append_arguments(roger_build.statsd_message_list, tools_version=tools_version_value, image_tag=image_tag_value)
+        for item in statsd_message_list:
             sc.timing(item[0], item[1])
     except (Exception) as e:
         print("The following error occurred: %s" %

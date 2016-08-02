@@ -21,6 +21,7 @@ def roger_version(root_dir):
                 version = f.read().strip()
     finally:
         print(version)
+    return version
 
 
 def print_help_opt(opt, desc):
@@ -81,7 +82,7 @@ def main():
         if sys.argv[1] == "-h" or sys.argv[1] == "--help":
             roger_help(root, commands)
         elif sys.argv[1] == "-v" or sys.argv[1] == "--version":
-            roger_version(root)
+            version = roger_version(root)
         else:
             command = sys.argv[1]
             command_args = sys.argv[2:]

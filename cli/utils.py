@@ -10,6 +10,10 @@ import hashlib
 import time
 import json
 
+own_dir = os.path.dirname(os.path.realpath(__file__))
+root = os.path.abspath(os.path.join(own_dir, os.pardir))
+sys.path.insert(0,root+"/bin")
+from roger import roger_version
 
 class Utils:
 
@@ -63,11 +67,14 @@ class Utils:
             return value.split("[")[0]
         return value
 
-    def append_task_id(self, statsd_message_list, task_id):
+    def append_arguments(self, statsd_message_list, **kwargs):
         modified_message_list = []
         try:
             for item in statsd_message_list:
-                tup = (item[0] + ",task_id=" + task_id, item[1])
+                input_metric = item[0]
+                for key, value in kwargs.iteritems():
+                    input_metric += "," + key + "=" + value
+                tup = (input_metric, item[1])
                 modified_message_list.append(tup)
         except (Exception) as e:
             print("The following error occurred: %s" %
@@ -117,3 +124,6 @@ class Utils:
             print("The following error occurred: %s" %
                   e, file=sys.stderr)
         return task_id_list
+
+    def get_version(self):
+        return roger_version(root)
