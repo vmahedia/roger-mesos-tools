@@ -5,7 +5,7 @@ import os
 import subprocess
 import sys
 import contextlib
-import urllib2
+import requests
 import json
 
 
@@ -42,8 +42,8 @@ class DockerUtils:
 
     def docker_search_v2(self, registry):
         url = 'http://{}/v2/_catalog?n=500'.format(registry)
-        response = urllib2.urlopen(url)
-        data = json.load(response)
+        response = requests.get(url)
+        data = response.json()
         tmp_repos_list = data['repositories']
         result = ""
         while(tmp_repos_list):
@@ -51,8 +51,8 @@ class DockerUtils:
                 result += item + '\n'
             last_fetched_repo = tmp_repos_list[-1]
             url = 'http://{}/v2/_catalog?n=100&last={}'.format(registry, last_fetched_repo)
-            response = urllib2.urlopen(url)
-            data = json.load(response)
+            response = requests.get(url)
+            data = response.json()
             tmp_repos_list = data['repositories']
 
         return result
