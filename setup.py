@@ -78,7 +78,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['argparse', 'setuptools', 'requests', 'pyyaml',
-        'mock', 'mockito', 'tabulate', 'slackclient', 'Jinja2', 'statsd'],
+        'mock', 'mockito', 'tabulate', 'slackclient', 'Jinja2', 'statsd', 'slackweb'],
 
     # Include the folders listed in the MANIFEST.in file as a part of the
     # package

@@ -149,8 +149,7 @@ def gemfile_swaparoo():
             f.write(orig_gemfile_lock)
 
 
-# Basic Node swaparoo written originally by Chris Whitten.
-# Simplye installs the modules into local node_modules; you must then not include that
+# Simply installs the modules into local node_modules; you must then not include that
 # in .dockerignore. This is not ideal and I want to rewrite it
 @contextlib.contextmanager
 def packagejson_swaparoo():
