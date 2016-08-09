@@ -41,7 +41,7 @@ class DockerUtils:
         return result
 
     def docker_search_v2(self, registry, name, application):
-        url = 'http://{0}/v2/_catalog'.format(registry)
+        url = 'http://{0}/v2/_catalog?n=10000'.format(registry)
         response = urllib2.urlopen(url)
         data = json.load(response)
         result = ""
