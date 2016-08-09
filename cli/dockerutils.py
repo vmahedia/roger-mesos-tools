@@ -46,7 +46,6 @@ class DockerUtils:
         data = json.load(response)
         tmp_repos_list = data['repositories']
         result = ""
-        
         while(tmp_repos_list):
             for item in tmp_repos_list:
                 result += item + '\n'
