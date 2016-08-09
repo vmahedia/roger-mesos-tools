@@ -25,7 +25,6 @@ class TestWebhook(unittest.TestCase):
         self.settingObj = Settings()
         self.base_dir = self.settingObj.getCliDir()
         self.configs_dir = self.base_dir + "/tests/configs"
-        print (self.configs_dir)
         self.components_dir = self.base_dir + '/tests/components/dev'
         with open(self.configs_dir + '/roger-mesos-tools.config') as roger:
             roger_env = yaml.load(roger)
@@ -39,22 +38,24 @@ class TestWebhook(unittest.TestCase):
         appConfig = mock(AppConfig)
         appdata = 'valid-app-data'
         hook_input_metrics = 'invalid-hook-input-metrics'
+        conf_file = 'roger-mesos-tools.config'
         when(settings).getConfigDir().thenReturn(self.configs_dir)
         when(appConfig).getRogerEnv(any()).thenReturn(self.roger_env)
-
+        when(appConfig).getConfig(any(), any()).thenReturn(conf_file)
         with self.assertRaises(ValueError):
-            self.webhook.invoke_webhook(appdata, hook_input_metrics)
+            self.webhook.invoke_webhook(appdata, hook_input_metrics, conf_file)
 
     def test_invoke_webhook_when_appdata_is_invalid(self):
         settings = mock(Settings)
         appConfig = mock(AppConfig)
         appdata = 'invalid-app-data'
         hook_input_metrics = 'hook-input-metrics'
+        conf_file = 'roger-mesos-tools.config'
         when(settings).getConfigDir().thenReturn(self.configs_dir)
         when(appConfig).getRogerEnv(any()).thenReturn(self.roger_env)
-
+        when(appConfig).getConfig(any(), any()).thenReturn(conf_file)
         with self.assertRaises(ValueError):
-            self.webhook.invoke_webhook(appdata, hook_input_metrics)
+            self.webhook.invoke_webhook(appdata, hook_input_metrics, conf_file)
 
     def tearDown(self):
         pass

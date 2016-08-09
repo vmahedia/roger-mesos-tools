@@ -13,14 +13,20 @@ class WebHook:
         self.disabled = True
         self.emoji = ':rocket:'
         self.defChannel = ''
+        self.config_dir = ''
         self.username = 'rogeros-deploy-bot'
         self.settingObj = Settings()
         self.appconfigObj = AppConfig()
+        self.configLoadFlag = False
+        self.config = ''
+        self.config_channels = []
+        self.config_envs = []
+        self.config_commands = []
 
     def webhookSetting(self):
         try:
-            config_dir = self.settingObj.getConfigDir()
-            roger_env = self.appconfigObj.getRogerEnv(config_dir)
+            self.config_dir = self.settingObj.getConfigDir()
+            roger_env = self.appconfigObj.getRogerEnv(self.config_dir)
             if 'slack_webhook_url' in roger_env.keys():
                 self.webhookURL = roger_env['slack_webhook_url']
             if 'slack_api_token' in roger_env.keys():
@@ -56,9 +62,24 @@ class WebHook:
                         self.client.notify(channel=channel, username=self.username,
                                            icon_emoji=self.emoji, text=text)
 
-    def invoke_webhook(self, appdata, hook_input_metric):
+    def invoke_webhook(self, appdata, hook_input_metric, config_file):
         function_execution_start_time = datetime.now()
         self.webhookSetting()
+        if (not self.configLoadFlag):
+            self.config = self.appconfigObj.getConfig(self.config_dir, config_file)
+            self.configLoadFlag = True
+            try:
+                self.config_channels = Set(self.config['notifications']['channels'])
+                self.config_envs = Set(self.config['notifications']['envs'])
+                self.config_commands = Set(self.config['notifications']['commands'])
+                if (len(self.config_channels) == 0 or len(self.config_envs) == 0 or len(self.config_commands) == 0):
+                    return
+            except (Exception, KeyError, ValueError) as e:
+                # notify to channel and log it as well
+                print("The following error occurred: %s" %
+                      e)
+                raise
+
         try:
             action = app_name = envr = user = ''
             temp = hook_input_metric.split(',')
@@ -82,15 +103,24 @@ class WebHook:
             if len(action) == 0 or len(app_name) == 0 or len(envr) == 0 or len(user) == 0:
                 raise ValueError
 
-        except (Exception, KeyError, ValueError, IndexError) as e:
+        except (Exception, KeyError, ValueError, IndexError, OSError) as e:
             print("The following error occurred: %s" %
                   e)
             raise
         try:
             if 'notifications' in appdata:
+                # create unique channels Set for each app
                 channelsSet = Set(appdata['notifications']['channels'])
+                if (len(self.config_channels) != 0):
+                    channelsSet = channelsSet.union(self.config_channels)
+                # create unique environment Set for each app
                 envSet = Set(appdata['notifications']['envs'])
+                if (len(self.config_channels) != 0):
+                    envSet = envSet.union(self.config_envs)
+                # create unique commands Set for each app
                 commandsSet = Set(appdata['notifications']['commands'])
+                if (len(self.config_commands) != 0):
+                    commandsSet = commandsSet.union(self.config_commands)
                 # to handle no tag at all
                 if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
                     return
