@@ -82,7 +82,7 @@ class WebHook:
 
     def areBasicKeysAvailableInConfig(self, config):
         tempList = config['notifications'].keys()
-        if 'channels'not in tempList:
+        if 'channels' not in tempList:
             return False  # if no channel is available nothing can be done
         if 'envs' not in tempList:
             self.config_envs = ['dev', 'production', 'staging', 'local']
