@@ -144,7 +144,6 @@ class WebHook:
                   e)
             raise
         try:
-            #import pdb; pdb.set_trace()
             if 'notifications' in appdata:
                 channelsSet = Set(appdata['notifications']['channels'])
                 if (len(self.config_channels) != 0):
@@ -182,7 +181,6 @@ class WebHook:
 
     def postToSlack(self, action, envSet, commandsSet, channelsSet):
         """ Prepares post to slack channel
-        
         Keyword arguments:
         action -- action extracted from hookname_input_metric
         envSet -- set of accepted environment
