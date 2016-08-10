@@ -91,7 +91,7 @@ class Slack:
         if not self.disabled:
             self.client.api_call(self.method, channel=self.channel,
                                  username=self.username, icon_emoji=self.emoji, text=text)
-            print ("This message posting to slack channel is being depricated! Switch to latest implementation")
+            print ("Your current configuration for slack notifications is deprecated! Please switch to latest configuration.")
 
 
 # Author: cwhitten
