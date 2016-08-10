@@ -24,6 +24,11 @@ class WebHook:
         self.config_commands = []
 
     def webhookSetting(self):
+        """
+        Prepares webhook setting from roger-mesos-tools.config file
+        File should have all the required variables otherwise it exits
+        with a warning message
+        """
         try:
             self.config_dir = self.settingObj.getConfigDir()
             roger_env = self.appconfigObj.getRogerEnv(self.config_dir)
@@ -49,6 +54,13 @@ class WebHook:
             return  # disabled flag remains False
 
     def custom_api_call(self, text, channel):
+        """ Makes the webhook call
+        Keyword arguments:
+        text -- message to be posted
+        channel -- to which channel
+
+        posts a message if rogeros - bot is present
+        """
         try:
             self.webhookSetting()
             if len(channel) == 0:
@@ -68,11 +80,14 @@ class WebHook:
                   e)
             raise
 
-    def invoke_webhook(self, appdata, hook_input_metric, config_file):
-        envSet = []
-        commandsSet = []
-        self.function_execution_start_time = datetime.now()
-        self.webhookSetting()
+    def configLevelSettings(self, config_file):
+        """ Prepares all the config_level settings as variables
+
+        Keyword arguments:
+        config_file -- This is the file name passed as argument
+        return three sets of channels, envs and commands.
+        self variable as config level variable not expected to change for the run
+        """
         if (not self.configLoadFlag):
             self.config = self.appconfigObj.getConfig(self.config_dir, config_file)
             self.configLoadFlag = True
@@ -87,6 +102,20 @@ class WebHook:
                 print("The following error occurred: %s" %
                       e)
                 raise
+
+    def invoke_webhook(self, appdata, hook_input_metric, config_file):
+        """ Pepares set and posts to slack channel
+
+        Keyword arguments:
+        appdata -- this is value related to an app
+        hook_input_metric -- value it  gets from hook class per app
+        config_file -- the file name under for the app deployment
+        """
+        envSet = []
+        commandsSet = []
+        self.function_execution_start_time = datetime.now()
+        self.webhookSetting()
+        self.configLevelSettings(config_file)
         try:
             self.action = self.app_name = self.envr = self.user = ''
             temp = hook_input_metric.split(',')
@@ -115,6 +144,7 @@ class WebHook:
                   e)
             raise
         try:
+            #import pdb; pdb.set_trace()
             if 'notifications' in appdata:
                 channelsSet = Set(appdata['notifications']['channels'])
                 if (len(self.config_channels) != 0):
@@ -151,6 +181,14 @@ class WebHook:
             raise
 
     def postToSlack(self, action, envSet, commandsSet, channelsSet):
+        """ Prepares post to slack channel
+        
+        Keyword arguments:
+        action -- action extracted from hookname_input_metric
+        envSet -- set of accepted environment
+        commandsSet -- set of accepted commandssets
+        channelsSet -- set of accepted channelsets
+        """
         try:
             if ('post' in action and self.envr in envSet and action.split('_')[1] in commandsSet):
                 for channel in channelsSet:
@@ -167,6 +205,11 @@ class WebHook:
             raise
 
     def makeTimeReadable(self, ms):
+        """ Make time readable
+
+        Keyword arguments:
+        ms -- time in miliseconds
+        """
         s = ms / 1000
         m, s = divmod(s, 60)
         h, m = divmod(m, 60)
@@ -175,10 +218,10 @@ class WebHook:
     def createMesage(self, h, m, s, ms):
         message = ''
         if int(h) > 0:
-            message += str(int(h)) + ":hour "
+            message += str(int(h)) + "h "
         if int(m) > 0:
-            message += str(int(m)) + ":mins "
+            message += str(int(m)) + "m "
         if int(s) > 0:
-            message += str(int(s)) + ":sec "
-        message += str(ms) + ":miliseconds "
+            message += str(int(s)) + "s "
+        message += str(ms) + "ms "
         return message
