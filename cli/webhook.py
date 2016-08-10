@@ -80,6 +80,25 @@ class WebHook:
                   e)
             raise
 
+    def areBasicKeysAvailableInConfig(self, config):
+        tempList = config['notifications'].keys()
+        if not 'channels' in tempList:
+            return  False#if no channel is available nothing can be done
+        if not 'envs' in tempList:
+            self.config_envs = ['dev', 'production', 'staging', 'local']
+        if not 'commands' in tempList:
+            self.config_commands = ['pull', 'build', 'push']
+        return True
+
+    def areBasicKeysAvailableInAppdata(self, appdata):
+        tempList = appdata.keys()
+        if not 'notifications' in tempList:
+            return False
+        appKeys = appdata['notifications'].keys()
+        if not 'channels' in appKeys:
+            return False
+        return True
+
     def configLevelSettings(self, config_file):
         """ Prepares all the config_level settings as variables
 
@@ -91,10 +110,14 @@ class WebHook:
         if (not self.configLoadFlag):
             self.config = self.appconfigObj.getConfig(self.config_dir, config_file)
             self.configLoadFlag = True
+            if(not self.areBasicKeysAvailableInConfig(self.config)):
+                return
             try:
                 self.config_channels = Set(self.config['notifications']['channels'])
-                self.config_envs = Set(self.config['notifications']['envs'])
-                self.config_commands = Set(self.config['notifications']['commands'])
+                if 'envs' in self.config['notifications'].keys():
+                    self.config_envs = Set(self.config['notifications']['envs'])
+                if 'commands' in self.config['notifications'].keys():
+                    self.config_commands = Set(self.config['notifications']['commands'])
                 if (len(self.config_channels) == 0 or len(self.config_envs) == 0 or len(self.config_commands) == 0):
                     return
             except (Exception, KeyError, ValueError) as e:
@@ -144,14 +167,22 @@ class WebHook:
                   e)
             raise
         try:
+
+            if(not self.areBasicKeysAvailableInAppdata(appdata)):
+                return
             if 'notifications' in appdata:
                 channelsSet = Set(appdata['notifications']['channels'])
+                # to handle if tag is there but no data is present
                 if (len(self.config_channels) != 0):
                     channelsSet = channelsSet.union(self.config_channels)
-                envSet = Set(appdata['notifications']['envs'])
-                if (len(self.config_channels) != 0):
+                # to handle if tag is there
+                if 'envs' in appdata['notifications'].keys():
+                    envSet = Set(appdata['notifications']['envs'])
+                # to handle if tag is there but data is not there
+                if (len(self.config_envs) != 0):
                     envSet = envSet.union(self.config_envs)
-                commandsSet = Set(appdata['notifications']['commands'])
+                if 'commands' in appdata['notifications'].keys():
+                    commandsSet = Set(appdata['notifications']['commands'])
                 if (len(self.config_commands) != 0):
                     commandsSet = commandsSet.union(self.config_commands)
                 if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
