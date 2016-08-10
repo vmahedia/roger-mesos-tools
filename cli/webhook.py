@@ -49,21 +49,29 @@ class WebHook:
             return  # disabled flag remains False
 
     def custom_api_call(self, text, channel):
-        self.webhookSetting()
-        if len(channel) == 0:
-            channel = self.defChannel
-        var = self.sc.api_call("channels.list")
-        length = len(var['channels'])
-        for iterator in range(0, length):
-            # getting rid of # for comparison
-            if channel[1:] == var['channels'][iterator]['name']:
-                if self.botid in var['channels'][iterator]['members']:
-                    if not self.disabled:
-                        self.client.notify(channel=channel, username=self.username,
-                                           icon_emoji=self.emoji, text=text)
+        try:
+            self.webhookSetting()
+            if len(channel) == 0:
+                channel = self.defChannel
+            var = self.sc.api_call("channels.list")
+            length = len(var['channels'])
+            for iterator in range(0, length):
+                # getting rid of # for comparison
+                if channel[1:] == var['channels'][iterator]['name']:
+                    if self.botid in var['channels'][iterator]['members']:
+                        if not self.disabled:
+                            self.client.notify(channel=channel, username=self.username,
+                                               icon_emoji=self.emoji, text=text)
+        except (Exception) as e:
+            # notify to channel and log it as well
+            print("The following error occurred: %s" %
+                  e)
+            raise
 
     def invoke_webhook(self, appdata, hook_input_metric, config_file):
-        function_execution_start_time = datetime.now()
+        envSet = []
+        commandsSet = []
+        self.function_execution_start_time = datetime.now()
         self.webhookSetting()
         if (not self.configLoadFlag):
             self.config = self.appconfigObj.getConfig(self.config_dir, config_file)
@@ -79,73 +87,98 @@ class WebHook:
                 print("The following error occurred: %s" %
                       e)
                 raise
-
         try:
-            action = app_name = envr = user = ''
+            self.action = self.app_name = self.envr = self.user = ''
             temp = hook_input_metric.split(',')
             for var in temp:
                 varAnother = var.split('=')[0]
                 if varAnother == 'event':
-                    action = var.split('=')[1]
+                    self.action = var.split('=')[1]
                     continue
 
                 if varAnother == 'app_name':
-                    app_name = var.split('=')[1]
+                    self.app_name = var.split('=')[1]
                     continue
 
                 if varAnother == 'env':
-                    envr = var.split('=')[1]
+                    self.envr = var.split('=')[1]
                     continue
 
                 if varAnother == 'user':
-                    user = var.split('=')[1]
+                    self.user = var.split('=')[1]
                     continue
-            if len(action) == 0 or len(app_name) == 0 or len(envr) == 0 or len(user) == 0:
+            if len(self.action) == 0 or len(self.app_name) == 0 or len(self.envr) == 0 or len(self.user) == 0:
                 raise ValueError
 
-        except (Exception, KeyError, ValueError, IndexError, OSError) as e:
+        except (Exception, KeyError, ValueError, IndexError) as e:
             print("The following error occurred: %s" %
                   e)
             raise
         try:
             if 'notifications' in appdata:
-                # create unique channels Set for each app
                 channelsSet = Set(appdata['notifications']['channels'])
                 if (len(self.config_channels) != 0):
                     channelsSet = channelsSet.union(self.config_channels)
-                # create unique environment Set for each app
                 envSet = Set(appdata['notifications']['envs'])
                 if (len(self.config_channels) != 0):
                     envSet = envSet.union(self.config_envs)
-                # create unique commands Set for each app
                 commandsSet = Set(appdata['notifications']['commands'])
                 if (len(self.config_commands) != 0):
                     commandsSet = commandsSet.union(self.config_commands)
-                # to handle no tag at all
                 if (len(channelsSet) == 0 or len(envSet) == 0 or len(commandsSet) == 0):
                     return
             else:
+                if list(self.config_envs)[0] == 'all':
+                    self.config_envs = ['dev', 'production', 'staging', 'local']
+                if list(self.config_commands)[0] == 'all':
+                    self.config_commands = ['pull', 'build', 'push']
+                self.postToSlack(self.action, self.config_envs, self.config_commands, self.config_channels)
                 return
-            # to handle all tag for env and commands
             if list(envSet)[0] == 'all':
                 envSet = ['dev', 'production', 'staging', 'local']
-
             if list(commandsSet)[0] == 'all':
                 commandsSet = ['pull', 'build', 'push']
         except (Exception, KeyError, ValueError) as e:
-            # notify to channel and log it as well
             print("The following error occurred: %s" %
                   e)
             raise
         try:
-            if ('post' in action and envr in envSet and action.split('_')[1] in commandsSet):
+            self.postToSlack(self.action, envSet, commandsSet, channelsSet)
+        except (Exception) as e:
+            self.custom_api_call("The following error occurred: %s" % e, self.defChannel)
+            print("The following error occurred: %s" %
+                  e)
+            raise
+
+    def postToSlack(self, action, envSet, commandsSet, channelsSet):
+        try:
+            if ('post' in action and self.envr in envSet and action.split('_')[1] in commandsSet):
                 for channel in channelsSet:
-                    timeElapsed = '{0:.2f}'.format((datetime.now() - function_execution_start_time).total_seconds() * 1000)
-                    unit = 'miliseconds'
-                    slackMessage = ("Completed *" + action.split('_')[1] + "* of *" + app_name + "* on *" + envr + "* in *" + str(timeElapsed) + "* " + unit + " (triggered by *" + user + "*)")
+                    timeElapsed = '{0:.2f}'.format((datetime.now() - self.function_execution_start_time).total_seconds() * 1000)
+                    timeasInt = float(timeElapsed)
+                    h, m, s, ms = self.makeTimeReadable(timeasInt)
+                    readableTime = self.createMesage(h, m, s, ms)
+                    slackMessage = ("Completed *" + action.split('_')[1] + "* of *" + self.app_name + "* on *" + self.envr + "* in *" + readableTime + "*  (triggered by *" + self.user + "*)")
                     self.custom_api_call(slackMessage, '#' + channel)
         except (Exception) as e:
             self.custom_api_call("The following error occurred: %s" % e, self.defChannel)
             print("The following error occurred: %s" %
                   e)
             raise
+
+    def makeTimeReadable(self, ms):
+        s = ms / 1000
+        m, s = divmod(s, 60)
+        h, m = divmod(m, 60)
+        return h, m, s, ms
+
+    def createMesage(self, h, m, s, ms):
+        message = ''
+        if int(h) > 0:
+            message += str(int(h)) + ":hour "
+        if int(m) > 0:
+            message += str(int(m)) + ":mins "
+        if int(s) > 0:
+            message += str(int(s)) + ":sec "
+        message += str(ms) + ":miliseconds "
+        return message

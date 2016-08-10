@@ -65,8 +65,6 @@ class Slack:
         try:
             from slackclient import SlackClient
         except:
-            print(
-                "Warning: SlackClient library not found, not using slack\n", file=sys.stderr)
             return
 
         try:
@@ -85,8 +83,6 @@ class Slack:
             slack_token = ''.join(r).strip()
             self.client = SlackClient(slack_token)
         except IOError:
-            print("Warning: slack token file %s not found/readable. Not using slack.\n" %
-                  token_file, file=sys.stderr)
             return
 
         self.disabled = False
@@ -95,6 +91,7 @@ class Slack:
         if not self.disabled:
             self.client.api_call(self.method, channel=self.channel,
                                  username=self.username, icon_emoji=self.emoji, text=text)
+            print ("This message posting to slack channel is being depricated! Switch to latest implementation")
 
 
 # Author: cwhitten
