@@ -51,8 +51,6 @@ GIT_ACCOUNT = "seomoz"
 
 
 def download_private_repos(projects, update_id=None):
-    if type(projects) == str:
-        projects = projects.split(',')
     '''Clone (or pull if already existing) private projects to the "git" subdirectory.
   Takes an optional "update_id" (can be a very long string like a Gemfile) that we save
   to the subdirectory. Only pulls from the subrepos if this has changed.'''
