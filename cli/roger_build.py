@@ -81,8 +81,7 @@ class RogerBuild(object):
             else:
                 repo = data.get('repo', args.app_name)
 
-            projects = data.get('privateProjects', ['none'])
-            projects = ','.join(projects)
+            projects = data.get('privateProjects', [])
             docker_path = data.get('path', 'none')
 
             # get/update target source(s)
