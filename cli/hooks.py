@@ -26,13 +26,14 @@ class Hooks:
         self.utils = Utils()
         self.whobj = WebHook()
         self.statsd_message_list = []
+        self.config_file = ""
 
     def run_hook(self, hookname, appdata, path, hook_input_metric):
         try:
             exit_code = 0
             function_execution_start_time = datetime.now()
             execution_result = 'SUCCESS'
-            self.whobj.invoke_webhook(appdata, hook_input_metric)
+            self.whobj.invoke_webhook(appdata, hook_input_metric, self.config_file)
             abs_path = os.path.abspath(path)
             if "hooks" in appdata and hookname in appdata["hooks"]:
                 command = appdata["hooks"][hookname]

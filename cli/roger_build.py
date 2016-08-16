@@ -64,6 +64,7 @@ class RogerBuild(object):
             config_dir = settingObj.getConfigDir()
             root = settingObj.getCliDir()
             config = appObj.getConfig(config_dir, args.config_file)
+            hooksObj.config_file = args.config_file
             roger_env = appObj.getRogerEnv(config_dir)
             config_name = ""
             if 'name' in config:

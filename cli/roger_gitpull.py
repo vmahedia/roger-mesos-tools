@@ -62,6 +62,7 @@ class RogerGitPull(object):
             appObj = appConfig
             gitObj = gitObject
             config_dir = settingObj.getConfigDir()
+            hooksObj.config_file = args.config_file
             config = appObj.getConfig(config_dir, args.config_file)
             config_name = ""
             if 'name' in config:

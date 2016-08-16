@@ -26,7 +26,7 @@ class TestHooks(unittest.TestCase):
 
     def test_run_hook_returns_zero_when_hook_succeeds(self):
 
-        when(self.hooks.whobj).invoke_webhook(any(), any()).thenReturn()
+        when(self.hooks.whobj).invoke_webhook(any(), any(), any()).thenReturn()
         sc = mock(StatsClient)
         when(sc).timing(any(), any()).thenReturn(any())
         when(self.hooks.utils).getStatsClient().thenReturn(sc)
@@ -35,7 +35,7 @@ class TestHooks(unittest.TestCase):
 
     def test_run_hook_returns_non_zero_when_hook_fails(self):
 
-        when(self.hooks.whobj).invoke_webhook(any(), any()).thenReturn()
+        when(self.hooks.whobj).invoke_webhook(any(), any(), any()).thenReturn()
         sc = mock(StatsClient)
         when(sc).timing(any(), any()).thenReturn(any())
         when(self.hooks.utils).getStatsClient().thenReturn(sc)
@@ -45,7 +45,7 @@ class TestHooks(unittest.TestCase):
 
     def test_run_hook_returns_zero_when_hook_is_absent(self):
 
-        when(self.hooks.whobj).invoke_webhook(any(), any()).thenReturn()
+        when(self.hooks.whobj).invoke_webhook(any(), any(), any()).thenReturn()
         sc = mock(StatsClient)
         when(sc).timing(any(), any()).thenReturn(any())
         when(self.hooks.utils).getStatsClient().thenReturn(sc)
@@ -55,7 +55,7 @@ class TestHooks(unittest.TestCase):
 
     def test_run_hook_preserves_current_directory(self):
 
-        when(self.hooks.whobj).invoke_webhook(any(), any()).thenReturn()
+        when(self.hooks.whobj).invoke_webhook(any(), any(), any()).thenReturn()
         sc = mock(StatsClient)
         when(sc).timing(any(), any()).thenReturn(any())
         when(self.hooks.utils).getStatsClient().thenReturn(sc)

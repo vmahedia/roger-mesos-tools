@@ -178,6 +178,7 @@ class RogerPush(object):
             appObj = appConfig
             frameworkUtils = frameworkObject
             config_dir = settingObj.getConfigDir()
+            hooksObj.config_file = args.config_file
             cur_file_path = os.path.dirname(os.path.realpath(__file__))
             config = appObj.getConfig(config_dir, args.config_file)
             config_name = ""
