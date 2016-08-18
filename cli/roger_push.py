@@ -395,7 +395,7 @@ class RogerPush(object):
 
                         if container_name in failed_container_dict:
                             print("Failed push to {} framework for container {} as unresolved Jinja variables present in template.".format(
-                                framework, container))
+                                framework, container_name))
                         else:
                             config_file_path = "{0}/{1}/{2}".format(
                                 comp_dir, environment, containerConfig)
