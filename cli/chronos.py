@@ -47,7 +47,12 @@ class Chronos(Framework):
                                 'Content-type': 'application/json'}, auth=(self.user, self.passw))
         chronos_message = "{}".format(resp)
         print(chronos_message)
-        return resp
+        task_id = []
+        body = json.loads(data)
+        if 'name' in body:
+            task_id.append(body['name'])
+
+        return resp, task_id
 
     def runDeploymentChecks(self, file_path, environment):
         print("No deployment checks for Chronos")
