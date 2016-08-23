@@ -68,7 +68,7 @@ setup(
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=find_packages(),
-    tests_require=['pytest>=2.5.1', 'mock>=1.3.0', 'mockito>=0.5.2'],
+    tests_require=['pytest>=2.5.1', 'mock>=1.0.1', 'mockito>=0.5.2'],
     cmdclass={'test': PyTest},
     # Including test_suite to executable
     test_suite="tests",
