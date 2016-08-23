@@ -68,7 +68,7 @@ setup(
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=find_packages(),
-    tests_require=['pytest'],
+    tests_require=['pytest>=2.5.1', 'mock>=1.0.1', 'mockito>=0.5.2'],
     cmdclass={'test': PyTest},
     # Including test_suite to executable
     test_suite="tests",
@@ -77,8 +77,8 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['argparse', 'setuptools', 'requests', 'pyyaml',
-        'mock', 'mockito', 'tabulate', 'slackclient', 'Jinja2', 'statsd', 'slackweb'],
+    install_requires=['argparse', 'setuptools', 'requests>=2.11.1', 'pyyaml',
+        'tabulate>=0.7.5', 'slackclient>=1.0.0', 'Jinja2>=2.8', 'statsd>=3.2.1', 'slackweb>=1.0.5'],
 
     # Include the folders listed in the MANIFEST.in file as a part of the
     # package
