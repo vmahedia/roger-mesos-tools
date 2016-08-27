@@ -44,7 +44,7 @@ class TestPush(unittest.TestCase):
         self.configs_dir = self.base_dir + "/tests/configs"
         self.components_dir = self.base_dir + '/tests/components/dev'
 
-        config = {u'repo': u'roger', u'notifications': {u'username': u'Roger Deploy', u'method': u'chat.postMessage', u'channel': u'Channel ID', u'emoji': u':rocket:'},
+        config = {u'repo': u'roger', u'act-as': u'test', u'notifications': {u'username': u'Roger Deploy', u'method': u'chat.postMessage', u'channel': u'Channel ID', u'emoji': u':rocket:'},
                   u'apps': {u'test_app': {u'imageBase': u'test_app_base', u'name': u'test_app', u'containers': [u'container_name1', u'container_name2']},
                             u'test_app1': {u'vars': {u'global': {u'env_value1': u'12', u'env_value2': u'16'}, u'environment': {u'test': {u'env_value1': u'20', u'env_value2': u'24'}}}, u'framework': u'chronos', u'name': u'test_app1', u'containers': [u'container_name1', u'container_name2'], u'imageBase': u'test_app_base'},
                             u'grafana_test_app': {u'imageBase': u'test_app_base', u'name': u'test_app_grafana', u'containers': [u'grafana', {u'grafana1': {u'vars': {u'environment': {u'prod': {u'mem': u'2048', u'cpus': u'2'}, u'dev': {u'mem': u'512', u'cpus': u'0.5'}, u'test': {u'env_value1': u'64', u'env_value2': u'128'}}, u'global': {u'mem': u'128', u'cpus': u'0.1', u'env_value1': u'30', u'env_value2': u'54'}}}}, {u'grafana2': {u'vars': {u'environment': {u'prod': {u'mem': u'2048', u'cpus': u'2'}, u'dev': {u'mem': u'1024', u'cpus': u'1'}}, u'global': {u'mem': u'128', u'cpus': u'0.1'}}}}]}}, u'name': u'test-app',
@@ -150,7 +150,7 @@ class TestPush(unittest.TestCase):
         when(roger_push.utils).getStatsClient().thenReturn(sc)
         when(roger_push.utils).get_identifier(any(), any(), any()).thenReturn(any())
         when(roger_push.utils).extract_app_name(any()).thenReturn("test")
-        when(marathon).put(any(), any(), any()).thenReturn("Response [200]")
+        when(marathon).put(any(), any(), any()).thenReturn("Response [200]", any())
         frameworkUtils = mock(FrameworkUtils)
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
         when(marathon).getName().thenReturn('Marathon')
@@ -685,7 +685,7 @@ class TestPush(unittest.TestCase):
         data = self.data
         when(marathon).getName().thenReturn('Marathon')
         when(marathon).put(any(), any(), any(),
-                           any()).thenReturn(["Response [200]", any()])
+                           any(), any()).thenReturn(["Response [200]", any()])
         when(marathon).runDeploymentChecks(any(), any()).thenReturn(True)
         frameworkUtils = mock(FrameworkUtils)
         frameworkUtils = mock(FrameworkUtils)
@@ -795,7 +795,7 @@ class TestPush(unittest.TestCase):
         when(frameworkUtils).getFramework(data).thenReturn(marathon)
         when(marathon).getName().thenReturn('Marathon')
         when(marathon).put(any(), any(), any(),
-                           any()).thenReturn(["Response [200]", any()])
+                           any(), any()).thenReturn(["Response [200]", any()])
         when(marathon).runDeploymentChecks(any(), any()).thenReturn(True)
         when(settings).getComponentsDir().thenReturn(
             self.base_dir + "/tests/components")
