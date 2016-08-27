@@ -28,7 +28,7 @@ class Framework(object):
         pass
 
     @abstractmethod
-    def put(self, file_path, environmentObj, container, environment):
+    def put(self, file_path, environmentObj, container, environment, act_as_user):
         pass
 
     @abstractmethod

@@ -26,7 +26,7 @@ class Chronos(Framework):
         resp = requests.get(url, auth=(self.user, self.passw))
         return resp.json()
 
-    def put(self, file_path, environmentObj, container, environment):
+    def put(self, file_path, environmentObj, container, environment, act_as_user):
         self.fetchUserPass(environment)
         data = open(file_path).read()
         chronos_resource = "scheduler/iso8601"
@@ -39,12 +39,12 @@ class Chronos(Framework):
         endpoint = environmentObj['chronos_endpoint']
         deploy_url = "{}/{}".format(endpoint, chronos_resource)
 
-        if hasattr(self, "act_as_user"):
-            resp = requests.put(deploy_url, data=data, headers={
-                                'Content-type': 'application/json', 'act-as-user': self.act_as_user}, auth=(self.user, self.passw))
-        else:
+        if not act_as_user:
             resp = requests.put(deploy_url, data=data, headers={
                                 'Content-type': 'application/json'}, auth=(self.user, self.passw))
+        else:
+            resp = requests.put(deploy_url, data=data, headers={
+                                'Content-type': 'application/json', 'act-as-user': act_as_user}, auth=(self.user, self.passw))
         chronos_message = "{}".format(resp)
         print(chronos_message)
         task_id = []
