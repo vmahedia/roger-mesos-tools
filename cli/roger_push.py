@@ -182,8 +182,11 @@ class RogerPush(object):
             cur_file_path = os.path.dirname(os.path.realpath(__file__))
             config = appObj.getConfig(config_dir, args.config_file)
             config_name = ""
+            act_as_user = ""
             if 'name' in config:
                 config_name = config['name']
+            if 'act-as' in config:
+                act_as_user = config['act-as']
             roger_env = appObj.getRogerEnv(config_dir)
 
             if not hasattr(args, "app_name"):
@@ -405,7 +408,7 @@ class RogerPush(object):
 
                             if args.force_push or result is True:
                                 resp, task_id = frameworkObj.put(
-                                    config_file_path, environmentObj, container_name, environment)
+                                    config_file_path, environmentObj, container_name, environment, act_as_user)
 
                                 container_task_id = self.utils.modify_task_id(task_id)
                                 self.task_id.extend(container_task_id)
