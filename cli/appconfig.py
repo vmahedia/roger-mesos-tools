@@ -1,5 +1,19 @@
 #!/usr/bin/python
 
+"""
+Notes for later
+* Class doesn't carry state
+  * Either make the method class methods or remove the class all together
+* Snake care preferred over camel case for method names
+* Best to pass the format method to strings earlier than later
+* Better to return None than empty string
+* Better to pass in objects instead of instantiating them within the method
+  definition. If you don't do this, it makes it hard to unit test. You can do
+  this in the class constructor or as a method parameter.
+* Keep strings length under 80 characters.
+
+"""
+
 from __future__ import print_function
 import os
 import os.path

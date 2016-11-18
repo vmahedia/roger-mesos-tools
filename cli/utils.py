@@ -1,5 +1,12 @@
 #!/usr/bin/python
 
+"""
+Notes for Later:
+* Better to return None rather than empty string or "special" string
+* Return None or raise an exception if data passed in is not what you expect
+* Prefer snake case for method names
+"""
+
 from __future__ import print_function
 import os
 import sys
@@ -18,6 +25,16 @@ class Utils:
         self.task_id_value = None
 
     def roger_version(self, root_dir):
+        """
+        Return the version
+
+        root_dir [String] The root directory !Unclear!
+        return   [String] Version of the tool
+
+        Attempt to retrieve the package version from a
+        pkg_resources.Distribution object. Otherwise, check for version in a
+        VERSION file in the root directory.
+        """
         version = "Unknown!"
         try:
             version = get_distribution('roger_mesos_tools').version
@@ -31,6 +48,16 @@ class Utils:
     # Expected format:
     #   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
     def extractFullShaAndVersion(self, image):
+        """
+        Return the sha and version
+
+        image  [String] The desired image
+        return [String] sha and version
+
+        If the string is "delimited" by hyphens, then return the last part of
+        the string containing the sha and version. Otherwise, return an empty
+        string.
+        """
         if '-' not in image:
             return ''
         tokens = image.split('-')
@@ -42,6 +69,16 @@ class Utils:
     # Expected format:
     #   moz-content-kairos-7da406eb9e8937875e0548ae1149/v0.46
     def extractShaFromImage(self, image):
+        """
+        Return the sha from the image
+
+        image  [String]: the desired image
+        return [String]: The sha
+
+        If the string is "delimited" by hyphens and contains `/v`, then split on
+        `/v` and store result. Split the first member of the stored value by
+        hyphen and return the last member of the result.
+        """
         if '/v' not in image:
             return ''
         sha = image.split('/v')

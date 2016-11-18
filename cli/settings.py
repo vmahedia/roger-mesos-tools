@@ -1,5 +1,15 @@
 #!/usr/bin/python
 
+"""
+Notes for later:
+* Class carries no state. Make the methods class methods, or remove the class
+  entirely.
+* Duplicate effor with returning values from environment variables. This can be
+  further simplified with os.getenv, as it returns None if not set. You can
+  optionally pass a default value.
+* Snake case prefered for method names
+"""
+
 from __future__ import print_function
 import os
 import sys
