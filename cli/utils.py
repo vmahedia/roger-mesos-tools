@@ -5,6 +5,11 @@ Notes for Later:
 * Better to return None rather than empty string or "special" string
 * Return None or raise an exception if data passed in is not what you expect
 * Prefer snake case for method names
+* Better to pass in objects in the class constructor or method parameters rather
+  than instantiate within the method. Harder to unit test if we don't.
+* task_id_value ivar does not appear to be used within the class
+* Keep line character length under 80
+* generate_task_id_list nested too deep
 """
 
 from __future__ import print_function
@@ -77,7 +82,8 @@ class Utils:
 
         If the string is "delimited" by hyphens and contains `/v`, then split on
         `/v` and store result. Split the first member of the stored value by
-        hyphen and return the last member of the result.
+        hyphen and return the last member of the result. Otherwise, return an
+        empty string
         """
         if '/v' not in image:
             return ''
@@ -89,6 +95,14 @@ class Utils:
         return ''
 
     def getStatsClient(self):
+        """
+        Return an instance of statsd.StatsClient
+
+        return [statsd.StatsClient]
+
+        The statsd.StatsClient passes in the statsd_url and statsd_port
+        retrieved from the roger_env.
+        """
         settingObj = Settings()
         appObj = AppConfig()
         config_dir = settingObj.getConfigDir()
@@ -102,10 +116,23 @@ class Utils:
         return statsd.StatsClient(statsd_url, statsd_port)
 
     def get_identifier(self, config_name, user_name, app_name):
+        """
+        Generate an identifier based on the config_name, user_name and app_name
+
+        config_name: [String] !Unclear!
+        user_name:   [String] The desired user
+        app_name:    [String] The desired application
+        """
         hash_value = str(int(time.time())) + "-" + str(hashlib.sha224(config_name + "-" + user_name + "-" + app_name).hexdigest())[:8]
         return hash_value
 
     def extract_app_name(self, value):
+        """
+        !Outside of the method name, it is unclear what is actually happening
+        aside from some string manipulation!
+
+        value [String]: !Unclear!
+        """
         if ':' in value:
             return value.split(":")[0]
         if '[' in value:
@@ -113,6 +140,16 @@ class Utils:
         return value
 
     def append_arguments(self, statsd_message_list, **kwargs):
+        """
+        statsd_message_list [?] Assumed to be a list of list of strings. !Unclear!
+
+        For each item in statsd_message_list, store the input metric as the
+        first member of said item and append the a comma separated string of
+        key=value. Lastly, generate a tuple, with the first member being the
+        aforementioned string and the second value being the second member of the
+        item under iteration. Append said tupple to modified_message_list and
+        return it. Raise an exception if something goes wrong.
+        """
         modified_message_list = []
         try:
             for item in statsd_message_list:
@@ -127,6 +164,15 @@ class Utils:
         return modified_message_list
 
     def modify_task_id(self, task_id_list):
+        """
+        Return a list of modified task ids
+
+        task_id_list: !Unclear!
+
+        For each task_id in the task_id_list, remove the first member in task_id
+        if it contains a `/` and replace `/` with `_`. Append the result to the
+        modified list and return it. Raise an exception if something goes wrong.
+        """
         modified_task_id_list = []
         try:
             for task_id in task_id_list:
@@ -140,6 +186,11 @@ class Utils:
         return modified_task_id_list
 
     def generate_task_id_list(self, data):
+        """
+        Generates a list of task_ids based on data
+
+        data [?] !Unclear!
+        """
         task_id_list = []
         try:
             data_json = json.loads(data)
@@ -171,6 +222,10 @@ class Utils:
         return task_id_list
 
     def get_version(self):
+        """
+        Does the same thing as roger_version, but doesn't bother with the
+        pkg_resources.Distribution object.
+        """
         own_dir = os.path.dirname(os.path.realpath(__file__))
         root = os.path.abspath(os.path.join(own_dir, os.pardir))
         return self.roger_version(root)
