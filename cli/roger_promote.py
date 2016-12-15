@@ -106,7 +106,7 @@ class RogerPromote(object):
         shutil.rmtree(self._temp_dir)
 
         if ret_val != 0:
-            print("Roger failed to push {} to {}".format(
+            print("Roger failed during push of {} to {}".format(
                 args.app_name, args.to_env
             ))
             return False
