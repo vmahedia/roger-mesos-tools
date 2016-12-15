@@ -40,11 +40,13 @@ class RogerPromote(object):
     """
     Enable application promotion between environments
 
-    :params:
-    :app_config [cli.appconfig.AppConfig]:
-    :settings [cli.settings.Settings]:
+    :Params:
+    :app_config [cli.appconfig.AppConfig]: Default: cli.appconfig.AppConfig
+    :settings [cli.settings.Settings]: Default: cli.settings.Settings
     :framework_utils [cli.framework_utils.FrameworkUtils]:
+        Default: cli.framework_utils.FrameworkUtils
     :framework [cli.framework.Framework]: Subclass of Framework
+        Default: cli.marathon.Marathon
     """
 
     def __init__(
