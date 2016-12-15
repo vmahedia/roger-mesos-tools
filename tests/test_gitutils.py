@@ -16,7 +16,7 @@ import pytest
 # Test basic functionalities of roger-init script
 
 
-@pytest.skip
+@pytest.mark.skip
 class TestInit(unittest.TestCase):
 
     def setUp(self):
