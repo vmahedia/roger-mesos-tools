@@ -18,6 +18,7 @@ RogerPromoteError: Generic exception for errors in RogerPromote
 # stdlib
 import argparse
 import tempfile
+import os
 import os.path
 import shutil
 import sys
