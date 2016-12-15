@@ -128,7 +128,7 @@ class RogerPromote(object):
             description='Enables application promotion between environments'
         )
 
-        env_choices = ['dev', 'stage', 'prod']
+        env_choices = ['local', 'dev', 'stage', 'prod']
 
         parser.add_argument(
             'from_env', choices=env_choices, help='The source environment'
