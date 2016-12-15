@@ -44,6 +44,7 @@ class RogerPromote(object):
     :app_config [cli.appconfig.AppConfig]:
     :settings [cli.settings.Settings]:
     :framework_utils [cli.framework_utils.FrameworkUtils]:
+    :framework [cli.framework.Framework]: Subclass of Framework
     """
 
     def __init__(
@@ -177,8 +178,8 @@ class RogerPromote(object):
 
     def _config_resolver(self, key, application, config_file):
         """
-        Returns the filepath to the repo directory directly below the app repo
-        checkout (e.g. /home/vagrant/[repo_name] - not including repo-name)
+        Returns the value for the desired key within the application's
+        configuration.
 
         :Params:
         :key [str]: The key containing the desired value we wish to return
