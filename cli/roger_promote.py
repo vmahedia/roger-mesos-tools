@@ -4,12 +4,12 @@
 Provides a class and script. See bin/roger.py for a reference of how the script
 is called.
 
-:classes:
+:Classes:
 
 RogerPromote: Provides application promotion between environments for the
 supported Mesos frameworks.
 
-:exceptions:
+:Exceptions:
 
 RogerPromoteError: Generic exception for errors in RogerPromote
 """
@@ -64,7 +64,7 @@ class RogerPromote(object):
     @classmethod
     def promote(cls, instance=None):
         """
-        :params:
+        :Params:
         :instance [roger_promote.RogerPromote]: Avalailable for test
         """
         # Get instance
@@ -128,7 +128,7 @@ class RogerPromote(object):
         parser.add_argument(
             'to_env', choices=env_choices, help='The destination environment'
         )
-        parser.add_argument('config', help='The team config file')
+        parser.add_argument('config', help='The name of the config file')
         parser.add_argument('app_name', help='The name of the application')
 
         return parser
@@ -165,7 +165,7 @@ class RogerPromote(object):
         """
         Returns the image name as a str
 
-        :params:
+        :Params:
         :roger_env [dict]: Data loaded from roger-mesos-tools.config
         :environment [str]: Environment as found in roger-mesos-tools.config
         :application [str]: application as defined in the appropriate yml or
@@ -180,7 +180,7 @@ class RogerPromote(object):
         Returns the filepath to the repo directory directly below the app repo
         checkout (e.g. /home/vagrant/[repo_name] - not including repo-name)
 
-        :params:
+        :Params:
         :key [str]: The key containing the desired value we wish to return
         :application [str]: The application being promoted
         :config_file [str] path to the yml or json file, typically found under
@@ -206,6 +206,9 @@ class RogerPromote(object):
         subprocess.check_call(['git', 'clone', repo_url], cwd=self.temp_dir)
 
     def _roger_push_script(self):
+        """
+        Returns path [str] to the roger_push.py executable
+        """
         code_dir = os.path.abspath(os.path.dirname(__file__))
         return os.path.join(code_dir, 'roger_push.py')
 
