@@ -66,7 +66,12 @@ class RogerPromote(object):
     def promote(cls, instance=None):
         """
         :Params:
-        :instance [roger_promote.RogerPromote]: Avalailable for test
+        :instance [cli.roger_promote.RogerPromote]: Avalailable for test
+
+        :Raises:
+        :cli.roger_utils.RogerPromoteError:
+
+        :Return [bool]: True if successful, False if otherwise
         """
         # Get instance
         if instance:
@@ -138,6 +143,8 @@ class RogerPromote(object):
     def config_dir(self):
         """
         Property that returns the config dir, typically /vagrant/config
+
+        :Return [str]: Path to the configuration directory
         """
         if not self._config_dir:
             self._config_dir = self._settings.getConfigDir()
@@ -148,6 +155,8 @@ class RogerPromote(object):
         """
         Property that returns the dict loaded from
         /vagrant/config/roger-mesos-tools.config
+
+        :Return [dict]: roger-mesos-tools.config loaded into a dict
         """
         if not self._roger_env:
             self._rover_env = self._app_config.getRogerEnv(self.config_dir)
@@ -156,6 +165,10 @@ class RogerPromote(object):
     def _set_framework(self, config_file, app_name):
         """
         Set the _framework instance variable based on the application config
+
+        :Params:
+        :config_file [str]: Name of the configuration file
+        :app_name [str]: Name of the application
         """
         app_data = self.app_config.getAppData(
             self.config_dir, config_file, app_name
@@ -171,6 +184,8 @@ class RogerPromote(object):
         :environment [str]: Environment as found in roger-mesos-tools.config
         :application [str]: application as defined in the appropriate yml or
                             json file under config/
+
+        :Return [str]: image name with version
         """
         return self._framework.getCurrentImageVersion(
             self.roger_env, environment, application
@@ -186,6 +201,8 @@ class RogerPromote(object):
         :application [str]: The application being promoted
         :config_file [str] path to the yml or json file, typically found under
                            /vagrant/config/
+
+        :Return [str]: Returns string if found, otherwise None
         """
         config_data = self._app_config.getConfig(self.config_dir, config_file)
         found = None
@@ -201,6 +218,14 @@ class RogerPromote(object):
     def _clone_repo(self, repo):
         """
         Clone the repo
+
+        :Params:
+        :repo [str] The name of the repo
+
+        :Raises:
+        :subprocess.CalledProcessError:
+
+        :Return: None
         """
         repo_url = self._app_config.getRepoUrl(repo)
         self.temp_dir = tempfile.mkdtemp()
@@ -209,6 +234,8 @@ class RogerPromote(object):
     def _roger_push_script(self):
         """
         Returns path [str] to the roger_push.py executable
+
+        :Return [str]: Path to the script
         """
         code_dir = os.path.abspath(os.path.dirname(__file__))
         return os.path.join(code_dir, 'roger_push.py')
