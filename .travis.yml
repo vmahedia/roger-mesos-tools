@@ -12,4 +12,4 @@ script:
 #        if (( $num_errors > 0 )); then
 #          exit 1;
 #        fi
-    - python setup.py test
+    - py.test -v tests 
