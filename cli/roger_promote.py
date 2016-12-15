@@ -228,8 +228,8 @@ class RogerPromote(object):
         :Return: None
         """
         repo_url = self._app_config.getRepoUrl(repo)
-        self.temp_dir = tempfile.mkdtemp()
-        subprocess.check_call(['git', 'clone', repo_url], cwd=self.temp_dir)
+        self._temp_dir = tempfile.mkdtemp()
+        subprocess.check_call(['git', 'clone', repo_url], cwd=self._temp_dir)
 
     def _roger_push_script(self):
         """
