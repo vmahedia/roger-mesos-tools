@@ -1,0 +1,3 @@
+[submodule "roger-mesos"]
+	path = roger-mesos
+	url = git@github.com:seomoz/roger-mesos.git

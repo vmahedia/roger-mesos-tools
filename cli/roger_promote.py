@@ -37,6 +37,7 @@ class RogerPromoteError(Exception):
 
 
 class RogerPromote(object):
+    #what are these for
     """
     Enable application promotion between environments
 
@@ -84,6 +85,8 @@ class RogerPromote(object):
         # Get Namespace obj
         args = rp.arg_parse.parse_args()
 
+
+        
         # Set framework based on app config
         self._set_framework(args.config, args.app_name)
 
