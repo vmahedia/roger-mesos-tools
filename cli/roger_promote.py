@@ -27,7 +27,7 @@ import sys
 # core
 from cli.settings import Settings
 from cli.appconfig import AppConfig
-from cli.framework_utils import FrameworkUtils
+from cli.frameworkUtils import FrameworkUtils
 from cli.marathon import Marathon
 from cli.chronos import Chronos
 
@@ -86,7 +86,7 @@ class RogerPromote(object):
         args = rp.arg_parse.parse_args()
 
 
-        
+
         # Set framework based on app config
         self._set_framework(args.config, args.app_name)
 
