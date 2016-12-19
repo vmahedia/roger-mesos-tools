@@ -86,7 +86,7 @@ class RogerPromote(object):
         args = rp.arg_parse.parse_args()
 
         # Set framework based on app config
-        self._set_framework(args.config, args.app_name)
+        rp._set_framework(args.config, args.app_name)
 
         # Get deployed version in source environment (should be the image name)
         image = rp._image_name(args.from_env, args.app_name)
