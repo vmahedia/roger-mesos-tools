@@ -85,8 +85,6 @@ class RogerPromote(object):
         # Get Namespace obj
         args = rp.arg_parse.parse_args()
 
-
-        
         # Set framework based on app config
         self._set_framework(args.config, args.app_name)
 
@@ -113,7 +111,7 @@ class RogerPromote(object):
         ret_val = os.system(cmd)
 
         # CleanUp
-        shutil.rmtree(self._temp_dir)
+        shutil.rmtree(rp._temp_dir)
 
         if ret_val != 0:
             print("Roger failed during push of {} to {}".format(
