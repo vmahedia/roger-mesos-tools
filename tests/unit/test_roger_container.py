@@ -9,15 +9,15 @@ import yaml
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-from roger_push import RogerPush
-from marathon import Marathon
-from frameworkUtils import FrameworkUtils
-from appconfig import AppConfig
-from settings import Settings
+from cli.roger_push import RogerPush
+from cli.marathon import Marathon
+from cli.frameworkUtils import FrameworkUtils
+from cli.appconfig import AppConfig
+from cli.settings import Settings
 from mockito import mock, when, verify
 from mockito.matchers import any
 from mock import MagicMock
-from hooks import Hooks
+from cli.hooks import Hooks
 from cli.utils import Utils
 from statsd import StatsClient
 

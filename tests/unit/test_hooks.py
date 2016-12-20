@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-from hooks import Hooks
+from cli.hooks import Hooks
 from mockito import mock, when, verify
 from mockito.matchers import any
 from cli.utils import Utils

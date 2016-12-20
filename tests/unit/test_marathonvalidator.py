@@ -6,8 +6,8 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-from marathonvalidator import MarathonValidator
-from haproxyparser import HAProxyParser
+from cli.marathonvalidator import MarathonValidator
+from cli.haproxyparser import HAProxyParser
 from mockito import mock, when
 
 # Test basic functionalities of MarathonValidator class

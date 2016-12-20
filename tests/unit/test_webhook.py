@@ -11,10 +11,10 @@ from mockito import mock, when, verify, verifyZeroInteractions
 from mock import MagicMock
 from slackclient import SlackClient
 from mockito.matchers import any
-from utils import Utils
-from appconfig import AppConfig
-from settings import Settings
-from webhook import WebHook
+from cli.utils import Utils
+from cli.appconfig import AppConfig
+from cli.settings import Settings
+from cli.webhook import WebHook
 # Test basic functionalities of Webhook class
 
 

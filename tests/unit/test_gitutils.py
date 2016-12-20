@@ -8,8 +8,8 @@ import sys
 import shutil
 sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-from settings import Settings
-from gitutils import GitUtils
+from cli.settings import Settings
+from cli.gitutils import GitUtils
 
 import pytest
 

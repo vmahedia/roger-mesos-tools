@@ -11,14 +11,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
 from roger_gitpull import RogerGitPull
 import argparse
-from settings import Settings
-from appconfig import AppConfig
-from hooks import Hooks
+from cli.settings import Settings
+from cli.appconfig import AppConfig
+from cli.hooks import Hooks
 from mockito import mock, when, verify
 from mockito.matchers import any
-from marathon import Marathon
-from gitutils import GitUtils
-from frameworkUtils import FrameworkUtils
+from cli.marathon import Marathon
+from cli.gitutils import GitUtils
+from cli.frameworkUtils import FrameworkUtils
 from cli.utils import Utils
 from statsd import StatsClient
 
