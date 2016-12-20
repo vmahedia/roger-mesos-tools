@@ -9,10 +9,5 @@ install:
     - pip install mock==1.0.1
     - pip install mockito==0.5.2
 
-script:
-#    - num_errors=`find cli/ tests/ bin/ -name \*.py -exec pep8 --ignore=E501,E402 {} + | wc -l`
-#    - |
-#        if (( $num_errors > 0 )); then
-#          exit 1;
-#        fi
-    - py.test -v tests 
+git:
+  submodules: false
