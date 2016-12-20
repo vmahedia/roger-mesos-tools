@@ -1,33 +1,54 @@
 #!/usr/bin/env bash
 
-set -e -o pipefail
-[ ${DEBUG:=0} -eq 1 ] && set -x
+source scripts/common.sh
 
 ansible_play(){
-  local hosts_file=roger-mesos/vagrant/single_node/hosts/single
-  echo "Kernel reload()..."
-  ansible-playbook -i "$hosts_file" --user=vagrant --ask-pass roger-mesos/ansible/base.yml
+  local roger_ansible='roger/ansible'
+
+  # Update kernel
+  ansible-playbook   \
+    -i "$HOSTS_FILE" \
+    "${roger_ansible}/mesos-base.yml"
+
+  # Restart to pickup new kernel
   vagrant reload
 
-  echo "Starting ansible-playbook to set up other services..."
+  # Deploy RogerOS
+  ansible-playbook                         \
+    "${roger_ansible}/initial-cluster.yml" \
+    -i "$HOSTS_FILE"                       \
+    --diff
+}
 
-  ansible-playbook -i "$hosts_file" --user=vagrant --ask-pass --extra-vars="mesos_cluster_name=localcluster-on-`hostname` mesos_master_network_interface=ansible_eth1 mesos_slave_network_interface=ansible_eth1" roger-mesos/ansible/initial-cluster.yml --diff -e "@roger-mesos/ansible_vars.yml"
-
+restart_services(){
   # restart Zookeeper
-  ansible zookeeper -i "$hosts_file" --user=vagrant -s -m command -a "service zookeeper restart" --ask-pass
+  ansible zookeeper  \
+    -i "$HOSTS_FILE" \
+    -m command       \
+    -a 'sudo service zookeeper restart'
 
-  # rstart mesos-master
-  ansible masters -i "$hosts_file" --user=vagrant -s -m command -a "service mesos-master restart" --ask-pass
+  # restart mesos-master
+  ansible masters    \
+    -i "$HOSTS_FILE" \
+    -m command       \
+    -a 'sudo service mesos-master restart'
 
   # restart mesos-slave
-  ansible slaves -i "$hosts_file" --user=vagrant -s -m command -a "service mesos-slave restart" --ask-pass
+  ansible slaves     \
+    -i "$HOSTS_FILE" \
+    -m command       \
+    -a 'sudo service mesos-slave restart'
 
   #restart marathon
-  ansible marathon_servers -i "$hosts_file" --user=vagrant -s -m command -a "service marathon restart" --ask-pass
+  ansible marathon_servers \
+    -i "$HOSTS_FILE"       \
+    -m command             \
+    -a 'sudo service marathon restart'
 }
 
 main(){
   ansible_play
+  restart_services
 }
 
 main
