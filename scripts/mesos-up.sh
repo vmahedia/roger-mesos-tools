@@ -21,6 +21,7 @@ main () {
   export VAGRANT_VAGRANTFILE='roger-mesos/vagrant/single_node/Vagrantfile'
   vagrant up
   bash scripts/ansble-plays.sh
+  vagrant ssh -c "sudo iptables -F"
 }
 
 
