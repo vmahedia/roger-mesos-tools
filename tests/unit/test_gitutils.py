@@ -27,6 +27,7 @@ class TestInit(unittest.TestCase):
         self.work_dir = self.base_dir + "/tests/work_dir"
         self.branch = "master"
 
+    @pytest.mark.skip
     def test_gitPull(self):
         config_file = "app.json"
         work_dir = self.work_dir
@@ -57,6 +58,7 @@ class TestInit(unittest.TestCase):
         shutil.rmtree(work_dir)
         pass
 
+    @pytest.mark.skip
     def test_gitShallowClone(self):
         config_file = "app.json"
         work_dir = self.work_dir
@@ -82,6 +84,7 @@ class TestInit(unittest.TestCase):
         assert exists is True
         shutil.rmtree(work_dir)
 
+    @pytest.mark.skip
     def test_gitClone(self):
         config_file = "app.json"
         work_dir = self.work_dir
