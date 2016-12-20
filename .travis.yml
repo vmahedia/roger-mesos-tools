@@ -5,7 +5,7 @@ python:
 
 install:
     - python setup.py install
-    - pip install pytest==2.5.1
+    - pip install pytest==3.0.5
     - pip install mock==1.0.1
     - pip install mockito==0.5.2
 
