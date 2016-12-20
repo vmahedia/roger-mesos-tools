@@ -37,7 +37,6 @@ class RogerPromoteError(Exception):
 
 
 class RogerPromote(object):
-    #what are these for
     """
     Enable application promotion between environments
 
