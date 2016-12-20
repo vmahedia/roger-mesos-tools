@@ -64,6 +64,9 @@ class RogerPromote(object):
         self._roger_env = None
         self._temp_dir = None
 
+    def config_dir_instance_variable(self):
+        return self._config_dir
+
     @classmethod
     def promote(cls, instance=None):
         """
@@ -148,7 +151,7 @@ class RogerPromote(object):
 
         :Return [str]: Path to the configuration directory
         """
-        if not self._config_dir:
+        if self._config_dir is None:
             self._config_dir = self._settings.getConfigDir()
         return self._config_dir
 
@@ -160,7 +163,7 @@ class RogerPromote(object):
 
         :Return [dict]: roger-mesos-tools.config loaded into a dict
         """
-        if not self._roger_env:
+        if self._roger_env is None:
             self._rover_env = self._app_config.getRogerEnv(self.config_dir)
         return self._roger_env
 
