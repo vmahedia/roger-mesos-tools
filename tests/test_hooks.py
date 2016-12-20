@@ -12,6 +12,7 @@ from cli.utils import Utils
 from statsd import StatsClient
 from cli.webhook import WebHook
 
+import pytest
 
 class TestHooks(unittest.TestCase):
 
