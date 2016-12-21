@@ -163,9 +163,15 @@ class RogerPromote(object):
 
         :Return [dict]: roger-mesos-tools.config loaded into a dict
         """
-        if self._roger_env is None:
+        if self._roger_env is not None:
             self._rover_env = self._app_config.getRogerEnv(self.config_dir)
+
         return self._roger_env
+
+
+    def _app_data(self, config_dir, config_file, app_name):
+        app_data = self._app_config.getAppData(self.config_dir, config_file, app_name)
+        return app_data
 
     def _set_framework(self, config_file, app_name):
         """
@@ -175,10 +181,10 @@ class RogerPromote(object):
         :config_file [str]: Name of the configuration file
         :app_name [str]: Name of the application
         """
-        app_data = self.app_config.getAppData(
+        app_data = self._app_config.getAppData(
             self.config_dir, config_file, app_name
         )
-        self._framework = self.framework_utils.getFramework(app_data)
+        self._framework = self._framework_utils.getFramework(app_data)
 
     def _image_name(self, environment, application):
         """
