@@ -45,4 +45,5 @@ class TestRogerPromote(unittest.TestCase):
         rp = RogerPromote(app_config=self.app_config)
         assert rp.roger_env is None
 
-    
+    def test_set_framework(self):
+        
