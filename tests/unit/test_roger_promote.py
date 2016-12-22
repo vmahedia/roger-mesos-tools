@@ -36,9 +36,6 @@ class TestRogerPromote(unittest.TestCase):
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
         return os.environ['ROGER_CONFIG_DIR']
 
-    def behavior_with_config_data(self, data):
-        when(self.app_config).getRogerEnv('/vagrant/config').thenReturn(data)
-
     def test_config_dir(self):
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
         when(self.settings).getConfigDir().thenReturn('/vagrant/config')
