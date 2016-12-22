@@ -51,12 +51,19 @@ class TestRogerPromote(unittest.TestCase):
         assert rp.roger_env is None
 
     def test_set_framework(self):
+        # app_data is a dict taken from the config file for a given app
         app_data = {'test_app': {'name': 'test_app'}}
+        # only stub the getAppData call
         when(self.app_config).getAppData(
             self.config_dir, self.config_file, 'test_app'
         ).thenReturn(app_data)
+        # Pass in the fake app_config instance
         rp = RogerPromote(app_config=self.app_config)
+        # Call the method to set the framework
         rp._set_framework(self.config_file, 'test_app')
+        # Get the framework name by calling getName() on the object. It should
+        # default to Marathon since we didn't set the framework key in the data
+        # var
         assert rp._framework.getName() == 'Marathon'
 
     # def test_image_name(self):
