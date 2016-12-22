@@ -64,9 +64,6 @@ class RogerPromote(object):
         self._roger_env = None
         self._temp_dir = None
 
-    def config_dir_instance_variable(self):
-        return self._config_dir
-
     @classmethod
     def promote(cls, instance=None):
         """
@@ -168,11 +165,6 @@ class RogerPromote(object):
 
         return self._roger_env
 
-
-    def _app_data(self, config_dir, config_file, app_name):
-        app_data = self._app_config.getAppData(self.config_dir, config_file, app_name)
-        return app_data
-
     def _set_framework(self, config_file, app_name):
         """
         Set the _framework instance variable based on the application config
@@ -199,7 +191,9 @@ class RogerPromote(object):
 
         :Return [str]: image name with version
         """
-        return self._framework.getCurrentImageVersion(self.roger_env, environment, application)
+        return self._framework.getCurrentImageVersion(
+            self.roger_env, environment, application
+        )
 
     def _config_resolver(self, key, application, config_file):
         """
