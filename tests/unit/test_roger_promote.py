@@ -21,6 +21,7 @@ from cli.appconfig import AppConfig
 from cli.settings import Settings
 from cli.framework import Framework
 from cli.frameworkUtils import FrameworkUtils
+from cli.marathon import Marathon
 
 
 class TestRogerPromote(unittest.TestCase):
@@ -31,6 +32,7 @@ class TestRogerPromote(unittest.TestCase):
         self.framework_utils = mock(FrameworkUtils)
         self.config_file = "test.yml"
         self.roger_env = {"data": "data2"}
+
 
     @property
     def config_dir(self):
