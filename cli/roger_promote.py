@@ -177,7 +177,6 @@ class RogerPromote(object):
             self.config_dir, config_file, app_name
         )
         self._framework = self._framework_utils.getFramework(app_data)
-        return self._framework
 
     def _image_name(self, environment, application):
         """
