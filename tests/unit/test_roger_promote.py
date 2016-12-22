@@ -62,12 +62,9 @@ class TestRogerPromote(unittest.TestCase):
        when(self.app_config).getAppData(self.config_dir, self.config_file, 'testApp').thenReturn('testApp')
        when(self._framework_utils).getFramework('testApp').thenReturn('Marathon')
        rp = RogerPromote(app_config=self.app_config, framework_utils=self._framework_utils)
-       assert rp._set_framework(self.config_file, "testApp") == 'why'
+       assert rp._set_framework(self.config_file, "testApp") == 'Marathon'
 
-    # def test_image_name(self):
-    #     data = {
-    #         'environments': 'test',
-    #         'registry': 'registry.roger.dal.moz.com:5000'}
-    #     when(self._framework).getCurrentImageVersion(data, "stage", "myApp").thenReturn(" ")
-    #     rp = RogerPromote(framework=self._framework)
-    #     assert rp._image_name("stage", "myApp") == " "
+    def test_image_name(self):
+        when(self._framework).getCurrentImageVersion().thenReturn(' ')
+        rp = RogerPromote(framework=self._framework)
+        assert rp._image_name('stage', 'appName') == ' '

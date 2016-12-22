@@ -185,6 +185,7 @@ class RogerPromote(object):
             self.config_dir, config_file, app_name
         )
         self._framework = self._framework_utils.getFramework(app_data)
+        return self._framework
 
     def _image_name(self, environment, application):
         """
@@ -198,9 +199,7 @@ class RogerPromote(object):
 
         :Return [str]: image name with version
         """
-        return self._framework.getCurrentImageVersion(
-            self.roger_env, environment, application
-        )
+        return self._framework.getCurrentImageVersion(self.roger_env, environment, application)
 
     def _config_resolver(self, key, application, config_file):
         """
