@@ -160,10 +160,10 @@ class RogerPromote(object):
 
         :Return [dict]: roger-mesos-tools.config loaded into a dict
         """
-        if self._roger_env is not None:
+        if self._roger_env is None:
             self._rover_env = self._app_config.getRogerEnv(self.config_dir)
 
-        return self._roger_env
+        return self._rover_env
 
     def _set_framework(self, config_file, app_name):
         """

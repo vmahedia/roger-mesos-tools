@@ -21,6 +21,8 @@ from cli.appconfig import AppConfig
 from cli.settings import Settings
 from cli.framework import Framework
 from cli.frameworkUtils import FrameworkUtils
+from cli.marathon import Marathon
+from cli.chronos import Chronos
 
 
 class TestRogerPromote(unittest.TestCase):
@@ -38,24 +40,41 @@ class TestRogerPromote(unittest.TestCase):
 
     def test_config_dir(self):
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
+
+        # Stubs
         when(self.settings).getConfigDir().thenReturn('/vagrant/config')
+
+        # Instance
         rp = RogerPromote()
         assert rp.config_dir == '/vagrant/config'
 
     def test_roger_env(self):
-        when(self.app_config).getRogerEnv(self.config_dir).thenReturn({})
+        # Fakes
+        fake_config = tests.helper.fake_config()
+        settings = mock(Settings)
+
+        # Stubs
+        when(settings).getConfigDir().thenReturn('/vagrant/config')
+        when(self.app_config).getRogerEnv(
+            self.config_dir
+        ).thenReturn(fake_config)
+
+        # Instance
         rp = RogerPromote(app_config=self.app_config)
-        assert rp.roger_env is None
+        assert rp.roger_env == fake_config
 
     def test_set_framework(self):
         # app_data is a dict taken from the config file for a given app
         app_data = {'test_app': {'name': 'test_app'}}
-        # only stub the getAppData call
+
+        # Stubs
         when(self.app_config).getAppData(
             self.config_dir, self.config_file, 'test_app'
         ).thenReturn(app_data)
-        # Pass in the fake app_config instance
+
+        # Instance
         rp = RogerPromote(app_config=self.app_config)
+
         # Call the method to set the framework
         rp._set_framework(self.config_file, 'test_app')
         # Get the framework name by calling getName() on the object. It should
@@ -63,7 +82,26 @@ class TestRogerPromote(unittest.TestCase):
         # var
         assert rp._framework.getName() == 'Marathon'
 
-    # def test_image_name(self):
-    #     when(self.framework).getCurrentImageVersion().thenReturn(' ')
-    #     rp = RogerPromote(framework=self.framework)
-    #     assert rp._image_name('stage', 'appName') == ' '
+    def test_image_name(self):
+        # Fakes
+        framework = mock(Marathon)
+        app_config = mock(AppConfig)
+        settings = mock(Settings)
+        fake_config = tests.helper.fake_config()
+
+        # Stubs
+        when(settings).getConfigDir().thenReturn('/vagrant/config')
+        when(app_config).getRogerEnv('/vagrant/config').thenReturn(fake_config)
+        when(framework).getCurrentImageVersion(
+            fake_config,
+            'stage',
+            'TestApp'
+        ).thenReturn('test_image')
+
+        # Get instance
+        rp = RogerPromote(
+            settings=settings,
+            app_config=app_config,
+            framework=framework
+        )
+        assert rp._image_name('stage', 'TestApp') == 'test_image'
