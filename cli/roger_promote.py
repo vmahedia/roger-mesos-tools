@@ -211,10 +211,10 @@ class RogerPromote(object):
         found = None
         if key in config_data:
             found = config_data[key]
-        for app in config_data['apps']:
-            if app['name'] == application:
-                if key in app:
-                    found = app[key]
+        for name, data in config_data['apps'].items():
+            if data['name'] == application:
+                if key in data:
+                    found = data[key]
                     break
         return found
 

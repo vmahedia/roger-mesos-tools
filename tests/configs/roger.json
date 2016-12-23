@@ -1,36 +1,36 @@
 {
-  "repo": "repo_name", 
+  "repo": "repo_name",
   "notifications": {
-    "username": "project_name Deployment", 
-    "method": "chat.postMessage", 
-    "channel": "channel_id", 
+    "username": "project_name Deployment",
+    "method": "chat.postMessage",
+    "channel": "channel_id",
     "emoji": ":rocket:"
-  }, 
+  },
   "apps": {
     "test_app": {
-      "path": "dockerfile_path", 
+      "path": "dockerfile_path",
       "containers": [
         "test_app"
-      ], 
-      "name": "test_app", 
+      ],
+      "name": "test_app",
       "vars": {
         "environment": {
-          "prod": {}, 
-          "dev": {}, 
+          "prod": {},
+          "dev": {},
           "stage": {}
-        }, 
+        },
         "global": {}
-      }, 
+      },
       "template_path": "framework_template_path"
     }
-  }, 
-  "name": "roger", 
+  },
+  "name": "roger",
   "vars": {
     "environment": {
-      "prod": {}, 
-      "dev": {}, 
+      "prod": {},
+      "dev": {},
       "stage": {}
-    }, 
+    },
     "global": {}
   }
 }

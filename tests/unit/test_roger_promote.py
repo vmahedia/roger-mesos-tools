@@ -105,3 +105,24 @@ class TestRogerPromote(unittest.TestCase):
             framework=framework
         )
         assert rp._image_name('stage', 'TestApp') == 'test_image'
+
+    def test_config_resolver(self):
+        # Fakes
+        settings = mock(Settings)
+        app_config = mock(AppConfig)
+        config_dir = '/vagrant/config'
+        fake_team_config = tests.helper.fake_team_config()
+
+        # Stubs
+        when(settings).getConfigDir().thenReturn(config_dir)
+        when(app_config).getConfig(
+            config_dir, 'roger.json'
+        ).thenReturn(fake_team_config)
+
+        rp = RogerPromote(settings=settings, app_config=app_config)
+        val = rp._config_resolver('template_path', 'test_app', 'roger.json')
+        assert val == 'framework_template_path'
+
+    def test_roger_push_script(self):
+        path = RogerPromote()._roger_push_script()
+        assert 'roger-mesos-tools/cli/roger_push.py' in path
