@@ -26,11 +26,13 @@ from cli.marathon import Marathon
 
 class TestRogerPromote(unittest.TestCase):
     def setUp(self):
+        self.marathon = mock(Marathon)
         self.settings = mock(Settings)
         self.app_config = mock(AppConfig)
-        self.framework = mock(Framework)
+        self.framework = self.marathon
         self.framework_utils = mock(FrameworkUtils)
         self.config_file = "test.yml"
+        self.roger_env = {}
 
 
     @property
@@ -65,7 +67,27 @@ class TestRogerPromote(unittest.TestCase):
         # var
         assert rp._framework.getName() == 'Marathon'
 
-    # def test_image_name(self):
-    #     when(self.framework).getCurrentImageVersion().thenReturn(' ')
-    #     rp = RogerPromote(framework=self.framework)
-    #     assert rp._image_name('stage', 'appName') == ' '
+    def test_image_name(self):
+        data = {
+             "apps": {
+        "test_app": {
+          "path": "dockerfile_path",
+          "containers": [
+            "test_app"
+          ],
+          "name": "test_app",
+          "vars": {
+            "environment": {
+              "prod": {},
+              "dev": {},
+              "stage": {}
+            },
+            "global": {}
+          },
+          "template_path": "framework_template_path"
+        }
+        }
+    }
+        when(self.framework).getCurrentImageVersion(data, 'stage', 'testApp').thenReturn("imageName")
+        rp = RogerPromote(framework=mock(Marathon))
+        assert rp._image_name('stage', 'testApp') == 'imageName'

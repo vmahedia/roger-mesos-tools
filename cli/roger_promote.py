@@ -160,7 +160,7 @@ class RogerPromote(object):
 
         :Return [dict]: roger-mesos-tools.config loaded into a dict
         """
-        if self._roger_env is not None:
+        if self._roger_env is None:
             self._rover_env = self._app_config.getRogerEnv(self.config_dir)
 
         return self._roger_env
@@ -191,7 +191,7 @@ class RogerPromote(object):
         :Return [str]: image name with version
         """
         return self._framework.getCurrentImageVersion(
-            self.roger_env, environment, application
+            self._roger_env, environment, application
         )
 
     def _config_resolver(self, key, application, config_file):
