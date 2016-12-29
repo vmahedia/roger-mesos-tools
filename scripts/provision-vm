@@ -19,10 +19,10 @@ function docker_setup {
 
 function set_env_vars {
   echo "Example: firstname.lastname"
-  read -p 'ROGER_USER_PASS_PROD: ' passprodvar
-  read -p 'ROGER_USER_PASS_STAGE: ' passstagevar
   read -p 'ROGER_USER: ' uservar
   read -p 'ROGER_USER_PASS_DEV: ' passdevvar
+  read -p 'ROGER_USER_PASS_STAGE: ' passstagevar
+  read -p 'ROGER_USER_PASS_PROD: ' passprodvar
 
   export ROGER_USER_PASS_PROD="$passprodvar"
   export ROGER_USER_PASS_STAGE="$passstagevar"
