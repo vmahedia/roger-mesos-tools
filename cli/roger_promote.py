@@ -32,6 +32,10 @@ from cli.marathon import Marathon
 from cli.chronos import Chronos
 
 
+def describe():
+    return 'Enables application promotion between environments'
+
+
 class RogerPromoteError(Exception):
     pass
 
@@ -82,7 +86,7 @@ class RogerPromote(object):
             rp = cls()
 
         # Get Namespace obj
-        args = rp.arg_parse.parse_args()
+        args = rp.arg_parse().parse_args()
 
         # Set framework based on app config
         rp._set_framework(args.config, args.app_name)
@@ -125,7 +129,7 @@ class RogerPromote(object):
         """
         parser = argparse.ArgumentParser(
             prog='roger promote',
-            description='Enables application promotion between environments'
+            description=describe()
         )
 
         env_choices = ['local', 'dev', 'stage', 'prod']

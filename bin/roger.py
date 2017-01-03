@@ -75,6 +75,9 @@ def main():
             command = sys.argv[1]
             command_args = sys.argv[2:]
             if command in commands:
+                print("root: {} command: {} args: {}".format(
+                    root, command, command_args
+                ))
                 script_call = getScriptCall(root, command, command_args)
                 os.system(script_call)
             else:
