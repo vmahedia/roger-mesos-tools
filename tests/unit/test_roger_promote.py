@@ -22,10 +22,7 @@ from cli.settings import Settings
 from cli.framework import Framework
 from cli.frameworkUtils import FrameworkUtils
 from cli.marathon import Marathon
-<<<<<<< HEAD
-=======
 from cli.chronos import Chronos
->>>>>>> fc1403916f12743d64a27b3080988513a0c84cd9
 
 
 class TestRogerPromote(unittest.TestCase):
@@ -37,19 +34,13 @@ class TestRogerPromote(unittest.TestCase):
         self.framework_utils = mock(FrameworkUtils)
         self.config_file = "test.yml"
         self.roger_env = {}
-
+        os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
 
     @property
     def config_dir(self):
-        os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
         return os.environ['ROGER_CONFIG_DIR']
 
     def test_config_dir(self):
-        os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
-
-        # Stubs
-        when(self.settings).getConfigDir().thenReturn('/vagrant/config')
-
         # Instance
         rp = RogerPromote()
         assert rp.config_dir == '/vagrant/config'
@@ -60,7 +51,6 @@ class TestRogerPromote(unittest.TestCase):
         settings = mock(Settings)
 
         # Stubs
-        when(settings).getConfigDir().thenReturn('/vagrant/config')
         when(self.app_config).getRogerEnv(
             self.config_dir
         ).thenReturn(fake_config)
@@ -72,6 +62,7 @@ class TestRogerPromote(unittest.TestCase):
     def test_set_framework(self):
         # app_data is a dict taken from the config file for a given app
         app_data = {'test_app': {'name': 'test_app'}}
+        os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
 
         # Stubs
         when(self.app_config).getAppData(
@@ -89,31 +80,6 @@ class TestRogerPromote(unittest.TestCase):
         assert rp._framework.getName() == 'Marathon'
 
     def test_image_name(self):
-<<<<<<< HEAD
-        data = {
-             "apps": {
-        "test_app": {
-          "path": "dockerfile_path",
-          "containers": [
-            "test_app"
-          ],
-          "name": "test_app",
-          "vars": {
-            "environment": {
-              "prod": {},
-              "dev": {},
-              "stage": {}
-            },
-            "global": {}
-          },
-          "template_path": "framework_template_path"
-        }
-        }
-    }
-        when(self.framework).getCurrentImageVersion(data, 'stage', 'testApp').thenReturn("imageName")
-        rp = RogerPromote(framework=mock(Marathon))
-        assert rp._image_name('stage', 'testApp') == 'imageName'
-=======
         # Fakes
         framework = mock(Marathon)
         app_config = mock(AppConfig)
@@ -121,7 +87,6 @@ class TestRogerPromote(unittest.TestCase):
         fake_config = tests.helper.fake_config()
 
         # Stubs
-        when(settings).getConfigDir().thenReturn('/vagrant/config')
         when(app_config).getRogerEnv('/vagrant/config').thenReturn(fake_config)
         when(framework).getCurrentImageVersion(
             fake_config,
@@ -129,9 +94,8 @@ class TestRogerPromote(unittest.TestCase):
             'TestApp'
         ).thenReturn('test_image')
 
-        # Get instance
+        # # Get instance
         rp = RogerPromote(
-            settings=settings,
             app_config=app_config,
             framework=framework
         )
@@ -157,4 +121,3 @@ class TestRogerPromote(unittest.TestCase):
     def test_roger_push_script(self):
         path = RogerPromote()._roger_push_script()
         assert 'roger-mesos-tools/cli/roger_push.py' in path
->>>>>>> fc1403916f12743d64a27b3080988513a0c84cd9

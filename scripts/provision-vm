@@ -1,4 +1,4 @@
-#!/bin/bash -e
+!/bin/bash -e
 
 function packages_setup {
   apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D || true
@@ -17,8 +17,27 @@ function docker_setup {
   service docker restart
 }
 
+function set_env_vars {
+  echo "Example: firstname.lastname"
+  read -p 'ROGER_USER: ' uservar
+  read -p 'ROGER_USER_PASS_DEV: ' passdevvar
+  read -p 'ROGER_USER_PASS_STAGE: ' passstagevar
+  read -p 'ROGER_USER_PASS_PROD: ' passprodvar
+
+  export ROGER_USER_PASS_PROD="$passprodvar"
+  export ROGER_USER_PASS_STAGE="$passstagevar"
+  export ROGER_USER="$uservar"
+  export ROGER_CONFIG_DIR="/home/vagrant/roger-cli/config/"
+  export ROGER_SECRETS_DIR="/home/vagrant/roger-cli/secrets"
+  export ROGER_USER_PASS_DEV="$passdevvar"
+  export ROGER_COMPONENTS_DIR="/home/vagrant/roger-cli/components"
+  export ROGER_TEMPLATES_DIR="/home/vagrant/roger-cli/templates"
+
+
+}
+
 
 # main
-
+set_env_vars
 packages_setup
 docker_setup
