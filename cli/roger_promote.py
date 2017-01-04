@@ -22,6 +22,7 @@ import os
 import os.path
 import shutil
 import sys
+import subprocess
 
 # ~
 # core
@@ -100,7 +101,7 @@ class RogerPromote(object):
             raise RogerPromoteError('Repo not found')
 
         # Clone the repo
-        rp.clone_repo(repo)
+        rp._clone_repo(repo)
 
         # Locate roger_push.py
         roger_push = rp._roger_push_script()
@@ -111,7 +112,8 @@ class RogerPromote(object):
             '--env', args.to_env,
             args.app_name, rp._temp_dir, image, args.config
         ]
-        ret_val = os.system(cmd)
+        string_cmd = ' '.join(cmd)
+        ret_val = os.system(string_cmd)
 
         # CleanUp
         shutil.rmtree(rp._temp_dir)
