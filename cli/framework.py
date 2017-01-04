@@ -42,3 +42,7 @@ class Framework(object):
     @abstractmethod
     def getTasks(self, roger_env, environment):
         pass
+
+    @abstractmethod
+    def image_name(self, environment, application):
+        pass

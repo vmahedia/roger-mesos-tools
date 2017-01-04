@@ -231,6 +231,7 @@ class RogerPush(object):
                 else:
                     container_list.append(tokens[1])
 
+        
             data = appObj.getAppData(config_dir, args.config_file, app_name)
             if not data:
                 raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(
@@ -272,6 +273,7 @@ class RogerPush(object):
             # secret_env_dir is something like '.' or './temp"
             os.chdir(cur_file_path)
             app_path = ''
+            "LOOK HERE!"
             if 'template_path' in data:
                 app_path = self.repo_relative_path(appObj, args, repo, data['template_path'])
             else:

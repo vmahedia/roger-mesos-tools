@@ -12,6 +12,7 @@ import json
 from pkg_resources import get_distribution
 
 
+
 class Utils:
 
     def __init__(self):
@@ -137,3 +138,9 @@ class Utils:
         own_dir = os.path.dirname(os.path.realpath(__file__))
         root = os.path.abspath(os.path.join(own_dir, os.pardir))
         return self.roger_version(root)
+
+    def getTemplatePath(self, appConfig(), args, repo, data):
+        if 'template_path' in data:
+            app_path = self.repo_relative_path(appObj, args, repo, data['template_path'])
+        else:
+            app_path = template_dir

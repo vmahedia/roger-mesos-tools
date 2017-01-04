@@ -185,6 +185,9 @@ class RogerPromote(object):
         self._framework = self._framework_utils.getFramework(app_data)
 
     def _image_name(self, environment, application):
+        #application app name
+        # need the current deployed image name with provided enviroment (from env)
+        #based on enviroments application(app name) we can get the end point from the env
         """
         Returns the image name as a str
 

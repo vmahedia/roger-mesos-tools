@@ -256,3 +256,11 @@ class Marathon(Framework):
         respjson = resp.json()
         tasks = resp.json()['tasks'] if 'tasks' in respjson else {}
         return tasks
+
+    def image_name(self, environment, application):
+        #
+        #act as value and app name
+        #which endpoint hint roger_env settings object in roger-cli
+        #how to parse output to retrieve the image name
+        #after building url with the data we have in the config file we can send a request
+        #how to  make a get requets with requests
