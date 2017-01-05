@@ -257,8 +257,23 @@ class Marathon(Framework):
         tasks = resp.json()['tasks'] if 'tasks' in respjson else {}
         return tasks
 
-    def image_name(self, environment, application):
-        #
+    def app_id(self, template_file):
+        """
+        returns the application id for the given template file
+        :params:
+        :template_file [str]: absoulte path to the template file
+        :return: [dict]
+        """
+        dir_name = os.path.dirname(template_file)
+        file_name = os.path.basename(template_file)
+        env = Environment(loader=FileSystemLoader(dir_name))
+        template = env.get_template(file_name)
+        return yaml.safe_load(str(template.module))["id"]
+
+
+
+
+
         #act as value and app name
         #which endpoint hint roger_env settings object in roger-cli
         #how to parse output to retrieve the image name

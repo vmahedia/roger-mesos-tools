@@ -252,6 +252,34 @@ class RogerPromote(object):
         code_dir = os.path.abspath(os.path.dirname(__file__))
         return os.path.join(code_dir, 'roger_push.py')
 
+    def _get_template_path(
+        self,
+        config_dir,
+        args,
+        app_name,
+        app_object=AppConfig(),
+        settings_object=Settings()):
+        """
+        Returns the template path
+
+        :Params:
+        :config_dir [str]: path to the config directory
+        :args [argparse.NameSpace]: how to get acceses to the values passed
+        :app_name [str]: name of app
+        :app_object [cli.appconfig.AppConfig]: instance of AppConfig
+        :settings_object [cli.settings.Settings]: instance of Settings
+
+        """
+
+        data = app_object.getAppData(config_dir, args.config_file, app_name)
+        repo = self._config_resolver('repo', app_name, args.config)
+
+        if 'template_path' in data:
+            app_path = os.path.join(self._temp_dir, repo, data['template_path'])
+        else:
+            app_path = settings_object.getTemplatesDir()
+        return app_path
+
 
 if __name__ == '__main__':
     if not RogerPromote.promote():
