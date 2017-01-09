@@ -10,6 +10,7 @@ from cli.utils import Utils
 from cli.settings import Settings
 from cli.marathonvalidator import MarathonValidator
 from cli.haproxyparser import HAProxyParser
+from cli.appconfig import AppConfig
 
 utils = Utils()
 settings = Settings()
@@ -260,6 +261,7 @@ class Marathon(Framework):
     def app_id(self, template_file):
         """
         returns the application id for the given template file
+
         :params:
         :template_file [str]: absoulte path to the template file
         :return: [dict]
@@ -270,12 +272,33 @@ class Marathon(Framework):
         template = env.get_template(file_name)
         return yaml.safe_load(str(template.module))["id"]
 
+    def image_name(
+        self,
+        username,
+        password,
+        env,
+        app_id,
+        config_dir,
+        config_file,
+        app_config_object=AppConfig()
+    ):
+        """
+        returns the application image name
 
+        :params:
+        :username           [str]: auth username
+        :password           [str]: auth password
+        :env:               [str]: enviroment
+        :app_id             [str]: app_id
+        :config_file        [str]: file name
+        :config_dir         [str]: config directory path
+        :app_config_object  [object]: AppConfig object
+        """
+        config = app_config_object.getConfig(config_dir, config_file)
+        location = config[env]['marathon_endpoint']
 
-
-
-        #act as value and app name
-        #which endpoint hint roger_env settings object in roger-cli
-        #how to parse output to retrieve the image name
-        #after building url with the data we have in the config file we can send a request
-        #how to  make a get requets with requests
+        url = '{location}/v2/apps/{app_id}'.format(
+            location=location, app_id=app_id)
+        res = requests.get(url, auth=(username, password))
+        image = res['app']['container']['docker']['image']
+        return image
