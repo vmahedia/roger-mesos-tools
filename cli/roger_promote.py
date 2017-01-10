@@ -93,7 +93,9 @@ class RogerPromote(object):
         rp._set_framework(args.config, args.app_name)
 
         # Get deployed version in source environment (should be the image name)
-        image = rp._image_name(args.from_env, args.app_name)
+        #image = rp._image_name(args.from_env, args.app_name)
+
+
 
         # Get repo name
         repo = rp._config_resolver('repo', args.app_name, args.config)
@@ -199,8 +201,16 @@ class RogerPromote(object):
 
         :Return [str]: image name with version
         """
-        return self._framework.getCurrentImageVersion(
-            self.roger_env, environment, application
+        username = os.environ['ROGER_USER']
+        if environment == 'dev':
+            password = os.environ['ROGER_USER_PASS_DEV']
+        elif environment == 'stage':
+            password = os.environ['ROGER_USER_PASS_STAGE']:
+        elif environment == 'prod':
+            password = os.environ['ROGER_USER_PASS_PROD']:
+
+        app_id = self._framework.app_id()
+        return self._framework.image_name(username, password, environment,
         )
 
     def _config_resolver(self, key, application, config_file):
@@ -254,6 +264,7 @@ class RogerPromote(object):
 
     def _get_template_path(
         self,
+        container_name,
         config_dir,
         args,
         app_name,
@@ -278,7 +289,11 @@ class RogerPromote(object):
             app_path = os.path.join(self._temp_dir, repo, data['template_path'])
         else:
             app_path = settings_object.getTemplatesDir()
-        return app_path
+
+        file_name = "{0}-{1}.json".format(
+                data['name'], container_name)
+
+        return os.path.join(app_path, file_name)
 
 
 if __name__ == '__main__':
