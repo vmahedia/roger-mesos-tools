@@ -4,6 +4,9 @@
 Provides a class and script. See bin/roger.py for a reference of how the script
 is called.
 
+Promote moves containers between dev, stage, prod environments
+
+
 :Classes:
 
 RogerPromote: Provides application promotion between environments for the
@@ -93,9 +96,7 @@ class RogerPromote(object):
         rp._set_framework(args.config, args.app_name)
 
         # Get deployed version in source environment (should be the image name)
-        #image = rp._image_name(args.from_env, args.app_name)
-
-
+        # image = rp._image_name(args.from_env, args.app_name)
 
         # Get repo name
         repo = rp._config_resolver('repo', args.app_name, args.config)
@@ -108,22 +109,51 @@ class RogerPromote(object):
         # Locate roger_push.py
         roger_push = rp._roger_push_script()
 
-        # Execute the script
-        cmd = [
-            roger_push,
-            '--env', args.to_env,
-            args.app_name, rp._temp_dir, image, args.config
-        ]
-        string_cmd = ' '.join(cmd)
-        ret_val = os.system(string_cmd)
+        app_data = app_config(self.config_dir, args.config, args.app_name)
+        image_refs = app_data['containers']
+        failed_images = []
+        for image_ref in image_refs:
+            template_path = self._get_template_path(
+                image_ref,
+                self.config_dir,
+                args,
+                args.app_name
+            )
+
+            image_name = rp._image_name(
+                args.from_env,
+                args.config,
+                template_path
+            )
+
+            # Execute the script
+            cmd = [
+                roger_push,
+                '--env', args.to_env,
+                args.app_name, rp._temp_dir, image_name, args.config
+            ]
+            string_cmd = ' '.join(cmd)
+
+            ret_val = None
+            x = 0
+            while x < 3:
+                x += 1
+                ret_val = os.system(string_cmd)
+                if ret_val == 0:
+                    break
+
+            if ret_val != 0:
+                print("Roger failed to deploy {image} to {env}".format(
+                    image_name, args.to
+                ))
+                failed_images.append(image_name)
 
         # CleanUp
         shutil.rmtree(rp._temp_dir)
-
-        if ret_val != 0:
-            print("Roger failed during push of {} to {}".format(
-                args.app_name, args.to_env
-            ))
+        print("Images that failed")
+        if len(failed_images) > 0:
+            for failed_image in failed_images:
+                print(failed_image)
             return False
         return True
 
@@ -148,6 +178,10 @@ class RogerPromote(object):
         parser.add_argument('app_name', help='The name of the application')
 
         return parser
+
+    @property
+    def framework(self):
+        return self._framework
 
     @property
     def config_dir(self):
@@ -186,10 +220,7 @@ class RogerPromote(object):
         )
         self._framework = self._framework_utils.getFramework(app_data)
 
-    def _image_name(self, environment, application):
-        #application app name
-        # need the current deployed image name with provided enviroment (from env)
-        #based on enviroments application(app name) we can get the end point from the env
+    def _image_name(self, environment, config_file, template_file):
         """
         Returns the image name as a str
 
@@ -205,13 +236,21 @@ class RogerPromote(object):
         if environment == 'dev':
             password = os.environ['ROGER_USER_PASS_DEV']
         elif environment == 'stage':
-            password = os.environ['ROGER_USER_PASS_STAGE']:
+            password = os.environ['ROGER_USER_PASS_STAGE']
         elif environment == 'prod':
-            password = os.environ['ROGER_USER_PASS_PROD']:
+            password = os.environ['ROGER_USER_PASS_PROD']
 
-        app_id = self._framework.app_id()
-        return self._framework.image_name(username, password, environment,
+        app_id = self._framework.app_id(template_file)
+
+        image = self._framework.image_name(
+            username,
+            password,
+            environment,
+            app_id,
+            config_file,
+            self.config_dir
         )
+        return image
 
     def _config_resolver(self, key, application, config_file):
         """
@@ -269,9 +308,13 @@ class RogerPromote(object):
         args,
         app_name,
         app_object=AppConfig(),
-        settings_object=Settings()):
+        settings_object=Settings()
+    ):
+
         """
         Returns the template path
+
+        Each framework requires an template_path for the app_id method
 
         :Params:
         :config_dir [str]: path to the config directory
