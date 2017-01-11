@@ -84,10 +84,10 @@ class RogerPromote(object):
         :Return [bool]: True if successful, False if otherwise
         """
         # Get instance
-        if instance:
-            rp = instance
+        if instance:  # if the instance is not None,
+            rp = instance  # re will equal that instance
         else:
-            rp = cls()
+            rp = cls()  # if instance is none then rp with be the class
 
         # Get Namespace obj
         args = rp.arg_parse().parse_args()
@@ -312,7 +312,7 @@ class RogerPromote(object):
     ):
 
         """
-        Returns the template path
+        Returns the template path for a given container_name
 
         Each framework requires an template_path for the app_id method
 
@@ -325,11 +325,12 @@ class RogerPromote(object):
 
         """
 
-        data = app_object.getAppData(config_dir, args.config_file, app_name)
+        data = app_object.getConfig(config_dir, args.config_file)
         repo = self._config_resolver('repo', app_name, args.config)
-
+        template_path = self._config_resolver(
+            'template_path', app_name, args.config)
         if 'template_path' in data:
-            app_path = os.path.join(self._temp_dir, repo, data['template_path'])
+            app_path = os.path.join(self._temp_dir, repo, template_path)
         else:
             app_path = settings_object.getTemplatesDir()
 
