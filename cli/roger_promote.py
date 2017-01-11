@@ -109,7 +109,7 @@ class RogerPromote(object):
         # Locate roger_push.py
         roger_push = rp._roger_push_script()
 
-        app_data = rp._app_config(rp.config_dir, args.config, args.app_name)
+        app_data = rp._app_config.getAppData(rp.config_dir, args.config, args.app_name)
         image_refs = app_data['containers']
         failed_images = []
         for image_ref in image_refs:
