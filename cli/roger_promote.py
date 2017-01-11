@@ -109,13 +109,13 @@ class RogerPromote(object):
         # Locate roger_push.py
         roger_push = rp._roger_push_script()
 
-        app_data = rp._app_config(self.config_dir, args.config, args.app_name)
+        app_data = rp._app_config(rp.config_dir, args.config, args.app_name)
         image_refs = app_data['containers']
         failed_images = []
         for image_ref in image_refs:
-            template_path = self._get_template_path(
+            template_path = rp._get_template_path(
                 image_ref,
-                self.config_dir,
+                rp.config_dir,
                 args,
                 args.app_name
             )
