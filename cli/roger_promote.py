@@ -325,7 +325,7 @@ class RogerPromote(object):
 
         """
 
-        data = app_object.getConfig(config_dir, args.config_file)
+        data = app_object.getConfig(config_dir, args.config)
         repo = self._config_resolver('repo', app_name, args.config)
         template_path = self._config_resolver(
             'template_path', app_name, args.config)
