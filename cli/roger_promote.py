@@ -27,6 +27,7 @@ import shutil
 import sys
 import subprocess
 
+
 # ~
 # core
 from cli.settings import Settings
@@ -109,7 +110,12 @@ class RogerPromote(object):
         # Locate roger_push.py
         roger_push = rp._roger_push_script()
 
-        app_data = rp._app_config.getAppData(rp.config_dir, args.config, args.app_name)
+        app_data = rp._app_config.getAppData(
+            rp.config_dir,
+            args.config,
+            args.app_name
+        )
+
         image_refs = app_data['containers']
         failed_images = []
         for image_ref in image_refs:
@@ -120,11 +126,12 @@ class RogerPromote(object):
                 args.app_name
             )
 
-            image_name = rp._image_name(
+            full_image_name = rp._image_name(
                 args.from_env,
                 args.config,
                 template_path
             )
+            image_name = full_image_name.split('/', 1)[1]
 
             # Execute the script
             cmd = [
@@ -247,8 +254,8 @@ class RogerPromote(object):
             password,
             environment,
             app_id,
-            config_file,
-            self.config_dir
+            self.config_dir,
+            config_file
         )
         return image
 

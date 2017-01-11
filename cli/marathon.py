@@ -5,6 +5,7 @@ import os
 import sys
 import requests
 import json
+import yaml
 from jinja2 import Environment, FileSystemLoader
 from cli.framework import Framework
 from cli.utils import Utils
@@ -295,11 +296,11 @@ class Marathon(Framework):
         :config_dir         [str]: config directory path
         :app_config_object  [object]: AppConfig object
         """
-        config = app_config_object.getConfig(config_dir, config_file)  # config is the config ditc
-        location = config[env]['marathon_endpoint']  # returning the marathon_endpoint for a certain enviroment
+        config = app_config_object.getRogerEnv(config_dir)  # config is the config ditc
+        location = config['environments'][env]['marathon_endpoint']  # returning the marathon_endpoint for a certain enviroment
 
         url = '{location}/v2/apps/{app_id}'.format(
             location=location, app_id=app_id)  # url for request
         res = requests.get(url, auth=(username, password))  # res is the response from the get request returns Json object
-        image = res['app']['container']['docker']['image']  # keys that acces the image from the dict
+        image = res.json()['app']['container']['docker']['image']  # keys that acces the image from the dict
         return image  # full image

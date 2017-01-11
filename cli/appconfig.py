@@ -21,7 +21,7 @@ class AppConfig:
 
     def getConfig(self, config_dir, config_file):
         config = None
-        if os.path.exists(config_file):
+        if os.path.isfile(config_file):
             with open(config_file) as config_file_obj:
                 config = yaml.load(config_file_obj) if config_file.lower(
                 ).endswith('.yml') else json.load(config_file_obj)
