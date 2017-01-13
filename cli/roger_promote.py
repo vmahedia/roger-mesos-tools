@@ -85,19 +85,16 @@ class RogerPromote(object):
         :Return [bool]: True if successful, False if otherwise
         """
         # Get instance
-        if instance:  # if the instance is not None,
-            rp = instance  # re will equal that instance
+        if instance:
+            rp = instance
         else:
-            rp = cls()  # if instance is none then rp with be the class
+            rp = cls()
 
         # Get Namespace obj
         args = rp.arg_parse().parse_args()
 
         # Set framework based on app config
         rp._set_framework(args.config, args.app_name)
-
-        # Get deployed version in source environment (should be the image name)
-        # image = rp._image_name(args.from_env, args.app_name)
 
         # Get repo name
         repo = rp._config_resolver('repo', args.app_name, args.config)
@@ -157,8 +154,8 @@ class RogerPromote(object):
 
         # CleanUp
         shutil.rmtree(rp._temp_dir)
-        print("Images that failed")
         if len(failed_images) > 0:
+            print("Images that failed")
             for failed_image in failed_images:
                 print(failed_image)
             return False
@@ -232,11 +229,9 @@ class RogerPromote(object):
         Returns the image name as a str
 
         :Params:
-        :roger_env [dict]: Data loaded from roger-mesos-tools.config
         :environment [str]: Environment as found in roger-mesos-tools.config
-        :application [str]: application as defined in the appropriate yml or
-                            json file under config/
-
+        :config_file [dict]: Data loaded from roger-mesos-tools.config
+        :template_file [str]: file that contains a template
         :Return [str]: image name with version
         """
         username = os.environ['ROGER_USER']

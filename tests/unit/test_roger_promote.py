@@ -11,7 +11,7 @@ import unittest
 import os
 import os.path
 import pytest
-
+import requests
 
 from mockito import mock, Mock, when
 
@@ -62,7 +62,7 @@ class TestRogerPromote(unittest.TestCase):
     def test_set_framework(self):
         # app_data is a dict taken from the config file for a given app
         app_data = {'test_app': {'name': 'test_app'}}
-        os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
+
 
         # Stubs
         when(self.app_config).getAppData(
@@ -80,29 +80,24 @@ class TestRogerPromote(unittest.TestCase):
         assert rp._framework.getName() == 'Marathon'
 
     def test_image_name(self):
-        # Fakes
-        framework = mock(Marathon)
-        app_config = mock(AppConfig)
-        settings = mock(Settings)
-        fake_config = tests.helper.fake_config()
+        os.environ['ROGER_USER'] = 'test_user'
+        os.environ['ROGER_USER_PASS_DEV'] = 'test_user.test_user'
 
-        # Stubs
-        when(app_config).getRogerEnv('/vagrant/config').thenReturn(fake_config)
-        when(framework).getCurrentImageVersion(
-            fake_config,
-            'stage',
-            'TestApp'
-        ).thenReturn('test_image')
+        when(self.framework).app_id('/temp/file').thenReturn("test_app")
 
-        # # Get instance
-        rp = RogerPromote(
-            app_config=app_config,
-            framework=framework
-        )
-        assert rp._image_name('stage', 'TestApp') == 'test_image'
+        when(self.framework).image_name(
+            os.environ['ROGER_USER'],
+            os.environ['ROGER_USER_PASS_DEV'],
+            'dev', 'test_app',
+            os.environ['ROGER_CONFIG_DIR'],
+            'config_file').thenReturn("test_image")
+
+        rp = RogerPromote(framework=self.framework)
+        assert rp._image_name('dev', 'config_file', '/temp/file') == 'test_image'
 
     def test_config_resolver(self):
         # Fakes
+        framework = mock(Framework)
         settings = mock(Settings)
         app_config = mock(AppConfig)
         config_dir = '/vagrant/config'

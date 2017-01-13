@@ -268,11 +268,11 @@ class Marathon(Framework):
         :template_file [str]: absoulte path to the template file
         :return: [dict]
         """
-        dir_name = os.path.dirname(template_file)  # returns the  directory name
-        file_name = os.path.basename(template_file)  # returns the basename
-        env = Environment(loader=FileSystemLoader(dir_name))  # loads filename using the dir_name
-        template = env.get_template(file_name)  # gets a template using a filename
-        return yaml.safe_load(str(template.module))["id"]  # returns the value of the id
+        dir_name = os.path.dirname(template_file)
+        file_name = os.path.basename(template_file)
+        env = Environment(loader=FileSystemLoader(dir_name))
+        template = env.get_template(file_name)
+        return yaml.safe_load(str(template.module))["id"]
 
     def image_name(
         self,
@@ -283,7 +283,7 @@ class Marathon(Framework):
         config_dir,
         config_file,
         app_config_object=AppConfig()
-    ):
+      ):
         """
         returns the application image name
 
@@ -296,11 +296,10 @@ class Marathon(Framework):
         :config_dir         [str]: config directory path
         :app_config_object  [object]: AppConfig object
         """
-        config = app_config_object.getRogerEnv(config_dir)  # config is the config ditc
-        location = config['environments'][env]['marathon_endpoint']  # returning the marathon_endpoint for a certain enviroment
-
+        config = app_config_object.getRogerEnv(config_dir)
+        location = config['environments'][env]['marathon_endpoint']
         url = '{location}/v2/apps/{app_id}'.format(
-            location=location, app_id=app_id)  # url for request
-        res = requests.get(url, auth=(username, password))  # res is the response from the get request returns Json object
-        image = res.json()['app']['container']['docker']['image']  # keys that acces the image from the dict
-        return image  # full image
+            location=location, app_id=app_id)
+        res = requests.get(url, auth=(username, password))
+        image = res.json()['app']['container']['docker']['image']
+        return image
