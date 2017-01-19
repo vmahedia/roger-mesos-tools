@@ -259,6 +259,10 @@ class RogerPush(object):
             templ_dir = settingObj.getTemplatesDir()
             secrets_dir = settingObj.getSecretsDir()
 
+            # Create comp_dir if it doesn't exist
+            if not os.path.isdir(comp_dir):
+                os.makedirs(comp_dir)
+
             # template marathon files
             if not container_list:
                 data_containers = data['containers']
