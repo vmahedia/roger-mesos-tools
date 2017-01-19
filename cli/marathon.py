@@ -296,11 +296,13 @@ class Marathon(Framework):
         :config_dir         [str]: config directory path
         :app_config_object  [object]: AppConfig object
         """
-        config = app_config_object.getRogerEnv(config_dir)  # config is the config ditc
-        location = config['environments'][env]['marathon_endpoint']  # returning the marathon_endpoint for a certain enviroment
-
+        config = app_config_object.getRogerEnv(config_dir)
+        # config is the config ditc
+        # returning the marathon_endpoint for a certain enviroment
+        location = config['environments'][env]['marathon_endpoint']
+        # do we need the above two lines, since ther is already a method that gets the environments
         url = '{location}/v2/apps/{app_id}'.format(
             location=location, app_id=app_id)  # url for request
         res = requests.get(url, auth=(username, password))  # res is the response from the get request returns Json object
         image = res.json()['app']['container']['docker']['image']  # keys that acces the image from the dict
-        return image  # full image
+        return image  # full image name

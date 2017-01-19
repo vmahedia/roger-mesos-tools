@@ -75,3 +75,31 @@ class Chronos(Framework):
 
     def getTasks(self, roger_env, environment):
         print("Not yet implemented!")
+
+    def image_name(
+        self,
+        roger_env,
+        environments,
+        name,
+        username,
+        password
+    ):
+        """
+        Returns the image name for a certain app
+        :Params:
+        :roger_env [str]: dict that contains the roger environment
+        :environments [str]: the desired environment dev, stage or prod
+        :name [str]: name of specific job
+        """
+        self.fetchUserPass(environment)
+        url = roger_env['environments'][environment][
+            'chronos_endpoint'] + 'scheduler/jobs/search?name={name}'.format(
+                name)
+
+        res = requests.get(url, auth=(username, password))
+        imagename = res.json()['container']['image']
+        return imagename
+
+        # merge into promote then make a new branch from there
+        # error incase it doesn't get error code
+        # dev', 'stage', 'roger.yml', 'welcome'

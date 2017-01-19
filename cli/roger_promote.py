@@ -115,6 +115,8 @@ class RogerPromote(object):
             args.config,
             args.app_name
         )
+        a = type(app_data)
+        print(a)
 
         image_refs = app_data['containers']
         failed_images = []
@@ -157,8 +159,8 @@ class RogerPromote(object):
 
         # CleanUp
         shutil.rmtree(rp._temp_dir)
-        print("Images that failed")
         if len(failed_images) > 0:
+            print("Images that failed")
             for failed_image in failed_images:
                 print(failed_image)
             return False
@@ -219,7 +221,7 @@ class RogerPromote(object):
         Set the _framework instance variable based on the application config
 
         :Params:
-        :config_file [str]: Name of the configuration file
+        :  [str]: Name of the configuration file
         :app_name [str]: Name of the application
         """
         app_data = self._app_config.getAppData(
