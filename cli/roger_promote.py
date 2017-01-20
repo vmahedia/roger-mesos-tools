@@ -96,9 +96,6 @@ class RogerPromote(object):
         # Set framework based on app config
         rp._set_framework(args.config, args.app_name)
 
-        # Get deployed version in source environment (should be the image name)
-        # image = rp._image_name(args.from_env, args.app_name)
-
         # Get repo name
         repo = rp._config_resolver('repo', args.app_name, args.config)
         if not repo:
@@ -115,8 +112,7 @@ class RogerPromote(object):
             args.config,
             args.app_name
         )
-        a = type(app_data)
-        print(a)
+        print()
 
         image_refs = app_data['containers']
         failed_images = []
@@ -249,7 +245,7 @@ class RogerPromote(object):
         elif environment == 'prod':
             password = os.environ['ROGER_USER_PASS_PROD']
 
-        app_id = self._framework.app_id(template_file)
+        app_id = self._framework.app_id(template_file, self._framework.getName())
 
         image = self._framework.image_name(
             username,
