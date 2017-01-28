@@ -21,6 +21,7 @@ class TestChronos(unittest.TestCase):
         self.appconfig = AppConfig()
 
     def test_image_name(self):
+        res = mock(requests.Response)
         url = 'https://chronos-dev-roger.dal.moz.com/scheduler/jobs/search?name=application-platforms-app1'
         image_data = [{'container':{'image':'moz-roger-simpleapp-1abd568915ad7598a37d1564b103b5b3dc8d9507/v0.1.0'}}]
         data = {'environments':{'dev':{'chronos_endpoint':'https://chronos-dev-roger.dal.moz.com'}}}
@@ -32,7 +33,8 @@ class TestChronos(unittest.TestCase):
 
         app_config_object = mock(AppConfig)
         when(app_config_object).getRogerEnv(config_dir).thenReturn(data)
-        when(requests).get(url, auth=(username, password)).thenReturn(image_data)
+        when(requests).get(url, auth=(username, password)).thenReturn(res)
+        when(res).json().thenReturn(image_data)
 
         c = Chronos()
         img = c.image_name(
@@ -44,4 +46,4 @@ class TestChronos(unittest.TestCase):
             config_file,
             app_config_object
         )
-        assert img ==  image_data[0]['container']['image']
+        assert img == image_data[0]['container']['image']

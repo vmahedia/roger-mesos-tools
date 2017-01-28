@@ -80,26 +80,26 @@ class TestRogerPromote(unittest.TestCase):
         assert rp._framework.getName() == 'Marathon'
 
     def test_image_name(self):
+        os.environ['ROGER_USER'] = "first.last"
+        os.environ['ROGER_USER_PASS_DEV'] = "password"
+        os.environ['ROGER_USER_PASS_STAGE'] = "password"
+        os.environ['ROGER_USER_PASS_PROD'] = "password"
+
         # Fakes
         framework = mock(Marathon)
         app_config = mock(AppConfig)
         settings = mock(Settings)
-        fake_config = tests.helper.fake_config()
+        #fake_config = tests.helper.fake_config()
 
-        # Stubs
-        when(app_config).getRogerEnv('/vagrant/config').thenReturn(fake_config)
-        when(framework).getCurrentImageVersion(
-            fake_config,
-            'stage',
-            'TestApp'
-        ).thenReturn('test_image')
+        when(framework).getName().thenReturn("Marathon")
+        when(framework).image_name('first.last', "password", "dev", "app_id", self.config_dir, self.config_file).thenReturn("test_image")
+        when(framework).app_id("test_path/test_app.json", "Marathon").thenReturn("app_id")
 
-        # # Get instance
         rp = RogerPromote(
             app_config=app_config,
             framework=framework
         )
-        assert rp._image_name('stage', 'TestApp') == 'test_image'
+        assert rp._image_name('dev', self.config_file, "test_path/test_app.json") == 'test_image'
 
     def test_config_resolver(self):
         # Fakes

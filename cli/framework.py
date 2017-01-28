@@ -28,6 +28,7 @@ class Framework(object):
 
         :params:
         :template_file [str]: absoulte path to the template file
+        :framework: [str]: name of framework Marathon or Chronos
         :return: [dict]
         """
         if framework == "Marathon":

@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import unittest
+import json
 import os
 import sys
 import requests
@@ -64,10 +65,15 @@ class TestMarathon(unittest.TestCase):
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
 
     def test_get_image(self):
+        res = mock(requests.Response)
         url = 'https://marathon-dev-roger.dal.moz.com/v2/apps/welcome'
-
-        data = {'dev':{'marathon_endpoint':'https://marathon-dev-roger.dal.moz.com'}}
-        image_data = {'app':{'container':{'docker':{'image':"registry.roger.dal.moz.com:5000/moz-roger-welcome-2522615506470f3d148509f913047060f08ecb64/v0.72.0"}}}}
+        data = {'environments': {'dev': {
+            'marathon_endpoint': 'https://marathon-dev-roger.dal.moz.com'}}}
+        image_data = {
+        'app': {
+        'container': {
+        'docker': {
+        'image': "registry.roger.dal.moz.com:5000/25060f08ecb64/v0.72.0"}}}}
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
         username = 'first.first'
         password = 'last.last'
@@ -75,8 +81,9 @@ class TestMarathon(unittest.TestCase):
         config_file = 'test.yml'
 
         app_config_object = mock(AppConfig)
-        when(app_config_object).getConfig(config_dir, config_file).thenReturn(data)
-        when(requests).get(url, auth=(username, password)).thenReturn(image_data)
+        when(app_config_object).getRogerEnv(config_dir).thenReturn(data)
+        when(requests).get(url, auth=(username, password)).thenReturn(res)
+        when(res).json().thenReturn(image_data)
 
         m = Marathon()
         img = m.image_name(
