@@ -22,3 +22,12 @@ def fake_team_config():
     )
     with open(config_file, 'r') as f:
         return json.loads(f.read())
+
+
+def fake_marathon_response():
+    current_dir = os.path.join(os.path.dirname(__file__))
+    config_file = os.path.abspath(
+        os.path.join(current_dir, 'configs', 'test_marathon_response.json')
+    )
+    with open(config_file, 'r') as f:
+        return json.loads(f.read())

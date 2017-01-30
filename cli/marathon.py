@@ -260,6 +260,7 @@ class Marathon(Framework):
         tasks = resp.json()['tasks'] if 'tasks' in respjson else {}
         return tasks
 
+<<<<<<< HEAD
     # def app_id(self, template_file):
     #     """
     #     returns the application id for the given template file
@@ -273,6 +274,21 @@ class Marathon(Framework):
     #     env = Environment(loader=FileSystemLoader(dir_name))  # loads filename using the dir_name
     #     template = env.get_template(file_name)  # gets a template using a filename
     #     return yaml.safe_load(str(template.module))["id"]  # returns the value of the id
+=======
+    def app_id(self, template_file):
+        """
+        returns the application id for the given template file
+
+        :params:
+        :template_file [str]: absoulte path to the template file
+        :return: [dict]
+        """
+        dir_name = os.path.dirname(template_file)
+        file_name = os.path.basename(template_file)
+        env = Environment(loader=FileSystemLoader(dir_name))
+        template = env.get_template(file_name)
+        return yaml.safe_load(str(template.module))["id"]
+>>>>>>> 363157802599f5896dc846705b64486d610e1313
 
     def image_name(
         self,
@@ -283,7 +299,7 @@ class Marathon(Framework):
         config_dir,
         config_file,
         app_config_object=AppConfig()
-    ):
+      ):
         """
         returns the application image name
 
@@ -297,6 +313,7 @@ class Marathon(Framework):
         :app_config_object  [object]: AppConfig object
         """
         config = app_config_object.getRogerEnv(config_dir)
+<<<<<<< HEAD
         # config is the config ditc
         # returning the marathon_endpoint for a certain enviroment
         location = config['environments'][env]['marathon_endpoint']
@@ -306,3 +323,11 @@ class Marathon(Framework):
         res = requests.get(url, auth=(username, password))  # res is the response from the get request returns Json object
         image = res.json()['app']['container']['docker']['image']  # keys that acces the image from the dict
         return image  # full image name
+=======
+        location = config['environments'][env]['marathon_endpoint']
+        url = '{location}/v2/apps/{app_id}'.format(
+            location=location, app_id=app_id)
+        res = requests.get(url, auth=(username, password))
+        image = res.json()['app']['container']['docker']['image']
+        return image
+>>>>>>> 363157802599f5896dc846705b64486d610e1313
