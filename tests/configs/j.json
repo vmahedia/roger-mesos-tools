@@ -1,0 +1,37 @@
+json_one = {
+  "container": {
+    "docker": {
+      "portMappings": [{
+        "servicePort": 0,
+        "protocol": "tcp",
+        "containerPort": 3000,
+        "hostPort": 0
+      }],
+      "image": "{{ image }}",
+      "network": "BRIDGE"
+    },
+    "type": "DOCKER"
+  },
+  "mem": {{ mem }},
+  "cpus": {{ cpus }},
+  "instances": {{ instances }},
+  "env": {
+    "NODE_ENV": "{{NODE_ENV}}",
+    "POSTGRES_USER": "SECRET",
+    "POSTGRES_PW": "SECRET",
+    "HTTP_PREFIX": "/amber",
+    "HTTP_PORT": "PORT0"
+  },
+  "id": "moz-analytics/amber"
+}
+
+
+imports = {
+  "app":{
+    "container":{
+      "docker":{
+        "image": "registry.roger.dal.moz.com:5000/moz-roger-welcome-2522615506470f3d148509f913047060f08ecb64/v0.72.0"
+      }
+    }
+  }
+}
