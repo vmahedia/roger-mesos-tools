@@ -37,7 +37,7 @@ class TestChronos(unittest.TestCase):
         when(res).json().thenReturn(image_data)
 
         c = Chronos()
-        img = c.image_name(
+        img = c.get_image_name(
             username,
             password,
             'dev',
