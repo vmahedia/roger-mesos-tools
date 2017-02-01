@@ -274,7 +274,7 @@ class Marathon(Framework):
         template = env.get_template(file_name)
         return yaml.safe_load(str(template.module))["id"]
 
-    def image_name(
+    def get_image_name(
         self,
         username,
         password,

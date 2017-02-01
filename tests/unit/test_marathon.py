@@ -86,7 +86,7 @@ class TestMarathon(unittest.TestCase):
         when(res).json().thenReturn(image_data)
 
         m = Marathon()
-        img = m.image_name(
+        img = m.get_image_name(
             username,
             password,
             'dev',

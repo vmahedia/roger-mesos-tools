@@ -66,5 +66,5 @@ class Framework(object):
         pass
 
     @abstractmethod
-    def image_name(self, environment, application):
+    def get_image_name(self, environment, application):
         pass
