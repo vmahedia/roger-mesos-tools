@@ -93,6 +93,5 @@ class Chronos(Framework):
             location=location, name=name)
 
         res = requests.get(url, auth=(username, password))
-        print(res.json())
         imagename = res.json()[0]['container']['image']
         return imagename
