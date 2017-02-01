@@ -245,7 +245,7 @@ class RogerPromote(object):
 
         app_id = self._framework.app_id(template_file, self._framework.getName())
 
-        image = self._framework.image_name(
+        image = self._framework.get_image_name(
             username,
             password,
             environment,

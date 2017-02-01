@@ -83,7 +83,7 @@ class TestRogerPromote(unittest.TestCase):
             "test_path/test_app.json",
             "Marathon"
         ).thenReturn("app_id")
-        when(framework).image_name(
+        when(framework).get_image_name(
             'first.last',
             "password",
             "dev",

@@ -77,7 +77,7 @@ class Chronos(Framework):
     def getTasks(self, roger_env, environment):
         print("Not yet implemented!")
 
-    def image_name(
+    def get_image_name(
         self,
         username,
         password,
