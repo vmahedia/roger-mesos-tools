@@ -13,8 +13,6 @@ import json
 from pkg_resources import get_distribution
 
 
-
-
 class Utils:
 
     def __init__(self):
