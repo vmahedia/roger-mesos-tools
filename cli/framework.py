@@ -22,7 +22,7 @@ class Framework(object):
             self.passw = settings.getPass(env)
         print("Using u:{}, p:****".format(self.user))
 
-    def app_id(self, template_file, framework):
+    def get_app_id(self, template_file, framework):
         """
         returns the application id for the given template file
 

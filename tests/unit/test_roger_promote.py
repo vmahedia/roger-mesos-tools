@@ -79,7 +79,7 @@ class TestRogerPromote(unittest.TestCase):
         framework = mock(Marathon)
 
         when(framework).getName().thenReturn("Marathon")
-        when(framework).app_id(
+        when(framework).get_app_id(
             "test_path/test_app.json",
             "Marathon"
         ).thenReturn("app_id")

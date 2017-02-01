@@ -243,7 +243,7 @@ class RogerPromote(object):
         elif environment == 'prod':
             password = os.environ['ROGER_USER_PASS_PROD']
 
-        app_id = self._framework.app_id(template_file, self._framework.getName())
+        app_id = self._framework.get_app_id(template_file, self._framework.getName())
 
         image = self._framework.get_image_name(
             username,
