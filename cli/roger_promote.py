@@ -41,10 +41,6 @@ def describe():
     return 'Enables application promotion between environments'
 
 
-class RogerPromoteError(Exception):
-    pass
-
-
 class RogerPromote(object):
     """
     Enable application promotion between environments
