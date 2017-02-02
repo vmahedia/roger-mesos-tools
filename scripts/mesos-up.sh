@@ -16,7 +16,7 @@ main() {
     install_plugin "$plugin"
   done
   vagrant up
-  bash scripts/ansble-plays.sh
+  bash scripts/ansible-plays.sh
   bash scripts/vagrant_runner.sh ssh -c \
     "pushd /vagrant && sudo ./scripts/flush_input_chain.sh && popd"
 }

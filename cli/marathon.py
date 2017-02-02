@@ -260,19 +260,19 @@ class Marathon(Framework):
         tasks = resp.json()['tasks'] if 'tasks' in respjson else {}
         return tasks
 
-    # def get_app_id(self, template_file):
-    #     """
-    #     returns the application id for the given template file
-    #
-    #     :params:
-    #     :template_file [str]: absoulte path to the template file
-    #     :return: [dict]
-    #     """
-    #     dir_name = os.path.dirname(template_file)
-    #     file_name = os.path.basename(template_file)
-    #     env = Environment(loader=FileSystemLoader(dir_name))
-    #     template = env.get_template(file_name)
-    #     return yaml.safe_load(str(template.module))["id"]
+    def get_app_id(self, template_file):
+        """
+        returns the application id for the given template file
+
+        :params:
+        :template_file [str]: absoulte path to the template file
+        :return: [dict]
+        """
+        dir_name = os.path.dirname(template_file)
+        file_name = os.path.basename(template_file)
+        env = Environment(loader=FileSystemLoader(dir_name))
+        template = env.get_template(file_name)
+        return yaml.safe_load(str(template.module))["id"]
 
     def get_image_name(
         self,
