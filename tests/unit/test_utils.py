@@ -13,8 +13,6 @@ from cli.utils import Utils
 from cli.appconfig import AppConfig
 from mockito import mock, Mock, when
 
-# Test basic functionalities of Settings class
-
 
 class TestUtils(unittest.TestCase):
 
@@ -43,25 +41,6 @@ class TestUtils(unittest.TestCase):
         assert self.utils.extractShaFromImage("") == ""
         assert self.utils.extractShaFromImage("bdsbddadhhd") == ""
 
-    # def test_get_template_path(self):
-    #     args = self.args
-    #     appObj = mock(AppConfig)
-    #     config_dir = '/vagrant/config'
-    #     app_name = 'testApp'
-    #     args.config_file = 'test.json'
-    #     fake_team_config = tests.helper.fake_team_config()
-    #
-    #     when(appObj).getAppData(config_dir, args.config_file, app_name).thenReturn(
-    #         {'template_path': 'Foo'})
-    #
-    #     when(appObj).getConfig(
-    #         config_dir, 'roger.json'
-    #         ).thenReturn(fake_team_config)
-    #
-    #     assert self.utils.get_template_path(config_dir, args, app_name) == 'somthing'
-    #
-    #     def tearDown(self):
-    #         pass
 
 if __name__ == '__main__':
     unittest.main()

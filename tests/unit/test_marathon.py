@@ -70,10 +70,10 @@ class TestMarathon(unittest.TestCase):
         data = {'environments': {'dev': {
             'marathon_endpoint': 'https:/marathon-example.com'}}}
         image_data = {
-        'app': {
-        'container': {
-        'docker': {
-        'image': "registry.example.com:5000/25060f08ecb64/v0.72.0"}}}}
+            'app': {
+            'container': {
+            'docker': {
+            'image': "registry.example.com:6000/0dajdhkfa8ecb64/v0.72.0"}}}}
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
         username = 'first.first'
         password = 'last.last'
