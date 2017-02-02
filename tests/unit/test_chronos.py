@@ -22,9 +22,9 @@ class TestChronos(unittest.TestCase):
 
     def test_image_name(self):
         res = mock(requests.Response)
-        url = 'https://chronos-dev-env.place.testplace.com/scheduler/jobs/search?name=example-team'
-        image_data = [{'container':{'image':'example-image/v0.1.0'}}]
-        data = {'environments':{'dev':{'chronos_endpoint':'https://example-end-point.com'}}}
+        url = 'https://example/scheduler/jobs/search?name=example_team-app'
+        image_data = [{'container':{'image':'moz-roger-simpleapp-1abd568915ad7598a37d1564b103b5b3dc8d9507/v0.1.0'}}]
+        data = {'environments':{'dev':{'chronos_endpoint':'https://example'}}}
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
         username = 'first.first'
         password = 'last.last'
@@ -41,7 +41,7 @@ class TestChronos(unittest.TestCase):
             username,
             password,
             'dev',
-            'application-platforms-app1',
+            'example_team-app',
             config_dir,
             config_file,
             app_config_object
