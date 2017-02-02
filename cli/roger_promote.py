@@ -108,7 +108,6 @@ class RogerPromote(object):
             args.config,
             args.app_name
         )
-        print()
 
         image_refs = app_data['containers']
         failed_images = []
