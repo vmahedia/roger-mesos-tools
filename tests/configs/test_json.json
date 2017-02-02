@@ -24,14 +24,3 @@ json_one = {
   },
   "id": "moz-analytics/amber"
 }
-
-
-imports = {
-  "app":{
-    "container":{
-      "docker":{
-        "image": "registry.roger.dal.moz.com:5000/moz-roger-welcome-2522615506470f3d148509f913047060f08ecb64/v0.72.0"
-      }
-    }
-  }
-}
