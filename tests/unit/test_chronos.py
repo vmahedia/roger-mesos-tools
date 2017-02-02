@@ -23,7 +23,7 @@ class TestChronos(unittest.TestCase):
     def test_image_name(self):
         res = mock(requests.Response)
         url = 'https://example/scheduler/jobs/search?name=example_team-app'
-        image_data = [{'container':{'image':'moz-roger-simpleapp-1abd568915ad7598a37d1564b103b5b3dc8d9507/v0.1.0'}}]
+        image_data = [{'container':{'image':'place-robot-simpleapp-1abd568915ad7598a37d1564b103b5b3dc8d9507/v0.1.0'}}]
         data = {'environments':{'dev':{'chronos_endpoint':'https://example'}}}
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
         username = 'first.first'
