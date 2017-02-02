@@ -179,8 +179,8 @@ class RogerPromote(object):
         parser.add_argument(
             'to_env', choices=env_choices, help='The destination environment'
         )
-        parser.add_argument('config', help='The name of the config file')
         parser.add_argument('app_name', help='The name of the application')
+        parser.add_argument('config', help='The name of the config file')
 
         return parser
 
