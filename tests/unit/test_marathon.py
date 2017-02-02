@@ -66,14 +66,14 @@ class TestMarathon(unittest.TestCase):
 
     def test_get_image(self):
         res = mock(requests.Response)
-        url = 'https://marathon-dev-roger.dal.moz.com/v2/apps/welcome'
+        url = 'https:/marathon-example.com/v2/apps/welcome'
         data = {'environments': {'dev': {
-            'marathon_endpoint': 'https://marathon-dev-roger.dal.moz.com'}}}
+            'marathon_endpoint': 'https:/marathon-example.com'}}}
         image_data = {
         'app': {
         'container': {
         'docker': {
-        'image': "registry.roger.dal.moz.com:5000/25060f08ecb64/v0.72.0"}}}}
+        'image': "registry.example.com:5000/25060f08ecb64/v0.72.0"}}}}
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
         username = 'first.first'
         password = 'last.last'
