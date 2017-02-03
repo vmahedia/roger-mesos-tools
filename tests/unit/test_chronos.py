@@ -24,7 +24,7 @@ class TestChronos(unittest.TestCase):
         res = mock(requests.Response)
         url = 'https://example.com/scheduler/jobs/search?name=example_team-app'
         image_data = [{'container':{'image':'place-robot-simpleapp-2345643lkjfkdajurakdsfoweifa/v0.1.0'}}]
-        data = {'environments':{'dev':{'chronos_endpoint':'https://example'}}}
+        data = {'environments':{'dev':{'chronos_endpoint':'https://example.com'}}}
         os.environ['ROGER_CONFIG_DIR'] = '/vagrant/config'
         username = 'first.first'
         password = 'last.last'
