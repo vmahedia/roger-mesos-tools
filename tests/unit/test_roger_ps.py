@@ -7,9 +7,9 @@ import sys
 import argparse
 sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-from roger_ps import RogerPS
-from haproxyparser import HAProxyParser
-from marathon import Marathon
+from cli.roger_ps import RogerPS
+from cli.haproxyparser import HAProxyParser
+from cli.marathon import Marathon
 from mockito import mock, when
 
 

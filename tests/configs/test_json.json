@@ -1,0 +1,26 @@
+json_one = {
+  "container": {
+    "docker": {
+      "portMappings": [{
+        "servicePort": 0,
+        "protocol": "tcp",
+        "containerPort": 3000,
+        "hostPort": 0
+      }],
+      "image": "{{ image }}",
+      "network": "BRIDGE"
+    },
+    "type": "DOCKER"
+  },
+  "mem": {{ mem }},
+  "cpus": {{ cpus }},
+  "instances": {{ instances }},
+  "env": {
+    "NODE_ENV": "{{NODE_ENV}}",
+    "POSTGRES_USER": "SECRET",
+    "POSTGRES_PW": "SECRET",
+    "HTTP_PREFIX": "/amber",
+    "HTTP_PORT": "PORT0"
+  },
+  "id": "moz-analytics/amber"
+}

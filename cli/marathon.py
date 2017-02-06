@@ -5,11 +5,14 @@ import os
 import sys
 import requests
 import json
+import yaml
+from jinja2 import Environment, FileSystemLoader
 from cli.framework import Framework
 from cli.utils import Utils
 from cli.settings import Settings
 from cli.marathonvalidator import MarathonValidator
 from cli.haproxyparser import HAProxyParser
+from cli.appconfig import AppConfig
 
 utils = Utils()
 settings = Settings()
@@ -256,3 +259,48 @@ class Marathon(Framework):
         respjson = resp.json()
         tasks = resp.json()['tasks'] if 'tasks' in respjson else {}
         return tasks
+
+    def get_app_id(self, template_file):
+        """
+        returns the application id for the given template file
+
+        :params:
+        :template_file [str]: absoulte path to the template file
+        :return: [dict]
+        """
+        dir_name = os.path.dirname(template_file)
+        file_name = os.path.basename(template_file)
+        env = Environment(loader=FileSystemLoader(dir_name))
+        template = env.get_template(file_name)
+        return yaml.safe_load(str(template.module))["id"]
+
+    def get_image_name(
+        self,
+        username,
+        password,
+        env,
+        app_id,
+        config_dir,
+        config_file,
+        app_config_object=AppConfig()
+      ):
+        """
+        returns the application image name
+
+        :params:
+        :username           [str]: auth username
+        :password           [str]: auth password
+        :env:               [str]: enviroment
+        :app_id             [str]: app_id
+        :config_file        [str]: file name
+        :config_dir         [str]: config directory path
+        :app_config_object  [object]: AppConfig object
+        """
+        config = app_config_object.getRogerEnv(config_dir)
+
+        location = config['environments'][env]['marathon_endpoint']
+        url = '{location}/v2/apps/{app_id}'.format(
+            location=location, app_id=app_id)
+        res = requests.get(url, auth=(username, password))
+        image = res.json()['app']['container']['docker']['image']
+        return image

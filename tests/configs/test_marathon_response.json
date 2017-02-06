@@ -1,0 +1,97 @@
+{
+    "app": {
+        "acceptedResourceRoles": null,
+        "args": null,
+        "backoffFactor": 1.15,
+        "backoffSeconds": 1,
+        "cmd": null,
+        "constraints": [],
+        "container": {
+            "docker": {
+                "forcePullImage": false,
+                "image": "example.roger.dal.moz.com:5000/moz-roger-test-2522615506470f3d148509f913047060f08ecb64/v0.72.0",
+                "network": "BRIDGE",
+                "parameters": [],
+                "portMappings": [
+                    {
+                        "containerPort": 9090,
+                        "hostPort": 0,
+                        "labels": {},
+                        "protocol": "tcp",
+                        "servicePort": 10134
+                    }
+                ],
+                "privileged": false
+            },
+            "type": "DOCKER",
+            "volumes": []
+        },
+        "cpus": 0.2,
+        "dependencies": [],
+        "deployments": [],
+        "disk": 0,
+        "env": {
+            "HTTP_PORT": "PORT0",
+            "HTTP_PREFIX": "/welcome1"
+        },
+        "executor": "",
+        "fetch": [],
+        "healthChecks": [],
+        "id": "/test",
+        "instances": 1,
+        "ipAddress": null,
+        "labels": {},
+        "maxLaunchDelaySeconds": 3600,
+        "mem": 256,
+        "portDefinitions": [
+            {
+                "labels": {},
+                "port": 10134,
+                "protocol": "tcp"
+            }
+        ],
+        "ports": [
+            10134
+        ],
+        "readinessChecks": [],
+        "requirePorts": false,
+        "residency": null,
+        "storeUrls": [],
+        "tasks": [
+            {
+                "appId": "test_app",
+                "host": "dalstgmesos01",
+                "id": "application-platforms_welcome.57655b6e-d1fd-11e6-a148-00505696a43a",
+                "ipAddresses": [
+                    {
+                        "ipAddress": "172.17.0.14",
+                        "protocol": "IPv4"
+                    }
+                ],
+                "ports": [
+                    31741
+                ],
+                "slaveId": "faa34e53-33fc-40d4-8e11-6d681fde4750-S59",
+                "stagedAt": "2017-01-03T21:41:10.459Z",
+                "startedAt": "2017-01-03T21:41:30.036Z",
+                "state": "TASK_RUNNING",
+                "version": "2017-01-03T21:41:09.409Z"
+            }
+        ],
+        "tasksHealthy": 0,
+        "tasksRunning": 1,
+        "tasksStaged": 0,
+        "tasksUnhealthy": 0,
+        "upgradeStrategy": {
+            "maximumOverCapacity": 1,
+            "minimumHealthCapacity": 1
+        },
+        "uris": [],
+        "user": null,
+        "version": "2017-01-03T21:41:09.409Z",
+        "versionInfo": {
+            "lastConfigChangeAt": "2017-01-03T21:41:09.409Z",
+            "lastScalingAt": "2017-01-03T21:41:09.409Z"
+        }
+    }
+}

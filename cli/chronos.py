@@ -6,6 +6,7 @@ import sys
 import requests
 import json
 from cli.framework import Framework
+from cli.appconfig import AppConfig
 from cli.utils import Utils
 utils = Utils()
 
@@ -75,3 +76,22 @@ class Chronos(Framework):
 
     def getTasks(self, roger_env, environment):
         print("Not yet implemented!")
+
+    def get_image_name(
+        self,
+        username,
+        password,
+        env,
+        name,
+        config_dir,
+        config_file,
+        app_config_object=AppConfig()
+    ):
+        config = app_config_object.getRogerEnv(config_dir)
+        location = config['environments'][env]['chronos_endpoint']
+        url = '{location}/scheduler/jobs/search?name={name}'.format(
+            location=location, name=name)
+
+        res = requests.get(url, auth=(username, password))
+        imagename = res.json()[0]['container']['image']
+        return imagename

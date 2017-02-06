@@ -14,16 +14,16 @@ from cli.roger_build import RogerBuild
 from cli.roger_gitpull import RogerGitPull
 from cli.roger_push import RogerPush
 import roger_gitpull
-from marathon import Marathon
-from frameworkUtils import FrameworkUtils
-from appconfig import AppConfig
-from settings import Settings
-from hooks import Hooks
+from cli.marathon import Marathon
+from cli.frameworkUtils import FrameworkUtils
+from cli.appconfig import AppConfig
+from cli.settings import Settings
+from cli.hooks import Hooks
 from mockito import mock, when, verify
 from mockito.matchers import any
 from mock import MagicMock
-from settings import Settings
-from gitutils import GitUtils
+from cli.settings import Settings
+from cli.gitutils import GitUtils
 from cli.dockerutils import DockerUtils
 from cli.docker_build import Docker
 from statsd import StatsClient

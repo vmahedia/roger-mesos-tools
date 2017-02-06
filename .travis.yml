@@ -9,9 +9,8 @@ install:
     - pip install mock==1.0.1
     - pip install mockito==0.5.2
 
-# The majority of these tests are setup properly under roger-promote. They're
-# not working here, so silencing on this branch for now.
-script: /bin/true
+
+script: py.test -v tests/unit
 
 git:
   submodules: false

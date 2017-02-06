@@ -1,20 +1,31 @@
 #!/usr/bin/python
 
+
 from __future__ import print_function
+import tests.helper
 import unittest
 import os
 import sys
+import argparse
 sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-from utils import Utils
-from appconfig import AppConfig
-
-# Test basic functionalities of Settings class
+from cli.utils import Utils
+from cli.appconfig import AppConfig
+from mockito import mock, Mock, when
 
 
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
+        parser = argparse.ArgumentParser(description='Args for test')
+        parser.add_argument('-e', '--env', metavar='env',
+                            help="Environment to deploy to. example: 'dev' or 'stage'")
+        parser.add_argument(
+            '--skip-push', '-s', help="Don't push. Only generate components. Defaults to false.", action="store_true")
+        parser.add_argument(
+            '--secrets-file', '-S', help="Specify an optional secrets file for deploy runtime variables.")
+        self.parser = parser
+        self.args = parser
         self.utils = Utils()
         self.appConfig = AppConfig()
 
@@ -30,8 +41,6 @@ class TestUtils(unittest.TestCase):
         assert self.utils.extractShaFromImage("") == ""
         assert self.utils.extractShaFromImage("bdsbddadhhd") == ""
 
-    def tearDown(self):
-        pass
 
 if __name__ == '__main__':
     unittest.main()

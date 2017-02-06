@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+import argparse
 import os
 import sys
 import statsd
@@ -137,3 +138,13 @@ class Utils:
         own_dir = os.path.dirname(os.path.realpath(__file__))
         root = os.path.abspath(os.path.join(own_dir, os.pardir))
         return self.roger_version(root)
+
+    def repo_relative_path(self, appConfig, args, repo, path):
+        '''Returns a path relative to the repo, assumed to be under [args.directory]/[repo name]'''
+        repo_name = appConfig.getRepoName(repo)
+        abs_path = os.path.abspath(args.directory)
+        if abs_path == args.directory:
+            return "{0}/{1}/{2}".format(args.directory, repo_name, path)
+        else:
+            return "{0}/{1}/{2}/{3}".format(os.environ.get('PWD', ''),
+                                            args.directory, repo_name, path)

@@ -8,15 +8,15 @@ import sys
 import shutil
 sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli")))
-from settings import Settings
-from gitutils import GitUtils
+from cli.settings import Settings
+from cli.gitutils import GitUtils
 
 import pytest
 
 # Test basic functionalities of roger-init script
 
 
-@pytest.skip
+@pytest.mark.skip
 class TestInit(unittest.TestCase):
 
     def setUp(self):
@@ -27,6 +27,7 @@ class TestInit(unittest.TestCase):
         self.work_dir = self.base_dir + "/tests/work_dir"
         self.branch = "master"
 
+    @pytest.mark.skip
     def test_gitPull(self):
         config_file = "app.json"
         work_dir = self.work_dir
@@ -57,6 +58,7 @@ class TestInit(unittest.TestCase):
         shutil.rmtree(work_dir)
         pass
 
+    @pytest.mark.skip
     def test_gitShallowClone(self):
         config_file = "app.json"
         work_dir = self.work_dir
@@ -82,6 +84,7 @@ class TestInit(unittest.TestCase):
         assert exists is True
         shutil.rmtree(work_dir)
 
+    @pytest.mark.skip
     def test_gitClone(self):
         config_file = "app.json"
         work_dir = self.work_dir
