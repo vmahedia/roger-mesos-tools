@@ -125,7 +125,10 @@ class RogerPromote(object):
                 args.config,
                 template_path
             )
-            image_name = full_image_name.split('/', 1)[1]
+            if "/" in full_image_name:
+                image_name = full_image_name.split('/', 1)[1]
+            else:
+                image_name = full_image_name
 
             # Execute the script
             cmd = [
