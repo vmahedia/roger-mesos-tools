@@ -14,7 +14,7 @@ class WebHook:
         self.emoji = ':rocket:'
         self.defChannel = ''
         self.config_dir = ''
-        self.username = 'rogeros-deploy-bot'
+        self.username = 'roger-deploy-bot'
         self.settingObj = Settings()
         self.appconfigObj = AppConfig()
         self.configLoadFlag = False
