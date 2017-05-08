@@ -22,7 +22,10 @@ def chdir(dirname):
 
 class DockerUtils:
 
-    def docker_build(self, image_tag, docker_file):
+    def docker_build(self, image_tag, docker_file, build_args):
+        if not build_args:
+            print("Build args in Docker Utils: {}".format(build_args))
+
         if docker_file is not 'Dockerfile':
             exit_code = os.system(
                 'docker build -f {} -t {} .'.format(docker_file, image_tag))

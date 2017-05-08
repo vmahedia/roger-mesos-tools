@@ -73,8 +73,7 @@ class Slack:
             self.username = config['username']
             self.emoji = config['emoji']
         except (TypeError, KeyError) as e:
-            print("Warning: slack not setup in config (error: %s). Not using slack.\n" %
-                  e, file=sys.stderr)
+            #print("Warning: slack not setup in config (error: %s). Not using slack.\n" %e, file=sys.stderr)
             return
 
         try:
@@ -92,24 +91,6 @@ class Slack:
             self.client.api_call(self.method, channel=self.channel,
                                  username=self.username, icon_emoji=self.emoji, text=text)
             print ("Your current configuration for slack notifications is deprecated! Please switch to latest configuration.")
-
-
-# Author: cwhitten
-# Purpose: Initial plumbing for a standardized deployment
-#          process into the ClusterOS
-#
-# Keys off of a master config file in APP_ROOT/config/
-#   with the naming convention APP_NAME.json
-# Container-specific Marathon files live in APP_ROOT/templates/ with the
-#   naming convention APP_NAME-SERVICE_NAME.json
-#
-# See README for details and intended use.
-#
-# Attempts to get a version from an existing image on marathon (formatting
-# rules apply)
-
-# Expected format:
-#   <host>:<port>/moz-content-agora-7da406eb9e8937875e0548ae1149/v0.46
 
 class RogerDeploy(object):
 
