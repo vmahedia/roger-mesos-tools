@@ -83,10 +83,10 @@ class RogerBuild(object):
                 repo = data.get('repo', args.app_name)
 
             build_args = {}
-            if 'build_args' in data:
-                if 'environment' in data['build_args']:
-                    if args.env in data['build_args']['environment']:
-                        build_args = data['build_args']['environment'][args.env]
+            if 'build-args' in data:
+                if 'environment' in data['build-args']:
+                    if args.env in data['build-args']['environment']:
+                        build_args = data['build-args']['environment'][args.env]
             print("Build args: {}".format(build_args))
 
             projects = data.get('privateProjects', [])

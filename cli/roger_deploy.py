@@ -73,7 +73,6 @@ class Slack:
             self.username = config['username']
             self.emoji = config['emoji']
         except (TypeError, KeyError) as e:
-            #print("Warning: slack not setup in config (error: %s). Not using slack.\n" %e, file=sys.stderr)
             return
 
         try:
