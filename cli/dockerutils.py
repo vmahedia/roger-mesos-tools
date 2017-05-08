@@ -25,10 +25,8 @@ class DockerUtils:
     def docker_build(self, image_tag, docker_file, build_args):
         build_arg_str = ""
         if build_args:
-            print("Build args in Docker Utils: {}".format(build_args))
             for key, value in build_args.iteritems():
                 build_arg_str = build_arg_str + "--build-arg {}={} ".format(key, value)
-        print("Build args string: {}".format(build_arg_str))
 
         if docker_file is not 'Dockerfile':
             exit_code = os.system(

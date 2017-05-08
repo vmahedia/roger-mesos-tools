@@ -87,7 +87,6 @@ class RogerBuild(object):
                 if 'environment' in data['build-args']:
                     if args.env in data['build-args']['environment']:
                         build_args = data['build-args']['environment'][args.env]
-            print("Build args: {}".format(build_args))
 
             projects = data.get('privateProjects', [])
             docker_path = data.get('path', 'none')

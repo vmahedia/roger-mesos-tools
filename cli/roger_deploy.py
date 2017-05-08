@@ -412,7 +412,7 @@ class RogerDeploy(object):
             build_args.directory = os.path.abspath(work_dir)
             build_args.tag_name = image_name
             build_args.config_file = config_file
-            build_args.env = args.environment
+            build_args.env = environment
             build_args.push = True
             try:
                 self.rogerBuildObject.identifier = self.identifier
