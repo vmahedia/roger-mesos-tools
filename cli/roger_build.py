@@ -223,7 +223,6 @@ class RogerBuild(object):
                       e, file=sys.stderr)
                 raise
 
-
 if __name__ == "__main__":
     settingObj = Settings()
     appObj = AppConfig()
