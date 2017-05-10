@@ -82,6 +82,12 @@ class RogerBuild(object):
             else:
                 repo = data.get('repo', args.app_name)
 
+            build_args = {}
+            if 'build-args' in data:
+                if 'environment' in data['build-args']:
+                    if args.env in data['build-args']['environment']:
+                        build_args = data['build-args']['environment'][args.env]
+
             projects = data.get('privateProjects', [])
             docker_path = data.get('path', 'none')
 
@@ -142,7 +148,7 @@ class RogerBuild(object):
                     if abs_path == args.directory:
                         try:
                             dockerObj.docker_build(
-                                dockerUtilsObj, appObj, args.directory, repo, projects, docker_path, image, build_filename)
+                                dockerUtilsObj, appObj, args.directory, repo, projects, docker_path, image, build_args, build_filename)
                         except ValueError:
                             print('Docker build failed.')
                             raise
@@ -150,7 +156,7 @@ class RogerBuild(object):
                         directory = '{0}/{1}'.format(cur_dir, args.directory)
                         try:
                             dockerObj.docker_build(
-                                dockerUtilsObj, appObj, directory, repo, projects, docker_path, image, build_filename)
+                                dockerUtilsObj, appObj, directory, repo, projects, docker_path, image, build_args, build_filename)
                         except ValueError:
                             print('Docker build failed.')
                             raise
@@ -216,7 +222,6 @@ class RogerBuild(object):
                 print("The following error occurred: %s" %
                       e, file=sys.stderr)
                 raise
-
 
 if __name__ == "__main__":
     settingObj = Settings()

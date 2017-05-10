@@ -22,12 +22,17 @@ def chdir(dirname):
 
 class DockerUtils:
 
-    def docker_build(self, image_tag, docker_file):
+    def docker_build(self, image_tag, docker_file, build_args):
+        build_arg_str = ""
+        if build_args:
+            for key, value in build_args.iteritems():
+                build_arg_str = build_arg_str + "--build-arg {}={} ".format(key, value)
+
         if docker_file is not 'Dockerfile':
             exit_code = os.system(
-                'docker build -f {} -t {} .'.format(docker_file, image_tag))
+                'docker build -f {} -t {} {} .'.format(docker_file, image_tag, build_arg_str))
         else:
-            exit_code = os.system('docker build -t {} .'.format(image_tag))
+            exit_code = os.system('docker build -t {} {} .'.format(image_tag, build_arg_str))
         if exit_code is not 0:
             raise ValueError("docker build failed")
 
