@@ -36,7 +36,6 @@ class Marathon(Framework):
             'marathon_endpoint'] + "/v2/apps"
         self.fetchUserPass(environment)
         resp = requests.get(url, auth=(self.user, self.passw))
-        resp.status_code = 403
         color = "green"
         if re.compile("[45]\d{2}").match(str(resp.status_code)):
             color = "red"
@@ -48,7 +47,7 @@ class Marathon(Framework):
         appName = json.loads(data)['id']
         self.fetchUserPass(environment)
 
-        print(colored("TRIGGERING MARATHON FRAMEWORK UPDATE FOR: {}".format(container), "yellow"))
+        print(colored("TRIGGERING MARATHON FRAMEWORK UPDATE FOR APPLICATION: {}".format(container), "yellow"))
         resp = ""
         if 'groups' in data:
             if not act_as_user:
@@ -62,7 +61,6 @@ class Marathon(Framework):
 
             print(colored("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/groups/{}".format(
                 file_path, environmentObj['marathon_endpoint'], appName), "yellow"))
-            resp.status_code = 403
             color = "green"
             if re.compile("[45]\d{2}").match(str(resp.status_code)):
                 color = "red"
@@ -78,7 +76,6 @@ class Marathon(Framework):
                                     'Content-type': 'application/json', 'act-as-user': act_as_user}, auth=(self.user, self.passw))
             print(colored("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/apps/{}".format(
                 file_path, environmentObj['marathon_endpoint'], appName), "yellow"))
-            resp.status_code = 403
             color = "green"
             if re.compile("[45]\d{2}").match(str(resp.status_code)):
                 color = "red"
@@ -248,7 +245,6 @@ class Marathon(Framework):
             'marathon_endpoint'] + '/v2/apps'
         resp = requests.get("{}".format(url), headers=headers,
                             auth=(self.user, self.passw))
-        resp.status_code = 403
         color = "green"
         if re.compile("[45]\d{2}").match(str(resp.status_code)):
             color = "red"
@@ -265,7 +261,6 @@ class Marathon(Framework):
             'marathon_endpoint'] + '/v2/tasks?status=running'
         resp = requests.get("{}".format(url), headers=headers,
                             auth=(self.user, self.passw))
-        resp.status_code = 403
         color = "green"
         if re.compile("[45]\d{2}").match(str(resp.status_code)):
             color = "red"

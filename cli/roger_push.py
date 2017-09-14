@@ -83,7 +83,7 @@ class RogerPush(object):
         # Two possible paths -- first without environment, second with
         path1 = "{}/{}".format(secrets_dir, file_name)
         path2 = "{}/{}/{}".format(secrets_dir, environment, file_name)
-        print(" Loading secrets from {} or {}".format(path1, path2))
+        print("Trying to Load secrets from file {} or {}".format(path1, path2))
 
         try:
             with open(path1) as f:
@@ -92,20 +92,18 @@ class RogerPush(object):
         except IOError:
             pass
         except ValueError as e:
-            raise ValueError(
-                " Error while loading json from {} - {}".format(path1, e))
+            raise ValueError(colored(" Error while loading json from {} - {}".format(path1, e)))
 
         try:
             with open(path2) as f:
                 return_file = yaml.load(f) if path2.lower().endswith('.yml') else json.load(f)
             return return_file
         except IOError:
-            print(" Couldn't load secrets file environment in %s or %s\n" %
+            print("WARNING - Couldn't load any secrets file. Searched %s and %s. \nIGNORE this above warning if you do not have secrets or your secrets file is passed in using the optional argument and does not reside in the above 2 looked up paths." %
                   (path1, path2), file=sys.stderr)
             return {}
         except ValueError as e:
-            raise ValueError(
-                " Error while loading json from {} - {}".format(path2, e))
+            raise ValueError(colored(" Error while loading json from {} - {}".format(path2, e)))
 
     def replaceSecrets(self, output_dict, secrets_dict):
         if type(output_dict) is not dict:
@@ -133,14 +131,14 @@ class RogerPush(object):
         '''Given a JSON string and an object of secret environment variables, replaces
         parses the JSON keys with the secret variables. Returns back
         a JSON string. Raises an error if there are any SECRET variables still exists.'''
-        print(colored("ERROR - The use of \"SECRET\" is deprecated. Please switch to using Jinja variables. To do so,"
-              " use '{{ <actual variable name> }}' instead of \"SECRET\" in the target file.", "red"))
         output_dict = json.loads(json_str)
         json_str = json.dumps(self.replaceSecrets(
             output_dict, secrets), indent=4)
 
         if '\"SECRET\"' in json_str:
-            print(colored("ERROR - There are still \"SECRET\" values -- does your secrets file have all secret environment variables?", "red"))
+            print(colored("ERROR - Found the \"SECRET\" keyword in the template file -- does your secrets file have all secret environment variables?", "red"))
+            print(colored("ERROR - The use of \"SECRET\" is deprecated. Please switch to using Jinja variables. To do so,"
+              " use '{{ <actual variable name> }}' instead of \"SECRET\" in the template file.", "red"))
             return "StandardError"
         return json_str
 
@@ -215,8 +213,7 @@ class RogerPush(object):
                 environment = args.env
 
             if environment not in roger_env['environments']:
-                raise ValueError(
-                    colored("Environment not found in roger-mesos-tools.config file.", "red"))
+                raise ValueError(colored("Environment not found in roger-mesos-tools.config file.", "red"))
 
             environmentObj = roger_env['environments'][environment]
             common_repo = config.get('repo', '')
@@ -339,8 +336,8 @@ class RogerPush(object):
                     failed_container_dict[container_name] = error_str
                     pass
 
-                # Adding check to see if all jinja variables git resolved fot the
-                # container
+                # Adding check to see if all jinja variables got resolved for the
+                # containers
                 if container_name not in failed_container_dict:
                     # Adding check so that not all apps try to mergeSecrets
                     try:
@@ -348,7 +345,7 @@ class RogerPush(object):
                     except Exception as e:
                         raise ValueError(colored("Error while loading json from {} - {}".format(template_with_path, e), "red"))
 
-                    if 'SECRET' in output:
+                    if '\"SECRET\"' in output:
                         output = self.mergeSecrets(output, self.loadSecrets(
                             secrets_dir, containerConfig, args, environment))
                     if output != "StandardError":
@@ -365,6 +362,8 @@ class RogerPush(object):
                             logging.error(traceback.format_exc())
                         with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
                             fh.write(output)
+                    else:
+                        raise ValueError(colored("Error while loading secrets to render template file variables", "red"))
 
             if args.skip_push:
                 print(colored("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(

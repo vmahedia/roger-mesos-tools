@@ -35,7 +35,7 @@ class Chronos(Framework):
         if 'parents' in json.loads(data):
             chronos_resource = "scheduler/dependency"
 
-        print(colored("TRIGGERING CHRONOS FRAMEWORK UPDATE FOR: {}".format(container), "yellow"))
+        print(colored("TRIGGERING CHRONOS FRAMEWORK UPDATE FOR JOB: {}".format(container), "yellow"))
         print(colored("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/{}".format(
             file_path, environmentObj['chronos_endpoint'], chronos_resource), "yellow"))
         endpoint = environmentObj['chronos_endpoint']

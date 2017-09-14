@@ -11,6 +11,7 @@ from cli.hooks import Hooks
 from cli.utils import Utils
 from cli.dockerutils import DockerUtils
 from cli.docker_build import Docker
+from termcolor import colored
 from datetime import datetime
 
 import contextlib
@@ -168,7 +169,7 @@ class RogerBuild(object):
                                 'Docker push failed.')
                         build_message += " and pushed to registry {}".format(roger_env[
                                                                              'registry'])
-                    print(build_message)
+                    print(colored(build_message, "green"))
                 except (IOError) as e:
                     print("The folowing error occurred.(Error: %s).\n" %
                           e, file=sys.stderr)
