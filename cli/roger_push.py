@@ -18,6 +18,7 @@ from cli.hooks import Hooks
 from cli.chronos import Chronos
 from cli.frameworkUtils import FrameworkUtils
 from datetime import datetime
+from termcolor import colored
 
 import contextlib
 import statsd
@@ -132,14 +133,14 @@ class RogerPush(object):
         '''Given a JSON string and an object of secret environment variables, replaces
         parses the JSON keys with the secret variables. Returns back
         a JSON string. Raises an error if there are any SECRET variables still exists.'''
-        print("WARNING - The use of \"SECRET\" is deprecated. Please switch to using Jinja variables. To do so,"
-              " use '{{ <actual variable name> }}' instead of \"SECRET\" in the target file.")
+        print(colored("ERROR - The use of \"SECRET\" is deprecated. Please switch to using Jinja variables. To do so,"
+              " use '{{ <actual variable name> }}' instead of \"SECRET\" in the target file.", "red"))
         output_dict = json.loads(json_str)
         json_str = json.dumps(self.replaceSecrets(
             output_dict, secrets), indent=4)
 
         if '\"SECRET\"' in json_str:
-            print('There are still "SECRET" values -- does your secrets file have all secret environment variables?')
+            print(colored("ERROR - There are still \"SECRET\" values -- does your secrets file have all secret environment variables?", "red"))
             return "StandardError"
         return json_str
 
@@ -193,8 +194,7 @@ class RogerPush(object):
                 args.app_name = ""
 
             if 'registry' not in roger_env.keys():
-                raise ValueError(
-                    'Registry not found in roger-mesos-tools.config file.')
+                raise ValueError(colored("Registry not found in roger-mesos-tools.config file.", "red"))
             else:
                 self.registry = roger_env['registry']
 
@@ -206,8 +206,7 @@ class RogerPush(object):
                 if "ROGER_ENV" in os.environ:
                     env_var = os.environ.get('ROGER_ENV')
                     if env_var.strip() == '':
-                        print(
-                            "Environment variable $ROGER_ENV is not set. Using the default set from roger-mesos-tools.config file")
+                        print(coleored("WARNING - Environment variable $ROGER_ENV is not set. Using the default set from roger-mesos-tools.config file", "red"))
                     else:
                         print(
                             "Using value {} from environment variable $ROGER_ENV".format(env_var))
@@ -217,7 +216,7 @@ class RogerPush(object):
 
             if environment not in roger_env['environments']:
                 raise ValueError(
-                    'Environment not found in roger-mesos-tools.config file.')
+                    colored("Environment not found in roger-mesos-tools.config file.", "red"))
 
             environmentObj = roger_env['environments'][environment]
             common_repo = config.get('repo', '')
@@ -233,8 +232,8 @@ class RogerPush(object):
 
             data = appObj.getAppData(config_dir, args.config_file, app_name)
             if not data:
-                raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(
-                    app_name, config_dir, args.config_file))
+                raise ValueError(colored("Application with name [{}] or data for it not found at {}/{}.".format(
+                    app_name, config_dir, args.config_file), "red"))
 
             configured_container_list = []
             for task in data['containers']:
@@ -243,8 +242,8 @@ class RogerPush(object):
                 else:
                     configured_container_list.append(task)
             if not set(container_list) <= set(configured_container_list):
-                raise ValueError('List of containers [{}] passed do not match list of acceptable containers: [{}]'.format(
-                    container_list, configured_container_list))
+                raise ValueError(colored("List of containers [{}] passed do not match list of acceptable containers: [{}]".format(
+                    container_list, configured_container_list), "red"))
 
             frameworkObj = frameworkUtils.getFramework(data)
             framework = frameworkObj.getName()
@@ -300,7 +299,7 @@ class RogerPush(object):
             hook_input_metric = "roger-tools.rogeros_tools_exec_time," + "event=" + hookname + ",app_name=" + str(args.app_name) + ",identifier=" + str(self.identifier) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser())
             exit_code = hooksObj.run_hook(hookname, data, app_path, hook_input_metric)
             if exit_code != 0:
-                raise ValueError('{} hook failed.'.format(hookname))
+                raise ValueError(colored("{} hook failed.".format(hookname), "red"))
 
             for container in data_containers:
                 if type(container) == dict:
@@ -319,11 +318,9 @@ class RogerPush(object):
                 try:
                     template = env.get_template(containerConfig)
                 except exceptions.TemplateNotFound as e:
-                    raise ValueError(
-                        "The template file {} does not exist".format(template_with_path))
+                    raise ValueError(colored("ERROR - The template file {} does not exist".format(template_with_path), "red"))
                 except Exception as e:
-                    raise ValueError(
-                        "Error while reading template from {} - {}".format(template_with_path, e))
+                    raise ValueError(colored("Error while reading template from {} - {}".format(template_with_path, e), "red"))
 
                 additional_vars = {}
                 additional_vars.update(extra_vars)
@@ -337,8 +334,8 @@ class RogerPush(object):
                 try:
                     output = self.renderTemplate(template, environment, image_path, data, config, container, container_name, additional_vars)
                 except exceptions.UndefinedError as e:
-                    error_str = "The following error occurred. %s.\n" % e
-                    print(error_str, file=sys.stderr)
+                    error_str = "The following Undefined Jinja variable error occurred. %s.\n" % e
+                    print(colored(error_str, "red"), file=sys.stderr)
                     failed_container_dict[container_name] = error_str
                     pass
 
@@ -349,8 +346,7 @@ class RogerPush(object):
                     try:
                         outputObj = json.loads(output)
                     except Exception as e:
-                        raise ValueError(
-                            "Error while loading json from {} - {}".format(template_with_path, e))
+                        raise ValueError(colored("Error while loading json from {} - {}".format(template_with_path, e), "red"))
 
                     if 'SECRET' in output:
                         output = self.mergeSecrets(output, self.loadSecrets(
@@ -371,8 +367,8 @@ class RogerPush(object):
                             fh.write(output)
 
             if args.skip_push:
-                print("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(
-                    framework, comp_dir, environment))
+                print(colored("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(
+                    framework, comp_dir, environment), "yellow"))
             else:
                 # push to roger framework
                 if 'owner' in config:
@@ -388,8 +384,8 @@ class RogerPush(object):
                         execution_result = 'SUCCESS'  # Assume the execution_result to be SUCCESS unless exception occurs
                         sc = self.utils.getStatsClient()
                     except (Exception) as e:
-                        print("The following error occurred: %s" %
-                              e, file=sys.stderr)
+                        print(colored("The following error occurred: %s" %
+                              e, "red"), file=sys.stderr)
                     try:
                         if type(container) == dict:
                             container_name = str(container.keys()[0])
@@ -401,8 +397,8 @@ class RogerPush(object):
                                 config['name'], container)
 
                         if container_name in failed_container_dict:
-                            print("Failed push to {} framework for container {} as unresolved Jinja variables present in template.".format(
-                                framework, container_name))
+                            print(colored("ERROR -  push to {} framework for container {} as unresolved Jinja variables present in template.".format(
+                                framework, container_name), "red"))
                         else:
                             config_file_path = "{0}/{1}/{2}".format(
                                 comp_dir, environment, containerConfig)
@@ -420,11 +416,11 @@ class RogerPush(object):
                                 if hasattr(resp, "status_code"):
                                     status_code = resp.status_code
                             else:
-                                print("Skipping push to {} framework for container {} as Validation Checks failed.".format(
-                                    framework, container))
+                                print(colored("ERROR - Skipping push to {} framework for container {} as Validation Checks failed.".format(
+                                    framework, container), "red"))
                     except (Exception) as e:
-                        print("The following error occurred: %s" %
-                              e, file=sys.stderr)
+                        print(colored("The following error occurred: %s" %
+                              e, "red"), file=sys.stderr)
                         execution_result = 'FAILURE'
                         raise
                     finally:
@@ -476,8 +472,8 @@ class RogerPush(object):
                                     self.statsd_counter_logging(metric)
 
                         except (Exception) as e:
-                            print("The following error occurred: %s" %
-                                  e, file=sys.stderr)
+                            print(colored("The following error occurred: %s" %
+                                  e, "red"), file=sys.stderr)
                             raise
 
             hooksObj.statsd_message_list = self.statsd_message_list
@@ -485,11 +481,11 @@ class RogerPush(object):
             hook_input_metric = "roger-tools.rogeros_tools_exec_time," + "event=" + hookname + ",app_name=" + str(args.app_name) + ",identifier=" + str(self.identifier) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser())
             exit_code = hooksObj.run_hook(hookname, data, app_path, hook_input_metric)
             if exit_code != 0:
-                raise ValueError('{} hook failed.'.format(hookname))
+                raise ValueError(colored("{} hook failed.".format(hookname), "red"))
 
         except (Exception) as e:
-            print("The following error occurred: %s" %
-                  e, file=sys.stderr)
+            print(colored("The following error occurred: %s" %
+                  e, "red"), file=sys.stderr)
             raise
 
 if __name__ == "__main__":
@@ -522,5 +518,5 @@ if __name__ == "__main__":
             for item in lst:
                 sc.timing(item[0], item[1])
     except (Exception) as e:
-        print("The following error occurred: %s" %
-              e, file=sys.stderr)
+        print(colored("The following error occurred: %s" %
+              e, "red"), file=sys.stderr)
