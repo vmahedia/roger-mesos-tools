@@ -75,7 +75,7 @@ class RogerBuild(object):
                 args.env = "dev"
             data = appObj.getAppData(config_dir, args.config_file, args.app_name)
             if not data:
-                raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(
+                raise ValueError("Application with name [{}] or data for it not found at {}/{}.".format(
                     args.app_name, config_dir, args.config_file))
             repo = ''
             if common_repo != '':
@@ -126,7 +126,7 @@ class RogerBuild(object):
             hookname_input_metric = "roger-tools.rogeros_tools_exec_time," + "event=" + hookname + ",app_name=" + str(args.app_name) + ",identifier=" + str(self.identifier) + ",config_name=" + str(config_name) + ",env=" + str(args.env) + ",user=" + str(settingObj.getUser())
             exit_code = hooksObj.run_hook(hookname, data, file_path, hookname_input_metric)
             if exit_code != 0:
-                raise ValueError('{} hook failed.'.format(hookname))
+                raise ValueError("{} hook failed.".format(hookname))
 
             build_filename = 'Dockerfile'
 
@@ -140,7 +140,7 @@ class RogerBuild(object):
 
             if file_exists:
                 if 'registry' not in roger_env:
-                    raise ValueError('Registry not found in roger-mesos-tools.config file.')
+                    raise ValueError("Registry not found in roger-mesos-tools.config file.")
                 else:
                     self.registry = roger_env['registry']
                 self.tag_name = args.tag_name
@@ -151,8 +151,7 @@ class RogerBuild(object):
                             dockerObj.docker_build(
                                 dockerUtilsObj, appObj, args.directory, repo, projects, docker_path, image, build_args, build_filename)
                         except ValueError:
-                            print('Docker build failed.')
-                            raise
+                            raise ValueError("Docker build failed")
                     else:
                         directory = '{0}/{1}'.format(cur_dir, args.directory)
                         try:
@@ -171,7 +170,7 @@ class RogerBuild(object):
                                                                              'registry'])
                     print(colored(build_message, "green"))
                 except (IOError) as e:
-                    print("The folowing error occurred.(Error: %s).\n" %
+                    print("The following error occurred.(Error: %s).\n" %
                           e, file=sys.stderr)
                     raise
             else:
@@ -233,18 +232,16 @@ if __name__ == "__main__":
     roger_build = RogerBuild()
     roger_build.parser = roger_build.parse_args()
     args = roger_build.parser.parse_args()
-    roger_build.main(settingObj, appObj, hooksObj,
-                     dockerUtilsObj, dockerObj, args)
-
-    tools_version_value = roger_build.utils.get_version()
-    image_name = roger_build.registry + "/" + roger_build.tag_name
-    image_tag_value = urllib.quote("'" + image_name + "'")
-
     try:
+        roger_build.main(settingObj, appObj, hooksObj, dockerUtilsObj, dockerObj, args)
+        tools_version_value = roger_build.utils.get_version()
+        image_name = roger_build.registry + "/" + roger_build.tag_name
+        image_tag_value = urllib.quote("'" + image_name + "'")
+
         sc = roger_build.utils.getStatsClient()
         statsd_message_list = roger_build.utils.append_arguments(roger_build.statsd_message_list, tools_version=tools_version_value, image_tag=image_tag_value)
         for item in statsd_message_list:
             sc.timing(item[0], item[1])
     except (Exception) as e:
-        print("The following error occurred: %s" %
-              e, file=sys.stderr)
+        print(colored("The following error occurred: %s" %
+              e, "red"), file=sys.stderr)
