@@ -366,8 +366,8 @@ class RogerPush(object):
                         raise ValueError(colored("Error while loading secrets to render template file variables", "red"))
 
             if args.skip_push:
-                print(colored("Skipping push to {} framework. The rendered config file(s) are under {}/{}".format(
-                    framework, comp_dir, environment), "yellow"))
+                print(colored("Skipping push to {} framework. The rendered config file(s) are under {}/{}/".format(
+                    framework, colored(comp_dir, "blue"), colored(environment, "blue")), "yellow"))
             else:
                 # push to roger framework
                 if 'owner' in config:
@@ -383,8 +383,8 @@ class RogerPush(object):
                         execution_result = 'SUCCESS'  # Assume the execution_result to be SUCCESS unless exception occurs
                         sc = self.utils.getStatsClient()
                     except (Exception) as e:
-                        print(colored("The following error occurred: %s" %
-                              e, "red"), file=sys.stderr)
+                        raise ValueError("The following error occurred: %s" %
+                              e, file=sys.stderr)
                     try:
                         if type(container) == dict:
                             container_name = str(container.keys()[0])
@@ -418,8 +418,8 @@ class RogerPush(object):
                                 print(colored("ERROR - Skipping push to {} framework for container {} as Validation Checks failed.".format(
                                     framework, container), "red"))
                     except (Exception) as e:
-                        print(colored("The following error occurred: %s" %
-                              e, "red"), file=sys.stderr)
+                        print("ERROR - : %s" %
+                              e, file=sys.stderr)
                         execution_result = 'FAILURE'
                         raise
                     finally:
@@ -471,8 +471,7 @@ class RogerPush(object):
                                     self.statsd_counter_logging(metric)
 
                         except (Exception) as e:
-                            print(colored("The following error occurred: %s" %
-                                  e, "red"), file=sys.stderr)
+                            print("The following error occurred: %s" %e, file=sys.stderr)
                             raise
 
             hooksObj.statsd_message_list = self.statsd_message_list
@@ -480,7 +479,7 @@ class RogerPush(object):
             hook_input_metric = "roger-tools.rogeros_tools_exec_time," + "event=" + hookname + ",app_name=" + str(args.app_name) + ",identifier=" + str(self.identifier) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser())
             exit_code = hooksObj.run_hook(hookname, data, app_path, hook_input_metric)
             if exit_code != 0:
-                raise ValueError(colored("{} hook failed.".format(hookname), "red"))
+                raise ValueError("{} hook failed.".format(hookname))
 
         except (Exception) as e:
             print(colored("The following error occurred: %s" %
