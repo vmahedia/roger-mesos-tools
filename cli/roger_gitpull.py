@@ -46,6 +46,7 @@ class RogerGitPull(object):
                                  help="application for which code is to be pulled. Example: 'agora' or 'grafana'")
         self.parser.add_argument('directory', metavar='directory',
                                  help="working directory. The repo has its own directory it this. Example: '/home/vagrant/work_dir'")
+        self.parser.add_argument('-v', '--verbose', help="verbose mode for debugging", action="store_true")
         self.parser.add_argument('-b', '--branch', metavar='branch',
                                  help="git branch to pull code from. Example: 'production' or 'master'. Defaults to master.")
         self.parser.add_argument('config_file', metavar='config_file',
@@ -110,10 +111,10 @@ class RogerGitPull(object):
             path = "{0}/{1}".format(args.directory, repo_name)
             if os.path.isdir(path):
                 with chdir(path):
-                    exit_code = gitObj.gitPull(branch)
+                    exit_code = gitObj.gitPull(branch, args.verbose)
             else:
                 with chdir('{0}'.format(args.directory)):
-                    exit_code = gitObj.gitShallowClone(repo, branch)
+                    exit_code = gitObj.gitShallowClone(repo, branch, args.verbose)
 
             if exit_code != 0:
                 raise ValueError("Gitpull failed.")
