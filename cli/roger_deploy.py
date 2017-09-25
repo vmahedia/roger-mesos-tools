@@ -420,6 +420,7 @@ class RogerDeploy(object):
             build_args.config_file = config_file
             build_args.env = environment
             build_args.push = True
+            build_args.verbose = args.verbose 
             try:
                 self.rogerBuildObject.identifier = self.identifier
                 self.rogerBuildObject.statsd_message_list = self.statsd_message_list

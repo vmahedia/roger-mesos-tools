@@ -54,6 +54,7 @@ class RogerBuild(object):
                                  help="tag for the built image. Example: 'roger-collectd:0.20'.")
         self.parser.add_argument('config_file', metavar='config_file',
                                  help="configuration file to use. Example: 'content.json'.")
+        self.parser.add_argument('-v', '--verbose', help="verbose mode for debugging. Defaults to false.", action="store_true")
         self.parser.add_argument(
             '--push', '-p', help="Also push to registry. Defaults to false.", action="store_true")
         return self.parser
@@ -149,14 +150,14 @@ class RogerBuild(object):
                     if abs_path == args.directory:
                         try:
                             dockerObj.docker_build(
-                                dockerUtilsObj, appObj, args.directory, repo, projects, docker_path, image, build_args, build_filename)
+                                dockerUtilsObj, appObj, args.directory, repo, projects, docker_path, image, build_args, args.verbose, build_filename)
                         except ValueError:
                             raise ValueError("Docker build failed")
                     else:
                         directory = '{0}/{1}'.format(cur_dir, args.directory)
                         try:
                             dockerObj.docker_build(
-                                dockerUtilsObj, appObj, directory, repo, projects, docker_path, image, build_args, build_filename)
+                                dockerUtilsObj, appObj, directory, repo, projects, docker_path, image, build_args, args.verbose, build_filename)
                         except ValueError:
                             print('Docker build failed.')
                             raise

@@ -22,22 +22,28 @@ def chdir(dirname):
 
 class DockerUtils:
 
-    def docker_build(self, image_tag, docker_file, build_args):
+    def docker_build(self, image_tag, docker_file, verbose_mode, build_args):
         build_arg_str = ""
         if build_args:
             for key, value in build_args.iteritems():
                 build_arg_str = build_arg_str + "--build-arg {}={} ".format(key, value)
 
+        redirect = " >/dev/null 2>&1"
+        if verbose_mode:
+            redirect = ""
         if docker_file is not 'Dockerfile':
             exit_code = os.system(
-                'docker build -f {} -t {} {} .'.format(docker_file, image_tag, build_arg_str))
+                'docker build -f {} -t {} {} . {}'.format(docker_file, image_tag, build_arg_str, redirect))
         else:
-            exit_code = os.system('docker build -t {} {} .'.format(image_tag, build_arg_str))
+            exit_code = os.system('docker build -t {} {} . {}'.format(image_tag, build_arg_str, redirect))
         if exit_code is not 0:
             raise ValueError("docker build failed")
 
     def docker_push(self, image):
-        exit_code = os.system("docker push {0}".format(image))
+        redirect = " >/dev/null 2>&1"
+        if verbose_mode:
+            redirect = ""
+        exit_code = os.system("docker push {} {}".format(image, redirect))
         return exit_code
 
     def docker_search_v1(self, registry, name, application):
