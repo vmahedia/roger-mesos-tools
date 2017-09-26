@@ -84,7 +84,8 @@ class RogerPush(object):
         # Two possible paths -- first without environment, second with
         path1 = "{}/{}".format(secrets_dir, file_name)
         path2 = "{}/{}/{}".format(secrets_dir, environment, file_name)
-        print("Trying to Load secrets from file {} or {}".format(path1, path2))
+        if args.verbose:
+            print(colored("Trying to load secrets from file {} or {}".format(path1, path2), "blue"))
 
         try:
             with open(path1) as f:

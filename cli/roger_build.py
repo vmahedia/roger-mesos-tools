@@ -163,7 +163,7 @@ class RogerBuild(object):
                             raise
                     build_message = "Image {0} built".format(image)
                     if(args.push):
-                        exit_code = dockerUtilsObj.docker_push(image)
+                        exit_code = dockerUtilsObj.docker_push(image, args.verbose)
                         if exit_code != 0:
                             raise ValueError(
                                 'Docker push failed.')
@@ -171,11 +171,11 @@ class RogerBuild(object):
                                                                              'registry'])
                     print(colored(build_message, "green"))
                 except (IOError) as e:
-                    print("The following error occurred.(Error: %s).\n" %
-                          e, file=sys.stderr)
+                    print(colored("The following error occurred.(Error: %s).\n" %
+                          e, "red"), file=sys.stderr)
                     raise
             else:
-                print("Dockerfile does not exist in dir: {}".format(file_path))
+                print(colored("Dockerfile does not exist in dir: {}".format(file_path), "red"))
 
             hooksObj.statsd_message_list = self.statsd_message_list
             hookname = "post_build"

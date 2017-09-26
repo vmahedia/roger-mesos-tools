@@ -7,6 +7,7 @@ import sys
 import contextlib
 import requests
 import json
+from termcolor import colored
 
 
 @contextlib.contextmanager
@@ -39,7 +40,7 @@ class DockerUtils:
         if exit_code is not 0:
             raise ValueError("docker build failed")
 
-    def docker_push(self, image):
+    def docker_push(self, image, verbose_mode):
         redirect = " >/dev/null 2>&1"
         if verbose_mode:
             redirect = ""
@@ -73,8 +74,8 @@ class DockerUtils:
         try:
             result = self.docker_search_v2(registry)
         except (Exception) as e:
-            print("The following error occurred when attempting search using docker v2 catalog: %s" %
-                  e, file=sys.stderr)
-            print("Attempting docker v1 search")
+            print(colored("The following error occurred when attempting search using docker v2 catalog: %s" %
+                  e, "red"), file=sys.stderr)
+            print(colored("Attempting docker v1 search", "yellow"))
             result = self.docker_search_v1(registry, name, application)
         return result
