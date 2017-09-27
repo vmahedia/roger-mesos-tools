@@ -45,9 +45,12 @@ class TestBuild(unittest.TestCase):
             path = ''
             image_tag = 'test_image_tag'
             build_filename = ''
+            verbose_mode = False
             dockerObj.docker_build(dockerUtilsObj, appObj,
-                                   directory, repo, projects, path, image_tag, build_filename)
-        except:
+                                   directory, repo, projects, path, image_tag, verbose_mode, build_filename)
+        except (Exception) as e:
+            print("Build error is: ")
+            print(e)
             raised_exception = True
         self.assertFalse(raised_exception)
 

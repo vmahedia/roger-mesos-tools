@@ -386,8 +386,7 @@ class RogerPush(object):
                         execution_result = 'SUCCESS'  # Assume the execution_result to be SUCCESS unless exception occurs
                         sc = self.utils.getStatsClient()
                     except (Exception) as e:
-                        raise ValueError("The following error occurred: %s" %
-                              e, file=sys.stderr)
+                        raise ValueError("The following error occurred: {}".format(e))
                     try:
                         if type(container) == dict:
                             container_name = str(container.keys()[0])
@@ -486,7 +485,7 @@ class RogerPush(object):
             print(colored("******Done with the PUSH step******", "green"))
 
         except (Exception) as e:
-            raise ValueError("ERROR - %s" %e, file=sys.stderr)
+            raise ValueError("ERROR - {}".format(e))
 
 if __name__ == "__main__":
     settingObj = Settings()
