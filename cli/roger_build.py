@@ -60,6 +60,7 @@ class RogerBuild(object):
         return self.parser
 
     def main(self, settingObj, appObj, hooksObj, dockerUtilsObj, dockerObj, args):
+        print(colored("******Building the Docker image now******", "yellow"))
         try:
             function_execution_start_time = datetime.now()
             execution_result = 'SUCCESS'  # Assume the execution_result to be SUCCESS unless exception occurs
@@ -161,13 +162,15 @@ class RogerBuild(object):
                         except ValueError:
                             print('Docker build failed.')
                             raise
-                    build_message = "Image {0} built".format(image)
+                    print(colored("******Successfully built Docker image******", "green"))
+                    build_message = "Image [{}]".format(image)
                     if(args.push):
+                        print(colored("******Pushing Docker image to registry******", "yellow"))
                         exit_code = dockerUtilsObj.docker_push(image, args.verbose)
                         if exit_code != 0:
                             raise ValueError(
                                 'Docker push failed.')
-                        build_message += " and pushed to registry {}".format(roger_env[
+                        build_message += " successfully pushed to registry [{}]*******".format(roger_env[
                                                                              'registry'])
                     print(colored(build_message, "green"))
                 except (IOError) as e:

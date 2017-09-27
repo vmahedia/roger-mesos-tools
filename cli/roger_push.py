@@ -174,6 +174,7 @@ class RogerPush(object):
                                             args.directory, repo_name, path)
 
     def main(self, settings, appConfig, frameworkObject, hooksObj, args):
+        print(colored("******Deploying application to framework******", "yellow"))
         try:
             settingObj = settings
             appObj = appConfig
@@ -482,6 +483,7 @@ class RogerPush(object):
             exit_code = hooksObj.run_hook(hookname, data, app_path, hook_input_metric)
             if exit_code != 0:
                 raise ValueError("{} hook failed.".format(hookname))
+            print(colored("******Done with the PUSH step******", "green"))
 
         except (Exception) as e:
             raise ValueError("ERROR - %s" %e, file=sys.stderr)
