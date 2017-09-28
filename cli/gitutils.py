@@ -38,8 +38,11 @@ class GitUtils:
         redirect = " >/dev/null 2>&1"
         if verbose:
             redirect = ""
+        print("Debugging git clone")
+        print("git clone --depth 1 --branch {} {} {}".format(branch, repo_url, redirect))
         exit_code = os.system(
             "git clone --depth 1 --branch {} {} {}".format(branch, repo_url, redirect))
+        print("Exit code is:{}".format(exit_code))
         return exit_code
 
     def gitClone(self, repo, branch):
