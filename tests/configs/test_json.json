@@ -17,8 +17,8 @@ json_one = {
   "instances": {{ instances }},
   "env": {
     "NODE_ENV": "{{NODE_ENV}}",
-    "POSTGRES_USER": "SECRET",
-    "POSTGRES_PW": "SECRET",
+    "POSTGRES_USER": "testuser",
+    "POSTGRES_PW": "testpass",
     "HTTP_PREFIX": "/amber",
     "HTTP_PORT": "PORT0"
   },
