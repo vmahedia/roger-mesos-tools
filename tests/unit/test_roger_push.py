@@ -175,6 +175,7 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
+        args.verbose = False
         roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         with open(self.base_dir + '/tests/templates/test-app-grafana.json') as output:
             output = json.load(output)
@@ -230,6 +231,7 @@ class TestPush(unittest.TestCase):
         args.directory = self.base_dir + '/tests/testrepo'
         args.config_file = 'test.json'
         args.image_name = 'grafana/grafana:2.1.3'
+        args.verbose = False
         roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         with open(self.base_dir + '/tests/templates/test-app-grafana.json') as output:
             output = json.load(output)
@@ -788,7 +790,7 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
-
+        args.verbose = False
         return_code = roger_push.main(
             settings, appConfig, frameworkUtils, mockedHooks, args)
         verify(frameworkUtils, times=0).runDeploymentChecks(any(), any())
@@ -893,6 +895,7 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
+        args.verbose = False
         exit_code = roger_push.main(
             settings, appConfig, frameworkUtils, mockedHooks, args)
         file_path = ("{0}/{1}/{2}".format(self.components_dir,

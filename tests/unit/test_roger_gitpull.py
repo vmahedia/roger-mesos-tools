@@ -108,6 +108,7 @@ class TestGitPull(unittest.TestCase):
         args.branch = "master"
         args.environment = 'test'
         args.directory = self.work_dir
+        args.verbose = False
         when(mockedHooks).run_hook(any(), any(), any(), any()).thenReturn(0)
         when(gitObj).gitPull(any()).thenReturn(0)
         when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
@@ -152,6 +153,7 @@ class TestGitPull(unittest.TestCase):
         args.environment = 'test'
         args.branch = "some_branch"
         args.directory = '/tmp'
+        args.verbose = False
         when(gitObj).gitPull(any()).thenReturn(0)
         when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
         when(mockedHooks).run_hook(any(), any(), any(), any()).thenReturn(0)
@@ -193,6 +195,7 @@ class TestGitPull(unittest.TestCase):
         args.branch = "some_branch"
         args.directory = '/tmp'
         args.environment = 'test'
+        args.verbose = False
         when(gitObj).gitPull(any()).thenReturn(0)
         when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
         when(mockedHooks).run_hook(any(), any(), any(), any()).thenReturn(0)
