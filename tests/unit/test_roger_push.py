@@ -486,7 +486,7 @@ class TestPush(unittest.TestCase):
             return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         except (Exception) as e:
             raised_exception = True
-        self.assertTrue(raised_exception) 
+        self.assertFalse(raised_exception) 
         verify(mockedHooks).run_hook("pre_push", any(), any(), any())
 
     def test_roger_push_calls_postpush_hook_when_present(self):
@@ -539,7 +539,7 @@ class TestPush(unittest.TestCase):
             return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         except (Exception) as e:
             raised_exception = True
-        self.assertTrue(raised_exception) 
+        self.assertFalse(raised_exception) 
         verify(mockedHooks).run_hook("post_push", any(), any(), any())
 
     def test_roger_push_verify_default_env_use(self):
@@ -657,7 +657,7 @@ class TestPush(unittest.TestCase):
             roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         except (Exception) as e:
             raised_exception = True
-        self.assertTrue(raised_exception)
+        self.assertFalse(raised_exception)
         verify(frameworkUtils).getFramework(any())
 
     def test_roger_push_env_from_ROGER_ENV_VAR(self):
@@ -745,7 +745,7 @@ class TestPush(unittest.TestCase):
             roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         except (Exception) as e:
             raised_exception = True
-        self.assertTrue(raised_exception)
+        self.assertFalse(raised_exception)
 
     def test_roger_push_skip_push_set(self):
         settings = mock(Settings)
@@ -849,7 +849,7 @@ class TestPush(unittest.TestCase):
             return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         except (Exception) as e:
             raised_exception = True
-        self.assertTrue(raised_exception)
+        self.assertFalse(raised_exception)
         verify(frameworkUtils, times=0).put(any(), any(), any(), any())
 
     def test_roger_push_secrets_replaced(self):
