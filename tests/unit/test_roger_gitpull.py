@@ -210,10 +210,10 @@ class TestGitPull(unittest.TestCase):
         raised_exception = False
         try:
             return_code = roger_gitpull.main(settings, appConfig, gitObj, mockedHooks, args)
+            verify(mockedHooks).run_hook("post_gitpull", any(), any(), any())
         except (Exception) as e:
             raised_exception = True
         self.assertTrue(raised_exception)
-        verify(mockedHooks).run_hook("post_gitpull", any(), any(), any())
 
     def tearDown(self):
         pass
