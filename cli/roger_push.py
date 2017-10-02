@@ -101,8 +101,8 @@ class RogerPush(object):
                 return_file = yaml.load(f) if path2.lower().endswith('.yml') else json.load(f)
             return return_file
         except IOError:
-            print("WARNING - Couldn't load any secrets file. Searched %s and %s. \nIGNORE this above warning if you do not have secrets or your secrets file is passed in using the optional argument and does not reside in the above 2 looked up paths." %
-                  (path1, path2), file=sys.stderr)
+            if args.verbose:
+                print("WARNING - Couldn't load any secrets file. Searched {} and {}. \nIGNORE this above warning if you do not have secrets or your secrets file is passed in using the optional argument and does not reside in the above 2 looked up paths.".format(path1, path2))
             return {}
         except ValueError as e:
             raise ValueError("Error while loading json from {} - {}".format(path2, e))
