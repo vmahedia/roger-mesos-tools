@@ -12,7 +12,7 @@ from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.containerconfig import ContainerConfig
 from termcolor import colored
-
+requests.packages.urllib3.disable_warnings()
 
 def describe():
     return 'starts an interactive bash session into a task.'
@@ -69,12 +69,12 @@ class RogerShell(object):
         else:
             if args.verbose:
                 print(colored("Most likely hostname could not be retrieved with appTaskId {0}. Hostname is also \
-    an optional argument. See -h for usage.".format(args.appTaskId), "blue"))
+    an optional argument. See -h for usage.".format(args.appTaskId), "cyan"))
 
         if containerId is not '' and containerId is not None:
             if args.verbose:
                 print(colored("INFO - If there are multiple containers that pattern match the given mesos task Id, \
-    then will log into the first one", "blue"))
+    then will log into the first one", "cyan"))
             print(colored("Executing bash in docker container - {0} on host - {1} for mesosTaskId - {2}".format(
                 containerId, hostname, mesosTaskId), "yellow"))
             try:

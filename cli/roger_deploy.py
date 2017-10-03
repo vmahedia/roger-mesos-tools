@@ -27,6 +27,7 @@ from cli.frameworkUtils import FrameworkUtils
 from cli.gitutils import GitUtils
 from cli.dockerutils import DockerUtils
 from cli.docker_build import Docker
+requests.packages.urllib3.disable_warnings()
 
 import contextlib
 import statsd
@@ -390,6 +391,7 @@ class RogerDeploy(object):
         image_name = "{0}-{1}-{2}/v0.1.0".format(
             config['name'], app, image_git_sha)
 
+        print(colored("******Fetching current version deployed or latest version from registry. This is used to bump to next version.******", "grey"))
         if skip_build:
             curr_image_ver = frameworkObj.getCurrentImageVersion(
                 roger_env, environment, app)
@@ -409,10 +411,10 @@ class RogerDeploy(object):
             # Docker build,tag and push
             image_name = self.getNextVersion(
                 config, roger_env, app, branch, work_dir, repo, args, gitObj)
+            print(colored("******Done finding latest version******", "green"))
             image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
-            print(colored("Bumped up image to version:{0}".format(image_name), "yellow"))
+            print(colored("Bumped up image to version:{0}".format(image_name), "green"))
             self.image_name = image_name
-
             build_args = args
             build_args.app_name = app
             build_args.directory = os.path.abspath(work_dir)
@@ -429,7 +431,7 @@ class RogerDeploy(object):
             except ValueError:
                 raise
 
-        print("Image Version is: {}".format(colored(image_name, "blue")))
+        print("Image Version is: {}".format(colored(image_name, "cyan")))
 
         # Deploying the app to framework
         args.image_name = image_name
