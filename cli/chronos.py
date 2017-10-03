@@ -9,6 +9,7 @@ from termcolor import colored
 from cli.framework import Framework
 from cli.appconfig import AppConfig
 from cli.utils import Utils
+requests.packages.urllib3.disable_warnings()
 utils = Utils()
 
 
@@ -35,9 +36,9 @@ class Chronos(Framework):
         if 'parents' in json.loads(data):
             chronos_resource = "scheduler/dependency"
 
-        print(colored("TRIGGERING CHRONOS FRAMEWORK UPDATE FOR JOB: {}".format(container), "yellow"))
+        print(colored("TRIGGERING CHRONOS FRAMEWORK UPDATE FOR JOB: {}".format(container), "cyan"))
         print(colored("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/{}".format(
-            file_path, environmentObj['chronos_endpoint'], chronos_resource), "yellow"))
+            file_path, environmentObj['chronos_endpoint'], chronos_resource), "cyan"))
         endpoint = environmentObj['chronos_endpoint']
         deploy_url = "{}/{}".format(endpoint, chronos_resource)
 

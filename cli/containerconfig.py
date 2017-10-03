@@ -9,6 +9,7 @@ import requests
 import subprocess
 import sys
 from marathon import Marathon
+requests.packages.urllib3.disable_warnings()
 
 # we probably need to remove (or refactor) this module (ankan, 201603)
 

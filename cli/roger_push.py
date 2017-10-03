@@ -19,6 +19,7 @@ from cli.chronos import Chronos
 from cli.frameworkUtils import FrameworkUtils
 from datetime import datetime
 from termcolor import colored
+requests.packages.urllib3.disable_warnings()
 
 import contextlib
 import statsd
@@ -85,7 +86,7 @@ class RogerPush(object):
         path1 = "{}/{}".format(secrets_dir, file_name)
         path2 = "{}/{}/{}".format(secrets_dir, environment, file_name)
         if args.verbose:
-            print(colored("Trying to load secrets from file {} or {}".format(path1, path2), "blue"))
+            print(colored("Trying to load secrets from file {} or {}".format(path1, path2), "cyan"))
 
         try:
             with open(path1) as f:
@@ -174,7 +175,7 @@ class RogerPush(object):
                                             args.directory, repo_name, path)
 
     def main(self, settings, appConfig, frameworkObject, hooksObj, args):
-        print(colored("******Deploying application to framework******", "yellow"))
+        print(colored("******Deploying application to framework******", "grey"))
         try:
             settingObj = settings
             appObj = appConfig
@@ -210,7 +211,7 @@ class RogerPush(object):
                         print(colored("WARNING - Environment variable $ROGER_ENV is not set. Using the default set from roger-mesos-tools.config file", "yellow"))
                     else:
                         if args.verbose:
-                            print(colored("Using value {} from environment variable $ROGER_ENV".format(env_var), "yellow"))
+                            print(colored("Using value {} from environment variable $ROGER_ENV".format(env_var), "grey"))
                         environment = env_var
             else:
                 environment = args.env
@@ -370,7 +371,7 @@ class RogerPush(object):
 
             if args.skip_push:
                 print(colored("Skipping push to {} framework. The rendered config file(s) are under {}/{}/".format(
-                    framework, colored(comp_dir, "blue"), colored(environment, "blue")), "yellow"))
+                    framework, colored(comp_dir, "cyan"), colored(environment, "cyan")), "yellow"))
             else:
                 # push to roger framework
                 if 'owner' in config:

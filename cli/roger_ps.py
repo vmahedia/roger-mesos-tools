@@ -14,6 +14,7 @@ from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.marathon import Marathon
 from cli.haproxyparser import HAProxyParser
+requests.packages.urllib3.disable_warnings()
 
 
 def describe():

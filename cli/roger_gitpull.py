@@ -54,7 +54,7 @@ class RogerGitPull(object):
         return self.parser
 
     def main(self, settings, appConfig, gitObject, hooksObj, args):
-        print(colored("******Executing GIT PULL of application repo******", "yellow"))
+        print(colored("******Executing GIT PULL of application repo******", "grey"))
         try:
             function_execution_start_time = datetime.now()
             execution_result = 'SUCCESS'  # Assume the execution_result to be SUCCESS unless exception occurs

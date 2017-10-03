@@ -8,6 +8,7 @@ import sys
 import re
 from cli.appconfig import AppConfig
 from cli.settings import Settings
+requests.packages.urllib3.disable_warnings()
 
 
 class HAProxyParser:

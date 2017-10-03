@@ -15,6 +15,7 @@ from cli.settings import Settings
 from cli.marathonvalidator import MarathonValidator
 from cli.haproxyparser import HAProxyParser
 from cli.appconfig import AppConfig
+requests.packages.urllib3.disable_warnings()
 
 utils = Utils()
 settings = Settings()
@@ -47,7 +48,7 @@ class Marathon(Framework):
         appName = json.loads(data)['id']
         self.fetchUserPass(environment)
 
-        print(colored("TRIGGERING MARATHON FRAMEWORK UPDATE FOR APPLICATION: {}".format(container), "yellow"))
+        print(colored("TRIGGERING MARATHON FRAMEWORK UPDATE FOR APPLICATION: {}".format(container), "cyan"))
         resp = ""
         if 'groups' in data:
             if not act_as_user:
@@ -60,7 +61,7 @@ class Marathon(Framework):
                                     headers={'Content-type': 'application/json', 'act-as-user': act_as_user}, auth=(self.user, self.passw))
 
             print(colored("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/groups/{}".format(
-                file_path, environmentObj['marathon_endpoint'], appName), "yellow"))
+                file_path, environmentObj['marathon_endpoint'], appName), "cyan"))
             color = "green"
             if re.compile("[45]\d{2}").match(str(resp.status_code)):
                 color = "red"

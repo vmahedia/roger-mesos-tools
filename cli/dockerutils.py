@@ -8,6 +8,7 @@ import contextlib
 import requests
 import json
 from termcolor import colored
+requests.packages.urllib3.disable_warnings()
 
 
 @contextlib.contextmanager

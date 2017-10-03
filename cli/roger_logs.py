@@ -11,6 +11,7 @@ import sys
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.containerconfig import ContainerConfig
+requests.packages.urllib3.disable_warnings()
 
 
 def describe():
