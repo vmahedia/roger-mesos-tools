@@ -11,6 +11,7 @@ import sys
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.containerconfig import ContainerConfig
+from termcolor import colored
 
 
 def describe():
@@ -24,6 +25,7 @@ class RogerShell(object):
             prog='roger shell', description=describe())
         self.parser.add_argument('appTaskId', metavar='appTaskId',
                                  help="first few letters of application task id. Example: 'content.5684.")
+        self.parser.add_argument('-v', '--verbose', help="verbose mode for debugging", action="store_true")
         self.parser.add_argument('-e', '--env', metavar='env',
                                  help="environment to search. Example: 'dev' or 'stage'")
         self.parser.add_argument('-H', '--hostname', metavar='hostname',
@@ -44,14 +46,14 @@ class RogerShell(object):
                     print(
                         "Environment variable $ROGER_ENV is not set. Using the default set from roger-mesos-tools.config file")
                 else:
-                    print(
-                        "Using value {} from environment variable $ROGER_ENV".format(env_var))
+                    if args.verbose:
+                        print(colored("Using value {} from environment variable $ROGER_ENV".format(env_var), "yellow"))
                     environment = env_var
         else:
             environment = args.env
 
         if environment not in roger_env['environments']:
-            raise ValueError('Environment not found in roger-mesos-tools.config file.')
+            raise ValueError(colored("Environment not found in roger-mesos-tools.config file.", "red"))
 
         hostname = ''
         containerId = ''
@@ -65,23 +67,25 @@ class RogerShell(object):
             (containerId, mesosTaskId) = containerconfig.get_containerid_mesostaskid(
                 args.appTaskId, hostname)
         else:
-            print("Most likely hostname could not be retrieved with appTaskId {0}. Hostname is also \
-    an optional argument. See -h for usage.".format(args.appTaskId))
+            if args.verbose:
+                print(colored("Most likely hostname could not be retrieved with appTaskId {0}. Hostname is also \
+    an optional argument. See -h for usage.".format(args.appTaskId), "blue"))
 
         if containerId is not '' and containerId is not None:
-            print("If there are multiple containers that pattern match the given mesos task Id, \
-    then will log into the first one")
-            print("Executing bash in docker container - {0} on host - {1} for mesosTaskId - {2}".format(
-                containerId, hostname, mesosTaskId))
+            if args.verbose:
+                print(colored("INFO - If there are multiple containers that pattern match the given mesos task Id, \
+    then will log into the first one", "blue"))
+            print(colored("Executing bash in docker container - {0} on host - {1} for mesosTaskId - {2}".format(
+                containerId, hostname, mesosTaskId), "yellow"))
             try:
                 subprocess.check_call(
                     "docker -H tcp://{0}:4243 exec -it {1} bash".format(hostname, containerId), shell=True)
             except Exception as e:
-                print("The following error occurred:\n (error: %s).\n" %
-                      e, file=sys.stderr)
+                print(colored("The following error occurred:\n (error: %s).\n" %
+                      e, "red"), file=sys.stderr)
         else:
-            print("No Container found on host {0} with application Task Id {1}".format(
-                hostname, args.appTaskId))
+            print(colored("No Container found on host {0} with application Task Id {1}".format(
+                hostname, args.appTaskId), "red"))
 
 if __name__ == '__main__':
     settingObj = Settings()

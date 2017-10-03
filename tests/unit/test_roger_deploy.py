@@ -257,6 +257,7 @@ class TestDeploy(unittest.TestCase):
         args.config_file = 'test.json'
         args.skip_build = True
         args.branch = None
+        args.verbose = False
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
         with self.assertRaises(ValueError):
             roger_deploy.main(settings, appConfig,
@@ -322,6 +323,7 @@ class TestDeploy(unittest.TestCase):
         args.application = 'grafana_test_app'
         args.config_file = 'test.json'
         args.skip_build = True
+        args.verbose = False
         args.branch = None
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
         roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
@@ -395,6 +397,7 @@ class TestDeploy(unittest.TestCase):
         args.config_file = 'test.json'
         args.skip_build = True
         args.branch = None
+        args.verbose = False
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
         roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
         verify(settings, times=1).getConfigDir()
@@ -468,6 +471,7 @@ class TestDeploy(unittest.TestCase):
         args.config_file = 'test.json'
         args.skip_build = True
         args.branch = None
+        args.verbose = False
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
         roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
         verify(roger_deploy.rogerGitPullObject, times=1).main(any(), any(), any(), any(), any())
@@ -536,6 +540,7 @@ class TestDeploy(unittest.TestCase):
         args.config_file = 'test.json'
         args.skip_build = True
         args.branch = None
+        args.verbose = False
         os.environ["ROGER_CONFIG_DIR"] = self.configs_dir
         roger_deploy.main(settings, appConfig, frameworkUtils, gitObj, mockedHooks, args)
         verify(roger_deploy.rogerGitPullObject, times=0).main(any(), any(), any(), any(), any())

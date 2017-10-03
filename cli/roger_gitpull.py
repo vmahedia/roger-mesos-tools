@@ -11,6 +11,7 @@ from cli.gitutils import GitUtils
 from cli.hooks import Hooks
 from cli.utils import Utils
 from datetime import datetime
+from termcolor import colored
 import errno
 
 import contextlib
@@ -45,6 +46,7 @@ class RogerGitPull(object):
                                  help="application for which code is to be pulled. Example: 'agora' or 'grafana'")
         self.parser.add_argument('directory', metavar='directory',
                                  help="working directory. The repo has its own directory it this. Example: '/home/vagrant/work_dir'")
+        self.parser.add_argument('-v', '--verbose', help="verbose mode for debugging", action="store_true")
         self.parser.add_argument('-b', '--branch', metavar='branch',
                                  help="git branch to pull code from. Example: 'production' or 'master'. Defaults to master.")
         self.parser.add_argument('config_file', metavar='config_file',
@@ -52,6 +54,7 @@ class RogerGitPull(object):
         return self.parser
 
     def main(self, settings, appConfig, gitObject, hooksObj, args):
+        print(colored("******Executing GIT PULL of application repo******", "yellow"))
         try:
             function_execution_start_time = datetime.now()
             execution_result = 'SUCCESS'  # Assume the execution_result to be SUCCESS unless exception occurs
@@ -70,7 +73,7 @@ class RogerGitPull(object):
             common_repo = config.get('repo', '')
             data = appObj.getAppData(config_dir, args.config_file, args.app_name)
             if not data:
-                raise ValueError('Application with name [{}] or data for it not found at {}/{}.'.format(
+                raise ValueError("Application with name [{}] or data for it not found at {}/{}.".format(
                     args.app_name, config_dir, args.config_file))
             repo = ''
             if common_repo != '':
@@ -102,27 +105,27 @@ class RogerGitPull(object):
             hookname_input_metric = "roger-tools.rogeros_tools_exec_time," + "event=" + hookname + ",app_name=" + str(args.app_name) + ",identifier=" + str(self.identifier) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser())
             exit_code = hooksObj.run_hook(hookname, data, args.directory, hookname_input_metric)
             if exit_code != 0:
-                raise ValueError('{} hook failed.'.format(hookname))
+                raise ValueError("{} hook failed.".format(hookname))
 
             # get/update target source(s)
             repo_name = appObj.getRepoName(repo)
             path = "{0}/{1}".format(args.directory, repo_name)
             if os.path.isdir(path):
                 with chdir(path):
-                    exit_code = gitObj.gitPull(branch)
+                    exit_code = gitObj.gitPull(branch, args.verbose)
             else:
                 with chdir('{0}'.format(args.directory)):
-                    exit_code = gitObj.gitShallowClone(repo, branch)
+                    exit_code = gitObj.gitShallowClone(repo, branch, args.verbose)
 
             if exit_code != 0:
-                raise ValueError('gitpull failed.')
+                raise ValueError("Gitpull failed.")
 
             hooksObj.statsd_message_list = self.statsd_message_list
             hookname = "post_gitpull"
             hookname_input_metric = "roger-tools.rogeros_tools_exec_time," + "event=" + hookname + ",app_name=" + str(args.app_name) + ",identifier=" + str(self.identifier) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser())
             exit_code = hooksObj.run_hook(hookname, data, args.directory, hookname_input_metric)
             if exit_code != 0:
-                raise ValueError('{} hook failed.'.format(hookname))
+                raise ValueError("{} hook failed.".format(hookname))
         except (Exception) as e:
             print("The following error occurred: %s" %
                   e, file=sys.stderr)
@@ -160,9 +163,10 @@ class RogerGitPull(object):
                 tup = (input_metric, time_take_milliseonds)
                 self.statsd_message_list.append(tup)
             except (Exception) as e:
-                print("The following error occurred: %s" %
+                print("ERROR - %s" %
                       e, file=sys.stderr)
                 raise
+            print(colored("******Completed the GIT PULL step successfully******", "green"))
 
 if __name__ == "__main__":
     settingObj = Settings()
@@ -172,13 +176,13 @@ if __name__ == "__main__":
     roger_gitpull = RogerGitPull()
     roger_gitpull.parser = roger_gitpull.parse_args()
     args = roger_gitpull.parser.parse_args()
-    roger_gitpull.main(settingObj, appObj, gitObj, hooksObj, args)
-    version = roger_gitpull.utils.get_version()
     try:
+        roger_gitpull.main(settingObj, appObj, gitObj, hooksObj, args)
+        version = roger_gitpull.utils.get_version()
         statsd_message_list = roger_gitpull.utils.append_arguments(roger_gitpull.statsd_message_list, tools_version=version)
         sc = roger_gitpull.utils.getStatsClient()
         for item in statsd_message_list:
             sc.timing(item[0], item[1])
     except (Exception) as e:
-        print("The following error occurred: %s" %
-              e, file=sys.stderr)
+        print(colored("The following error occurred: %s" %
+              e, "red"), file=sys.stderr)

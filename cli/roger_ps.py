@@ -9,6 +9,7 @@ import requests
 import subprocess
 import sys
 from tabulate import tabulate
+from termcolor import colored
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.marathon import Marathon
@@ -136,8 +137,7 @@ class RogerPS(object):
             if "ROGER_ENV" in os.environ:
                 env_var = os.environ.get('ROGER_ENV')
                 if env_var.strip() == '':
-                    print(
-                        "Environment variable $ROGER_ENV is not set.Using the default set from roger-mesos-tools.config file")
+                    print("Environment variable $ROGER_ENV is not set.Using the default set from roger-mesos-tools.config file")
                 else:
                     print(
                         "Using value {} from environment variable $ROGER_ENV".format(env_var))
@@ -146,7 +146,7 @@ class RogerPS(object):
             environment = args.env
 
         if environment not in roger_env['environments']:
-            raise ValueError('Environment not found in roger-mesos-tools.config file.')
+            raise ValueError(colored("Environment not found in roger-mesos-tools.config file.", "red"))
 
         app_details = self.get_app_details(
             framework, haproxyparser, environment, args, roger_env)

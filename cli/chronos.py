@@ -5,6 +5,7 @@ import os
 import sys
 import requests
 import json
+from termcolor import colored
 from cli.framework import Framework
 from cli.appconfig import AppConfig
 from cli.utils import Utils
@@ -34,9 +35,9 @@ class Chronos(Framework):
         if 'parents' in json.loads(data):
             chronos_resource = "scheduler/dependency"
 
-        print("TRIGGERING CHRONOS FRAMEWORK UPDATE FOR: {}".format(container))
-        print("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/{}".format(
-            file_path, environmentObj['chronos_endpoint'], chronos_resource))
+        print(colored("TRIGGERING CHRONOS FRAMEWORK UPDATE FOR JOB: {}".format(container), "yellow"))
+        print(colored("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/{}".format(
+            file_path, environmentObj['chronos_endpoint'], chronos_resource), "yellow"))
         endpoint = environmentObj['chronos_endpoint']
         deploy_url = "{}/{}".format(endpoint, chronos_resource)
 
@@ -47,7 +48,7 @@ class Chronos(Framework):
             resp = requests.put(deploy_url, data=data, headers={
                                 'Content-type': 'application/json', 'act-as-user': act_as_user}, auth=(self.user, self.passw))
         chronos_message = "{}".format(resp)
-        print(chronos_message)
+        print(colored(chronos_message, "yellow"))
         task_id = []
         body = json.loads(data)
         if 'name' in body:

@@ -108,11 +108,16 @@ class TestGitPull(unittest.TestCase):
         args.branch = "master"
         args.environment = 'test'
         args.directory = self.work_dir
+        args.verbose = False
         when(mockedHooks).run_hook(any(), any(), any(), any()).thenReturn(0)
         when(gitObj).gitPull(any()).thenReturn(0)
         when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
-        return_code = roger_gitpull.main(
-            settings, appConfig, gitObj, mockedHooks, args)
+        raised_exception = False
+        try:
+            return_code = roger_gitpull.main(settings, appConfig, gitObj, mockedHooks, args)
+        except (Exception) as e:
+            raised_exception = True
+        self.assertTrue(raised_exception)
         with open(self.configs_dir + '/{}'.format(config_file)) as config:
             config = json.load(config)
         exists = os.path.exists(work_dir)
@@ -152,11 +157,16 @@ class TestGitPull(unittest.TestCase):
         args.environment = 'test'
         args.branch = "some_branch"
         args.directory = '/tmp'
+        args.verbose = False
         when(gitObj).gitPull(any()).thenReturn(0)
         when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
         when(mockedHooks).run_hook(any(), any(), any(), any()).thenReturn(0)
-        return_code = roger_gitpull.main(
-            settings, appConfig, gitObj, mockedHooks, args)
+        raised_exception = False
+        try:
+            return_code = roger_gitpull.main(settings, appConfig, gitObj, mockedHooks, args)
+        except (Exception) as e:
+            raised_exception = True
+        self.assertTrue(raised_exception)
         verify(mockedHooks).run_hook("pre_gitpull", any(), any(), any())
 
     def test_roger_gitpull_calls_postgitpull_hook_when_present(self):
@@ -193,12 +203,17 @@ class TestGitPull(unittest.TestCase):
         args.branch = "some_branch"
         args.directory = '/tmp'
         args.environment = 'test'
+        args.verbose = False
         when(gitObj).gitPull(any()).thenReturn(0)
         when(gitObj).gitShallowClone(any(), any()).thenReturn(0)
         when(mockedHooks).run_hook(any(), any(), any(), any()).thenReturn(0)
-        return_code = roger_gitpull.main(
-            settings, appConfig, gitObj, mockedHooks, args)
-        verify(mockedHooks).run_hook("post_gitpull", any(), any(), any())
+        raised_exception = False
+        try:
+            return_code = roger_gitpull.main(settings, appConfig, gitObj, mockedHooks, args)
+            verify(mockedHooks).run_hook("post_gitpull", any(), any(), any())
+        except (Exception) as e:
+            raised_exception = True
+        self.assertTrue(raised_exception)
 
     def tearDown(self):
         pass

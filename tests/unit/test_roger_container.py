@@ -96,6 +96,7 @@ class Testcontainer(unittest.TestCase):
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'tests/v0.1.0'
         args.secrets_file = 'test'
+        args.verbose = False
 
         roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
 

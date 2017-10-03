@@ -34,7 +34,6 @@
     "GF_DATABASE_PASSWORD":"sdfs",
     "GF_AUTH_GOOGLE_ENABLED": "true",
     "GF_AUTH_GOOGLE_CLIENT_ID": "sdfj;lkj",
-    "GF_AUTH_GOOGLE_CLIENT_SECRET": "jlksjdlkj",
     "GF_AUTH_GOOGLE_SCOPES": "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
     "GF_AUTH_GOOGLE_AUTH_URL": "https://accounts.google.com/o/oauth2/auth",
     "GF_AUTH_GOOGLE_TOKEN_URL": "https://accounts.google.com/o/oauth2/token",

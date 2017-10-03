@@ -21,19 +21,25 @@ def chdir(dirname):
 
 class GitUtils:
 
-    def gitPull(self, branch):
-        exit_code = os.system("git pull origin {}".format(branch))
+    def gitPull(self, branch, verbose):
+        redirect = " >/dev/null 2>&1"
+        if verbose:
+            redirect = ""
+        exit_code = os.system("git pull origin {} {}".format(branch, redirect))
         return exit_code
 
-    def gitShallowClone(self, repo, branch):
+    def gitShallowClone(self, repo, branch, verbose):
         appObj = AppConfig()
         try:
             repo_url = appObj.getRepoUrl(repo)
         except (ValueError) as e:
             print("The folowing error occurred.(Error: %s).\n" %
                   e, file=sys.stderr)
+        redirect = " >/dev/null 2>&1"
+        if verbose:
+            redirect = ""
         exit_code = os.system(
-            "git clone --depth 1 --branch {} {}".format(branch, repo_url))
+            "git clone --depth 1 --branch {} {} {}".format(branch, repo_url, redirect))
         return exit_code
 
     def gitClone(self, repo, branch):

@@ -175,6 +175,7 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
+        args.verbose = False
         roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         with open(self.base_dir + '/tests/templates/test-app-grafana.json') as output:
             output = json.load(output)
@@ -230,6 +231,7 @@ class TestPush(unittest.TestCase):
         args.directory = self.base_dir + '/tests/testrepo'
         args.config_file = 'test.json'
         args.image_name = 'grafana/grafana:2.1.3'
+        args.verbose = False
         roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         with open(self.base_dir + '/tests/templates/test-app-grafana.json') as output:
             output = json.load(output)
@@ -430,7 +432,7 @@ class TestPush(unittest.TestCase):
         args.config_file = 'roger_push_unresolved_jinja.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'tests/v0.1.0'
-
+        args.verbose = False
         roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
         verify(frameworkUtils, times=0).put(any(), any(), any(), any())
 
@@ -478,8 +480,13 @@ class TestPush(unittest.TestCase):
         args.directory = '/tmp'
         args.secrets_file = ""
         args.skip_push = True
-        return_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        args.verbose = False
+        raised_exception = False
+        try:
+            return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        except (Exception) as e:
+            raised_exception = True
+        self.assertFalse(raised_exception) 
         verify(mockedHooks).run_hook("pre_push", any(), any(), any())
 
     def test_roger_push_calls_postpush_hook_when_present(self):
@@ -526,8 +533,13 @@ class TestPush(unittest.TestCase):
         args.directory = '/tmp'
         args.secrets_file = ""
         args.skip_push = True
-        return_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        args.verbose = False
+        raised_exception = False
+        try:
+            return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        except (Exception) as e:
+            raised_exception = True
+        self.assertFalse(raised_exception) 
         verify(mockedHooks).run_hook("post_push", any(), any(), any())
 
     def test_roger_push_verify_default_env_use(self):
@@ -639,8 +651,13 @@ class TestPush(unittest.TestCase):
         args.app_name = 'grafana_test_app:grafana'
         args.config_file = 'test.json'
         args.image_name = 'grafana/grafana:2.1.3'
-
-        roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        args.verbose = False
+        raised_exception = False
+        try:
+            roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        except (Exception) as e:
+            raised_exception = True
+        self.assertFalse(raised_exception)
         verify(frameworkUtils).getFramework(any())
 
     def test_roger_push_env_from_ROGER_ENV_VAR(self):
@@ -722,7 +739,13 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
-        roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        args.verbose = False
+        raised_exception = False
+        try:
+            roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        except (Exception) as e:
+            raised_exception = True
+        self.assertFalse(raised_exception)
 
     def test_roger_push_skip_push_set(self):
         settings = mock(Settings)
@@ -767,7 +790,7 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
-
+        args.verbose = False
         return_code = roger_push.main(
             settings, appConfig, frameworkUtils, mockedHooks, args)
         verify(frameworkUtils, times=0).runDeploymentChecks(any(), any())
@@ -820,8 +843,13 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
-        return_code = roger_push.main(
-            settings, appConfig, frameworkUtils, mockedHooks, args)
+        args.verbose = False
+        raised_exception = False
+        try:
+            return_code = roger_push.main(settings, appConfig, frameworkUtils, mockedHooks, args)
+        except (Exception) as e:
+            raised_exception = True
+        self.assertFalse(raised_exception)
         verify(frameworkUtils, times=0).put(any(), any(), any(), any())
 
     def test_roger_push_secrets_replaced(self):
@@ -867,6 +895,7 @@ class TestPush(unittest.TestCase):
         args.config_file = 'test.json'
         args.directory = self.base_dir + '/tests/testrepo'
         args.image_name = 'grafana/grafana:2.1.3'
+        args.verbose = False
         exit_code = roger_push.main(
             settings, appConfig, frameworkUtils, mockedHooks, args)
         file_path = ("{0}/{1}/{2}".format(self.components_dir,
@@ -879,6 +908,7 @@ class TestPush(unittest.TestCase):
         args.secrets_file = ""
         args.app_name = 'test_app'
         args.image_name = 'test_image'
+        args.verbose = False
         secrets_dir = self.base_dir + "/tests/secrets"
         roger_push = RogerPush()
         app_data = self.config['apps'][args.app_name]
@@ -903,6 +933,7 @@ class TestPush(unittest.TestCase):
         args.secrets_file = "test_app-container1.json"
         args.app_name = 'test_app'
         args.image_name = 'test_image'
+        args.verbose = False
         secrets_dir = self.base_dir + "/tests/secrets"
         roger_push = RogerPush()
         app_data = self.config['apps'][args.app_name]

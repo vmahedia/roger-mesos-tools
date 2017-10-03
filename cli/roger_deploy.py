@@ -6,6 +6,7 @@ import argparse
 from decimal import *
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
+from termcolor import colored
 import subprocess
 import json
 import os
@@ -185,6 +186,7 @@ class RogerDeploy(object):
                                  help="increment major in version. Defaults to false.")
         self.parser.add_argument('-sp', '--skip-push', action="store_true",
                                  help="skip the push step. Defaults to false.'")
+        self.parser.add_argument('-v', '--verbose', help="verbose mode for debugging. Defaults to false.", action="store_true")
         self.parser.add_argument('-f', '--force-push', action="store_true",
                                  help="force push. Not recommended. Forces push even if validation checks failed. Applies only if skip_push is false. Defaults to false.")
         self.parser.add_argument('-p', '--incr-patch', action="store_true",
@@ -243,11 +245,13 @@ class RogerDeploy(object):
             if args.directory:
                 work_dir = args.directory
                 temp_dir_created = False
-                print("Using {0} as the working directory".format(work_dir))
+                if args.verbose:
+                    print("Using {0} as the working directory".format(work_dir))
             else:
                 work_dir = mkdtemp()
                 temp_dir_created = True
-                print("Created a temporary dir: {0}".format(work_dir))
+                if args.verbose:
+                    print("Created a temporary dir: {0}".format(work_dir))
 
             if args.environment is None:
                 if "ROGER_ENV" in os.environ:
@@ -273,24 +277,25 @@ class RogerDeploy(object):
             try:
                 for app in apps:
                     if app not in config['apps']:
-                        print ('Application {} specified not found.'.format(app))
+                        raise ValueError('Application {} specified not found.'.format(app))
                     else:
                         try:
-                            print("Deploying {} ...".format(app))
+                            if args.verbose:
+                                print("Deploying {} ...".format(app))
                             self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj,
                                            root, args, config, roger_env, work_dir, config_dir, environment, app, branch, self.slack, args.config_file, common_repo, temp_dir_created, apps_container_dict)
                         except (IOError, ValueError) as e:
-                            print("The following error occurred when deploying {}: {}".format(
-                                app, e), file=sys.stderr)
+                            print(colored("The following error occurred when deploying {}: {}".format(
+                                app, e), "red"), file=sys.stderr)
                             pass    # try deploying the next app
             except (Exception) as e:
-                print("The following error occurred: %s" %
-                      e, file=sys.stderr)
+                print(colored("The following error occurred: %s" %
+                      e, "red"), file=sys.stderr)
                 raise
         except (Exception) as e:
             execution_result = 'FAILURE'
-            print("The following error occurred: %s" %
-                  e, file=sys.stderr)
+            print(colored("The following error occurred: %s" %
+                  e, "red"), file=sys.stderr)
             raise
         finally:
             # Check if the initializition of variables carried out
@@ -331,8 +336,8 @@ class RogerDeploy(object):
                 self.statsd_message_list.append(tup)
                 self.removeDirTree(work_dir, args, temp_dir_created)
             except (Exception) as e:
-                print("The following error occurred: %s" %
-                      e, file=sys.stderr)
+                print(colored("The following error occurred: %s" %
+                      e, "red"), file=sys.stderr)
                 raise
 
     def deployApp(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config,
@@ -390,21 +395,22 @@ class RogerDeploy(object):
                 roger_env, environment, app)
             self.image_name = curr_image_ver
 
-            print("Current image version deployed on {0} is :{1}".format(
-                framework, curr_image_ver))
+            if args.verbose:
+                print("Current image version deployed on {0} is :{1}".format(framework, curr_image_ver))
             if curr_image_ver is not None:
                 image_name = "{0}-{1}-{2}".format(
                     config['name'], app, curr_image_ver)
-                print("Image current version from {0} endpoint is:{1}".format(
-                    framework, image_name))
+                if args.verbose:
+                    print("Image current version from {0} endpoint is:{1}".format(framework, image_name))
             else:
-                print("Using base version for image:{0}".format(image_name))
+                if args.verbose:
+                    print("Using base version for image:{0}".format(image_name))
         else:
             # Docker build,tag and push
             image_name = self.getNextVersion(
                 config, roger_env, app, branch, work_dir, repo, args, gitObj)
             image_name = "{0}-{1}-{2}".format(config['name'], app, image_name)
-            print("Bumped up image to version:{0}".format(image_name))
+            print(colored("Bumped up image to version:{0}".format(image_name), "yellow"))
             self.image_name = image_name
 
             build_args = args
@@ -414,6 +420,7 @@ class RogerDeploy(object):
             build_args.config_file = config_file
             build_args.env = environment
             build_args.push = True
+            build_args.verbose = args.verbose 
             try:
                 self.rogerBuildObject.identifier = self.identifier
                 self.rogerBuildObject.statsd_message_list = self.statsd_message_list
@@ -422,7 +429,7 @@ class RogerDeploy(object):
             except ValueError:
                 raise
 
-        print("Version is:" + image_name)
+        print("Image Version is: {}".format(colored(image_name, "blue")))
 
         # Deploying the app to framework
         args.image_name = image_name
@@ -445,7 +452,7 @@ class RogerDeploy(object):
             username, app, environment, branch, deployTime.total_seconds())
         if slack is not None:
             slack.api_call(deployMessage)
-        print(deployMessage)
+        print(colored(deployMessage, "green"))
 
 
 if __name__ == "__main__":
@@ -478,5 +485,5 @@ if __name__ == "__main__":
             sc.timing(item[0], item[1])
 
     except (Exception) as e:
-        print("The following error occurred: %s" %
-              e, file=sys.stderr)
+        print(colored("The following error occurred: %s" %
+              e, "red"), file=sys.stderr)

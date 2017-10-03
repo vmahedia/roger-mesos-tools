@@ -6,7 +6,9 @@ import sys
 import requests
 import json
 import yaml
+import re
 from jinja2 import Environment, FileSystemLoader
+from termcolor import colored
 from cli.framework import Framework
 from cli.utils import Utils
 from cli.settings import Settings
@@ -34,8 +36,10 @@ class Marathon(Framework):
             'marathon_endpoint'] + "/v2/apps"
         self.fetchUserPass(environment)
         resp = requests.get(url, auth=(self.user, self.passw))
-        print (
-            "Server response: [ {} - {} ]".format(resp.status_code, resp.reason))
+        color = "green"
+        if re.compile("[45]\d{2}").match(str(resp.status_code)):
+            color = "red"
+        print(colored("Server response: [ {} - {} ]".format(resp.status_code, resp.reason), color))
         return resp.json()
 
     def put(self, file_path, environmentObj, container, environment, act_as_user):
@@ -43,7 +47,7 @@ class Marathon(Framework):
         appName = json.loads(data)['id']
         self.fetchUserPass(environment)
 
-        print("TRIGGERING MARATHON FRAMEWORK UPDATE FOR: {}".format(container))
+        print(colored("TRIGGERING MARATHON FRAMEWORK UPDATE FOR APPLICATION: {}".format(container), "yellow"))
         resp = ""
         if 'groups' in data:
             if not act_as_user:
@@ -55,10 +59,12 @@ class Marathon(Framework):
                                     data=data,
                                     headers={'Content-type': 'application/json', 'act-as-user': act_as_user}, auth=(self.user, self.passw))
 
-            print("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/groups/{}".format(
-                file_path, environmentObj['marathon_endpoint'], appName))
-            print (
-                "Server response: [ {} - {} ]".format(resp.status_code, resp.reason))
+            print(colored("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/groups/{}".format(
+                file_path, environmentObj['marathon_endpoint'], appName), "yellow"))
+            color = "green"
+            if re.compile("[45]\d{2}").match(str(resp.status_code)):
+                color = "red"
+            print(colored("Server response: [ {} - {} ]".format(resp.status_code, resp.reason), color))
         else:
             endpoint = environmentObj['marathon_endpoint']
             deploy_url = "{}/v2/apps/{}".format(endpoint, appName)
@@ -68,13 +74,12 @@ class Marathon(Framework):
             else:
                 resp = requests.put(deploy_url, data=data, headers={
                                     'Content-type': 'application/json', 'act-as-user': act_as_user}, auth=(self.user, self.passw))
-            print("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/apps/{}".format(
-                file_path, environmentObj['marathon_endpoint'], appName))
-            print (
-                "Server response: [ {} - {} ]".format(resp.status_code, resp.reason))
-
-        marathon_message = "{0}: {1}".format(appName, resp)
-        print(marathon_message)
+            print(colored("curl -X PUT -H 'Content-type: application/json' --data-binary @{} {}/v2/apps/{}".format(
+                file_path, environmentObj['marathon_endpoint'], appName), "yellow"))
+            color = "green"
+            if re.compile("[45]\d{2}").match(str(resp.status_code)):
+                color = "red"
+            print(colored("Server response: [ {} - {} ]".format(resp.status_code, resp.reason), color))
 
         task_id_list = utils.generate_task_id_list(data)
         return resp, task_id_list
@@ -240,8 +245,10 @@ class Marathon(Framework):
             'marathon_endpoint'] + '/v2/apps'
         resp = requests.get("{}".format(url), headers=headers,
                             auth=(self.user, self.passw))
-        print (
-            "Server response for apps: [ {} - {} ]".format(resp.status_code, resp.reason))
+        color = "green"
+        if re.compile("[45]\d{2}").match(str(resp.status_code)):
+            color = "red"
+        print(colored("Server response for apps: [ {} - {} ]".format(resp.status_code, resp.reason), color))
         resp_json = resp.json()
         apps = resp.json()['apps'] if 'apps' in resp_json else {}
         return apps
@@ -254,8 +261,10 @@ class Marathon(Framework):
             'marathon_endpoint'] + '/v2/tasks?status=running'
         resp = requests.get("{}".format(url), headers=headers,
                             auth=(self.user, self.passw))
-        print (
-            "Server response for tasks: [ {} - {} ]".format(resp.status_code, resp.reason))
+        color = "green"
+        if re.compile("[45]\d{2}").match(str(resp.status_code)):
+            color = "red"
+        print(colored("Server response for tasks: [ {} - {} ]".format(resp.status_code, resp.reason), color))
         respjson = resp.json()
         tasks = resp.json()['tasks'] if 'tasks' in respjson else {}
         return tasks

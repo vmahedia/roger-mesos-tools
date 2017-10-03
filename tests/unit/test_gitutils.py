@@ -74,7 +74,8 @@ class TestInit(unittest.TestCase):
         with open(self.configs_dir + '/{}'.format(config_file)) as config:
             config = json.load(config)
         repo = config['repo']
-        return_code = self.gitObj.gitShallowClone(repo, branch)
+        verbose_mode = False
+        return_code = self.gitObj.gitShallowClone(repo, branch, verbose_mode)
         assert return_code == 0
         exists = os.path.exists(work_dir)
         assert exists is True
