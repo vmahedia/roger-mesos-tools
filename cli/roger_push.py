@@ -331,7 +331,7 @@ class RogerPush(object):
             # ----------------------------------------------
             # (vmahedia) Meat starts from here, probably.
             for container in data_containers:
-                container_name = getContainerName(container)
+                container_name = self.getContainerName(container)
                 containerConfig = "{0}-{1}.json".format(config['name'], container_name)
 
                 env = Environment(loader = FileSystemLoader("{}".format(app_path)), undefined = StrictUndefined)
@@ -412,7 +412,7 @@ class RogerPush(object):
             # fail if the deployment check fails
 
             for container in data_containers:
-                container_name = getContainerName(container)
+                container_name = self.getContainerName(container)
                 containerConfig = "{0}-{1}.json".format(config['name'], container_name)
                 config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
                 result = frameworkObj.runDeploymentChecks(config_file_path, environment)
