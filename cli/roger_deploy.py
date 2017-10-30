@@ -374,22 +374,13 @@ class RogerDeploy(object):
             self.rogerGitPullObject.identifier = self.identifier
             self.rogerGitPullObject.main(settingObj, appObj, gitObj, hooksObj, args)
 
-        skip_build = False
-        if args.skip_build is not None:
-            skip_build = args.skip_build
-
-        skip_push = False
-        if args.skip_push is not None:
-            skip_push = args.skip_push
-
-        secrets_file = None
-        if args.secrets_file is not None:
-            secrets_file = args.secrets_file
+        skip_build = True if args.skip_build else False
+        skip_push = True if args.skip_push else False
+        secrets_file = args.secrets_file if args.secrets_file else None
 
         # Set initial version
         image_git_sha = getGitSha(work_dir, repo, branch, gitObj)
-        image_name = "{0}-{1}-{2}/v0.1.0".format(
-            config['name'], app, image_git_sha)
+        image_name = "{0}-{1}-{2}/v0.1.0".format(config['name'], app, image_git_sha)
 
         print(colored("******Fetching current version deployed or latest version from registry. This is used to bump to next version.******", "grey"))
         if skip_build:

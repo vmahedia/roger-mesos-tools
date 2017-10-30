@@ -202,6 +202,10 @@ class Marathon(Framework):
         data = self.get(roger_env, environment)
         self.fetchUserPass(environment)
         for app in data['apps']:
+            # (vmahedia) todo: there's a YOOGE bug here, this just picks the first image it founds
+            # with an app name in it, this is wrong, cli should either be very explicity or not try
+            # to guess at all. We need to change this bigly.
+            # https://seomoz.atlassian.net/browse/ROGER-2393
             if app['container'] is not None:
                 docker_image = app['container']['docker']['image']
                 if application in docker_image:
