@@ -10,6 +10,7 @@ from cli.appconfig import AppConfig
 from cli.gitutils import GitUtils
 from cli.hooks import Hooks
 from cli.utils import Utils
+from cli.utils import printException, printErrorMsg
 from datetime import datetime
 from termcolor import colored
 import errno
@@ -127,8 +128,7 @@ class RogerGitPull(object):
             if exit_code != 0:
                 raise ValueError("{} hook failed.".format(hookname))
         except (Exception) as e:
-            print("The following error occurred: %s" %
-                  e, file=sys.stderr)
+            printException(e)
             execution_result = 'FAILURE'
             raise
         finally:
@@ -184,5 +184,4 @@ if __name__ == "__main__":
         for item in statsd_message_list:
             sc.timing(item[0], item[1])
     except (Exception) as e:
-        print(colored("The following error occurred: %s" %
-              e, "red"), file=sys.stderr)
+        printException(e)

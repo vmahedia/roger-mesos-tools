@@ -13,6 +13,7 @@ import logging
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.utils import Utils
+from cli.utils import printException, printErrorMsg
 from cli.marathon import Marathon
 from cli.hooks import Hooks
 from cli.chronos import Chronos
@@ -444,7 +445,7 @@ class RogerPush(object):
                         execution_result = 'SUCCESS'
                         sc = self.utils.getStatsClient()
                     except (Exception) as e:
-                        raise ValueError("The following error occurred: {}".format(e))
+                        raise ValueError("{} Error : {}".format(getDebugInfo(), e))
                     try:
                         # this is where actual push is happening
                         # we only push if forced, in case of failures
@@ -529,7 +530,7 @@ class RogerPush(object):
                                     self.statsd_counter_logging(metric)
 
                         except (Exception) as e:
-                            print("The following error occurred: %s" % e, file=sys.stderr)
+                            printException(e)
                             raise
 
             hooksObj.statsd_message_list = self.statsd_message_list
@@ -577,5 +578,4 @@ if __name__ == "__main__":
             for item in lst:
                 sc.timing(item[0], item[1])
     except (Exception) as e:
-        print(colored("The following error occurred: %s" %
-              e, "red"), file=sys.stderr)
+        printException(e)

@@ -11,6 +11,7 @@ import sys
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.containerconfig import ContainerConfig
+from cli.utils import printException, printErrorMsg
 from termcolor import colored
 requests.packages.urllib3.disable_warnings()
 
@@ -81,8 +82,7 @@ class RogerShell(object):
                 subprocess.check_call(
                     "docker -H tcp://{0}:4243 exec -it {1} bash".format(hostname, containerId), shell=True)
             except Exception as e:
-                print(colored("The following error occurred:\n (error: %s).\n" %
-                      e, "red"), file=sys.stderr)
+                printException(e)
         else:
             print(colored("No Container found on host {0} with application Task Id {1}".format(
                 hostname, args.appTaskId), "red"))

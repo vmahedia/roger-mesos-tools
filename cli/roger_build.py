@@ -9,6 +9,7 @@ from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.hooks import Hooks
 from cli.utils import Utils
+from cli.utils import printException, printErrorMsg
 from cli.dockerutils import DockerUtils
 from cli.docker_build import Docker
 from termcolor import colored
@@ -174,8 +175,7 @@ class RogerBuild(object):
                                                                              'registry'])
                     print(colored(build_message, "green"))
                 except (IOError) as e:
-                    print(colored("The following error occurred.(Error: %s).\n" %
-                          e, "red"), file=sys.stderr)
+                    printException(e)
                     raise
             else:
                 print(colored("Dockerfile does not exist in dir: {}".format(file_path), "red"))
@@ -188,8 +188,7 @@ class RogerBuild(object):
                 raise ValueError('{} hook failed.'.format(hookname))
         except (Exception) as e:
             execution_result = 'FAILURE'
-            print("The following error occurred: %s" %
-                  e, file=sys.stderr)
+            printException(e)
             raise
         finally:
             try:
@@ -223,8 +222,7 @@ class RogerBuild(object):
                 tup = (input_metric, time_take_milliseonds)
                 self.statsd_message_list.append(tup)
             except (Exception) as e:
-                print("The following error occurred: %s" %
-                      e, file=sys.stderr)
+                printException(e)
                 raise
 
 if __name__ == "__main__":
@@ -247,5 +245,4 @@ if __name__ == "__main__":
         for item in statsd_message_list:
             sc.timing(item[0], item[1])
     except (Exception) as e:
-        print(colored("The following error occurred: %s" %
-              e, "red"), file=sys.stderr)
+        printException(e)

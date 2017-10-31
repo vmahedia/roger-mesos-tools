@@ -7,6 +7,7 @@ from datetime import datetime
 
 from cli.webhook import WebHook
 from cli.utils import Utils
+from cli.utils import printException, printErrorMsg
 
 
 @contextlib.contextmanager
@@ -42,8 +43,7 @@ class Hooks:
                         hookname, command, abs_path))
                     exit_code = os.system(command)
         except (Exception) as e:
-            print("The following error occurred: %s" %
-                  e, file=sys.stderr)
+            printException(e)
             execution_result = 'FAILURE'
             raise
         finally:
@@ -58,7 +58,6 @@ class Hooks:
                 tup = (hook_input_metric, time_take_milliseonds)
                 self.statsd_message_list.append(tup)
             except (Exception) as e:
-                print("The following error occurred: %s" %
-                      e, file=sys.stderr)
+                printExceptione(e)
                 raise
         return exit_code

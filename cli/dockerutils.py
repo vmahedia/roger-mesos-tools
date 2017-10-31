@@ -7,6 +7,7 @@ import sys
 import contextlib
 import requests
 import json
+from cli.utils import printException, printErrorMsg
 from termcolor import colored
 requests.packages.urllib3.disable_warnings()
 
@@ -75,8 +76,8 @@ class DockerUtils:
         try:
             result = self.docker_search_v2(registry)
         except (Exception) as e:
-            print(colored("The following error occurred when attempting search using docker v2 catalog: %s" %
-                  e, "red"), file=sys.stderr)
+            error_message = "Error when attempting search using docker v2 catalog: {} ".format(e)
+            printException(error_message)
             print(colored("Attempting docker v1 search", "yellow"))
             result = self.docker_search_v1(registry, name, application)
         return result

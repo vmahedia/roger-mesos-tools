@@ -20,6 +20,7 @@ from cli.roger_push import RogerPush
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.utils import Utils
+from cli.utils import printException, printErrorMsg
 from cli.hooks import Hooks
 from cli.marathon import Marathon
 from cli.chronos import Chronos
@@ -286,17 +287,16 @@ class RogerDeploy(object):
                             self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj,
                                            root, args, config, roger_env, work_dir, config_dir, environment, app, branch, self.slack, args.config_file, common_repo, temp_dir_created, apps_container_dict)
                         except (IOError, ValueError) as e:
-                            print(colored("The following error occurred when deploying {}: {}".format(
-                                app, e), "red"), file=sys.stderr)
+                            error_msg = "Error when deploying {}: {}".format(app, repr(e))
+                            printErrorMsg(error_msg)
                             pass    # try deploying the next app
             except (Exception) as e:
-                print(colored("The following error occurred: %s" %
-                      e, "red"), file=sys.stderr)
+                printException(e)
                 raise
         except (Exception) as e:
             execution_result = 'FAILURE'
-            print(colored("The following error occurred: %s" %
-                  e, "red"), file=sys.stderr)
+            error_msg = "Error when deploying {}: {}".format(app, repr(e))
+            printErrorMsg(error_msg)
             raise
         finally:
             # Check if the initializition of variables carried out
@@ -337,8 +337,8 @@ class RogerDeploy(object):
                 self.statsd_message_list.append(tup)
                 self.removeDirTree(work_dir, args, temp_dir_created)
             except (Exception) as e:
-                print(colored("The following error occurred: %s" %
-                      e, "red"), file=sys.stderr)
+                error_msg = "Error when deploying {}: {}".format(app, repr(e))
+                printErrorMsg(error_msg)
                 raise
 
     def deployApp(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config,
@@ -413,7 +413,7 @@ class RogerDeploy(object):
             build_args.config_file = config_file
             build_args.env = environment
             build_args.push = True
-            build_args.verbose = args.verbose 
+            build_args.verbose = args.verbose
             try:
                 self.rogerBuildObject.identifier = self.identifier
                 self.rogerBuildObject.statsd_message_list = self.statsd_message_list
@@ -478,5 +478,5 @@ if __name__ == "__main__":
             sc.timing(item[0], item[1])
 
     except (Exception) as e:
-        print(colored("The following error occurred: %s" %
-              e, "red"), file=sys.stderr)
+        error_msg = "Error when deploying {}: {}".format(app, repr(e))
+        printErrorMsg(error_msg)
