@@ -103,6 +103,9 @@ class RogerBuild(object):
                 cur_dir = os.environ.get('PWD')
             abs_path = os.path.abspath(args.directory)
             repo_name = appObj.getRepoName(repo)
+
+            # This is bad code, assuming current directory and then trying to again guess, this is not rocket science
+            # it's a fucking file path, as simple as that. https://seomoz.atlassian.net/browse/ROGER-2405
             if docker_path != 'none':
                 if abs_path == args.directory:
                     file_path = "{0}/{1}/{2}".format(args.directory,

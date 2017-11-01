@@ -362,9 +362,7 @@ class RogerDeploy(object):
         image_name = ''
         image = ''
 
-        skip_gitpull = False
-        if args.skip_gitpull is not None:
-            skip_gitpull = args.skip_gitpull
+        skip_gitpull = True if args.skip_gitpull else False
 
         # get/update target source(s)
         if not skip_gitpull:
@@ -379,10 +377,11 @@ class RogerDeploy(object):
         secrets_file = args.secrets_file if args.secrets_file else None
 
         # Set initial version
+        # todo (vmahedia) #image_name naming should not be magic, make it explicit
         image_git_sha = getGitSha(work_dir, repo, branch, gitObj)
         image_name = "{0}-{1}-{2}/v0.1.0".format(config['name'], app, image_git_sha)
-
-        print(colored("******Fetching current version deployed or latest version from registry. This is used to bump to next version.******", "grey"))
+        print(colored("******Fetching current version deployed or latest version from registry.\
+                       This is used to bump to next version.******", "grey"))
         if skip_build:
             curr_image_ver = frameworkObj.getCurrentImageVersion(
                 roger_env, environment, app)
