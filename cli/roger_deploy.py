@@ -295,8 +295,7 @@ class RogerDeploy(object):
                 raise
         except (Exception) as e:
             execution_result = 'FAILURE'
-            error_msg = "Error when deploying {}: {}".format(app, repr(e))
-            printErrorMsg(error_msg)
+            printException(e)
             raise
         finally:
             # Check if the initializition of variables carried out
