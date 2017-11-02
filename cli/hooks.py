@@ -58,6 +58,6 @@ class Hooks:
                 tup = (hook_input_metric, time_take_milliseonds)
                 self.statsd_message_list.append(tup)
             except (Exception) as e:
-                printExceptione(e)
+                printException(e)
                 raise
         return exit_code
