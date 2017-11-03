@@ -169,17 +169,3 @@ class Utils:
         else:
             return "{0}/{1}/{2}/{3}".format(os.environ.get('PWD', ''),
                                             args.directory, repo_name, path)
-
-
-# decorator to use for cd command
-from contextlib import contextmanager
-import os
-
-@contextmanager
-def cd(newdir):
-    prevdir = os.getcwd()
-    os.chdir(os.path.expanduser(newdir))
-    try:
-        yield
-    finally:
-        os.chdir(prevdir) 

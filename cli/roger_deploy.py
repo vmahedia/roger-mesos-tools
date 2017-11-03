@@ -457,12 +457,13 @@ class RogerDeploy(object):
         # have to assume that there's always a change, although it's not true - we can check if there's a change
         # and only pull then, but that is another mess. Let's make it simple and pull everytime
         branch = args.branch if args.branch else "master"
+        repo_dir = os.path.abspath(args.directory) + args.app_repo
         if os.path.exists(args.config_file):
             # skip the git clone
             # this file path could be inside the cloned repo or outside
             if args.config_file.startswith(args.directory):
-                # cd is a decorator defined in utils
-                with cd(args.directory):
+                # chdir is a decorator above but we should move it to utils or somewhere else for every file to use
+                with chdir(repo_dir):
                     # file is inside cloned repo so Pull to fetch changes
                     rc = gitObj.gitPull(branch, args.verbose)
                     if rc:
@@ -470,13 +471,19 @@ class RogerDeploy(object):
                                        "not contain latest changes".format(args.branch, args.app_repo)), "yellow")
                     # File is not inside cloned repo but somewhere else
                     # just use it, no need to do anything
-            # file does not exist and we need to clone the repo it is in repo since repo is
-            # defined and we mandate it to be in repo
         else:
              if args.app_repo:
-                 # cd is a decorator defined in utils
-                 with cd(args.directory):
+                 if os.path.exists(repo_dir):
+                     raise ValueError("Repo directory - {} already exists but config file - {} is not present"\
+                                      .format(repo_dir, args.config_file))
+                 # chdir is a decorator defined above
+                 with chdir(args.directory):
+                    if args.verbose:
+                        print(colored("Cloning repo - {} at - {} for config file - {}".\
+                              format(args.repo_name, repo_dir, args.config_file)))
                     # clone the repo
+                    # file does not exist and we need to clone the repo it is in repo since repo is
+                    # defined and we mandate it to be in repo
                     exit_code = gitObj.gitShallowClone(args.app_repo, branch, args.verbose)
                     if exit_code:
                         raise ValueError("Error cloning repo {} while looking for config file".format(args.app_repo))
