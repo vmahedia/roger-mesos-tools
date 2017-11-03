@@ -499,7 +499,9 @@ if __name__ == "__main__":
     # since we can't do anything about it except print an error message which exception already has
     roger_deploy.locateConfigFile(args, gitObj)
     settingObj = Settings()
+    # if we reach here, we have already located a config file otherwise locateConfigFile would have thrown exception
     appObj = AppConfig()
+    appObj.config_file_path = args.config_file
     frameworkUtils = FrameworkUtils()
     hooksObj = Hooks()
     roger_deploy.main(settingObj, appObj, frameworkUtils,
