@@ -50,7 +50,7 @@ class AppConfig:
         # expects us to locate the file within a repo.
         # so if the file is set through this class's property, that means we got it from commandline args
         # from user so use that one because it's explicit.
-        if ps.path.exists(self._config_file_path) and os.path.isfile(self._config_file_path):
+        if os.path.exists(self._config_file_path) and os.path.isfile(self._config_file_path):
             config_file_to_load = self._config_file_path
 
         with open(config_file_to_load) as config_file_obj:

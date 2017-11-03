@@ -457,7 +457,7 @@ class RogerDeploy(object):
         # have to assume that there's always a change, although it's not true - we can check if there's a change
         # and only pull then, but that is another mess. Let's make it simple and pull everytime
         branch = args.branch if args.branch else "master"
-        repo_dir = os.path.abspath(args.directory) + args.app_repo
+        repo_dir = os.path.join(args.directory,args.app_repo)
         if os.path.exists(args.config_file):
             # skip the git clone
             # this file path could be inside the cloned repo or outside
@@ -480,7 +480,7 @@ class RogerDeploy(object):
                  with chdir(args.directory):
                     if args.verbose:
                         print(colored("Cloning repo - {} at - {} for config file - {}".\
-                              format(args.repo_name, repo_dir, args.config_file)))
+                              format(args.app_repo, repo_dir, args.config_file)))
                     # clone the repo
                     # file does not exist and we need to clone the repo it is in repo since repo is
                     # defined and we mandate it to be in repo
