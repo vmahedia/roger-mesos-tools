@@ -13,6 +13,7 @@ import logging
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.utils import Utils
+from cli.utils import printException, printErrorMsg
 from cli.marathon import Marathon
 from cli.hooks import Hooks
 from cli.chronos import Chronos
@@ -74,6 +75,9 @@ class RogerPush(object):
                                  help="specifies an optional secrets file for deploy runtime variables.")
         return self.parser
 
+    # (vmahedia) todo: https://seomoz.atlassian.net/browse/ROGER-2396
+    # this has a lot of redundant messages and logic of assuming the
+    # secret file location is annoying, make it obvious and simple
     def loadSecrets(self, secrets_dir, file_name, args, environment):
         if args.secrets_file is not None:
             print("Using specified secrets file: {}".format(args.secrets_file))
@@ -82,6 +86,8 @@ class RogerPush(object):
         if exists is False:
             os.makedirs(secrets_dir)
 
+        # (vmahedia) WE SHOULD NOT DO ANY GUESSING GAME BE EXPLICIT
+        # about where we expect what and argument should make that very clear to customers
         # Two possible paths -- first without environment, second with
         path1 = "{}/{}".format(secrets_dir, file_name)
         path2 = "{}/{}/{}".format(secrets_dir, environment, file_name)
@@ -174,9 +180,13 @@ class RogerPush(object):
             return "{0}/{1}/{2}/{3}".format(os.environ.get('PWD', ''),
                                             args.directory, repo_name, path)
 
+    def getContainerName(self, container):
+         return str(container.keys()[0]) if type(container) == dict else container
+
     def main(self, settings, appConfig, frameworkObject, hooksObj, args):
         print(colored("******Deploying application to framework******", "grey"))
         try:
+            validation_failed = False
             settingObj = settings
             appObj = appConfig
             frameworkUtils = frameworkObject
@@ -215,22 +225,32 @@ class RogerPush(object):
                         environment = env_var
             else:
                 environment = args.env
+            # ----------------------------------------------
 
             if environment not in roger_env['environments']:
                 raise ValueError("Environment not found in roger-mesos-tools.config file.")
 
+            # ----------------------------------------------
+            # GetEnvironmentConfig(environment)
+            # ----------------------------------------------
             environmentObj = roger_env['environments'][environment]
             common_repo = config.get('repo', '')
+
+            # ----------------------------------------------
+            # GetContainersForApp(app)
+            # ----------------------------------------------
             app_name = args.app_name
             container_list = []
+            # todo (vmahedia): What does ':' signify? Put explanation.
             if ':' in app_name:
                 tokens = app_name.split(':')
                 app_name = tokens[0]
+                # todo (vmahedia): it's container list - need to explain syntax
                 if ',' in tokens[1]:
                     container_list = tokens[1].split(',')
                 else:
                     container_list.append(tokens[1])
-
+            # ----------------------------------------------
             data = appObj.getAppData(config_dir, args.config_file, app_name)
             if not data:
                 raise ValueError("Application with name [{}] or data for it not found at {}/{}.".format(
@@ -271,6 +291,8 @@ class RogerPush(object):
 
             failed_container_dict = {}
 
+            # (vmahedia) upto this point it's all getting and checking the
+            # configuration parameters
             template = ''
             # Required for when work_dir,component_dir,template_dir or
             # secret_env_dir is something like '.' or './temp"
@@ -302,19 +324,18 @@ class RogerPush(object):
             if exit_code != 0:
                 raise ValueError("{} hook failed.".format(hookname))
 
+            # ----------------------------------------------
+            # (vmahedia) Figure out what the hell this loop does
+            # and name it appropriately
+            # it seems first part is just finding a template and Rendering
+            # it against the given config, checking to see if there are errors
+            # ----------------------------------------------
+            # (vmahedia) Meat starts from here, probably.
             for container in data_containers:
-                if type(container) == dict:
-                    container_name = str(container.keys()[0])
-                    container = container[container_name]
-                    containerConfig = "{0}-{1}.json".format(
-                        config['name'], container_name)
-                else:
-                    container_name = container
-                    containerConfig = "{0}-{1}.json".format(
-                        config['name'], container)
+                container_name = self.getContainerName(container)
+                containerConfig = "{0}-{1}.json".format(config['name'], container_name)
 
-                env = Environment(loader=FileSystemLoader(
-                    "{}".format(app_path)), undefined=StrictUndefined)
+                env = Environment(loader = FileSystemLoader("{}".format(app_path)), undefined = StrictUndefined)
                 template_with_path = "[{}{}]".format(app_path, containerConfig)
                 try:
                     template = env.get_template(containerConfig)
@@ -324,6 +345,10 @@ class RogerPush(object):
                     raise ValueError("Error while reading template from {} - {}".format(template_with_path, e))
 
                 additional_vars = {}
+                # (vmahedia)variables likes this should be at least visible within one
+                # scroll up or down, move this code to near to context
+                # Why are we getting the secrets everytime, this requires the file to be
+                # present
                 additional_vars.update(extra_vars)
                 secret_vars = self.loadSecrets(secrets_dir, containerConfig, args, environment)
                 additional_vars.update(secret_vars)
@@ -338,10 +363,18 @@ class RogerPush(object):
                     error_str = "The following Undefined Jinja variable error occurred. %s.\n" % e
                     print(colored(error_str, "red"), file=sys.stderr)
                     failed_container_dict[container_name] = error_str
-                    pass
 
-                # Adding check to see if all jinja variables got resolved for the
-                # containers
+                    # we are going to fail even if one of the container config is not valid but we will
+                    # still go through the loop and collect all the errors before we bail out
+                    validation_failed = True
+                    pass
+                # ----------------------------------------------
+                # it seems the checks above can finish independent of the
+                # following code, decouple this two parts, later when  the code
+                # is well understood
+                # ----------------------------------------------
+                # Adding check to see if all jinja variables git resolved fot
+                # the container
                 if container_name not in failed_container_dict:
                     # Adding check so that not all apps try to mergeSecrets
                     try:
@@ -364,10 +397,34 @@ class RogerPush(object):
                                     "{0}/{1}".format(comp_dir, environment))
                         except Exception as e:
                             logging.error(traceback.format_exc())
+                        # (vmahedia) Should we write out the files even though there is an error with one of the
+                        # containers. Although maybe users would want to see some output
                         with open("{0}/{1}/{2}".format(comp_dir, environment, containerConfig), 'wb') as fh:
                             fh.write(output)
                     else:
                         raise ValueError("Error while loading secrets to render template file variables")
+
+            # Notify container error messages
+            # let failed_container_dict just be for now, but report all the errors
+            if validation_failed:
+                raise Exception("Unable to render Jinja template")
+
+            deployment_check_failed = False
+            # fail if the deployment check fails
+
+            for container in data_containers:
+                container_name = self.getContainerName(container)
+                containerConfig = "{0}-{1}.json".format(config['name'], container_name)
+                config_file_path = "{0}/{1}/{2}".format(comp_dir, environment, containerConfig)
+                result = frameworkObj.runDeploymentChecks(config_file_path, environment)
+                if not result:
+                    # need to give more indication about what can they do to fix this and what exactly failed
+                    # in the deployment check function, we should print an error in that function as well
+                    print(colored("Deployment checks failed for container - {}".format(framework, container)), "red")
+                    deployment_check_failed = True
+
+            if deployment_check_failed:
+                raise Exception("Deployment Check failed for one or more containers, check logs for more info!")
 
             if args.skip_push:
                 print(colored("Skipping push to {} framework. The rendered config file(s) are under {}/{}/".format(
@@ -384,42 +441,25 @@ class RogerPush(object):
                 for container in data_containers:
                     try:
                         function_execution_start_time = datetime.now()
-                        execution_result = 'SUCCESS'  # Assume the execution_result to be SUCCESS unless exception occurs
+                        # Assume SUCCESS unless exception
+                        execution_result = 'SUCCESS'
                         sc = self.utils.getStatsClient()
                     except (Exception) as e:
-                        raise ValueError("The following error occurred: {}".format(e))
+                        raise ValueError("{} Error : {}".format(getDebugInfo(), e))
                     try:
-                        if type(container) == dict:
-                            container_name = str(container.keys()[0])
-                            containerConfig = "{0}-{1}.json".format(
-                                config['name'], container_name)
-                        else:
-                            container_name = container
-                            containerConfig = "{0}-{1}.json".format(
-                                config['name'], container)
-
-                        if container_name in failed_container_dict:
-                            print(colored("ERROR -  push to {} framework for container {} as unresolved Jinja variables present in template.".format(
-                                framework, container_name), "red"))
-                        else:
-                            config_file_path = "{0}/{1}/{2}".format(
-                                comp_dir, environment, containerConfig)
-
-                            result = frameworkObj.runDeploymentChecks(
-                                config_file_path, environment)
-
-                            if args.force_push or result is True:
-                                resp, task_id = frameworkObj.put(
-                                    config_file_path, environmentObj, container_name, environment, act_as_user)
-
-                                container_task_id = self.utils.modify_task_id(task_id)
-                                self.task_id.extend(container_task_id)
-
-                                if hasattr(resp, "status_code"):
-                                    status_code = resp.status_code
-                            else:
-                                print(colored("ERROR - Skipping push to {} framework for container {} as Validation Checks failed.".format(
-                                    framework, container), "red"))
+                        # this is where actual push is happening
+                        # we only push if forced, in case of failures
+                        # in deployment checks
+                        #
+                        # (vmahedia) todo:
+                        # list down scenarios in which this features
+                        # will be useful
+                        resp, task_id = frameworkObj.put(config_file_path, environmentObj,
+                                                         container_name, environment, act_as_user)
+                        container_task_id = self.utils.modify_task_id(task_id)
+                        self.task_id.extend(container_task_id)
+                        if hasattr(resp, "status_code"):
+                            status_code = resp.status_code
                     except (Exception) as e:
                         print("ERROR - : %s" %
                               e, file=sys.stderr)
@@ -427,46 +467,62 @@ class RogerPush(object):
                         raise
                     finally:
                         try:
-
-                            if 'function_execution_start_time' not in globals() and 'function_execution_start_time' not in locals():
+                            if 'function_execution_start_time' not in globals() and \
+                               'function_execution_start_time' not in locals():
                                 function_execution_start_time = datetime.now()
 
-                            if 'execution_result' not in globals() and 'execution_result' not in locals():
+                            if 'execution_result' not in globals() and \
+                               'execution_result' not in locals():
                                 execution_result = 'FAILURE'
 
-                            if 'config_name' not in globals() and 'config_name' not in locals():
+                            if 'config_name' not in globals() and \
+                               'config_name' not in locals():
                                 config_name = ""
 
-                            if 'environment' not in globals() and 'environment' not in locals():
+                            if 'environment' not in globals() and \
+                               'environment' not in locals():
                                 environment = "dev"
 
-                            if 'container_name' not in globals() and 'container_name' not in locals():
+                            if 'container_name' not in globals() and \
+                               'container_name' not in locals():
                                 container_name = ""
 
-                            if 'status_code' not in globals() and 'status_code' not in locals():
+                            if 'status_code' not in globals() and \
+                               'status_code' not in locals():
                                 status_code = "500"
 
                             if not hasattr(args, "app_name"):
                                 args.app_name = ""
 
-                            if 'settingObj' not in globals() and 'settingObj' not in locals():
+                            if 'settingObj' not in globals() and \
+                               'settingObj' not in locals():
                                 settingObj = Settings()
 
                             if 'container_task_id' not in globals() and 'container_task_id' not in locals():
                                 container_task_id = []
 
                             if not hasattr(self, "identifier"):
-                                self.identifier = self.utils.get_identifier(config_name, settingObj.getUser(), args.app_name)
+                                self.identifier = self.utils.get_identifier(config_name, settingObj.getUser(),
+                                                                            args.app_name)
 
                             if not str(status_code).startswith("20"):
                                 execution_result = 'FAILURE'
                                 self.outcome = 0
 
-                            time_take_milliseonds = ((datetime.now() - function_execution_start_time).total_seconds() * 1000)
+                            time_taken = (datetime.now() - function_execution_start_time).total_seconds()
                             for task_id in container_task_id:
-                                input_metric = "roger-tools.rogeros_tools_exec_time," + "app_name=" + str(args.app_name) + ",event=push" + ",container_name=" + str(container_name) + ",identifier=" + str(self.identifier) + ",outcome=" + str(execution_result) + ",response_code=" + str(status_code) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser()) + ",task_id=" + str(task_id) + ",tools_version=" + str(tools_version_value) + ",image_tag=" + str(image_tag_value)
-                                tup = (input_metric, time_take_milliseonds)
-                                self.statsd_push_list.append(tup)
+                                input_metric = "roger-tools.rogeros_tools_exec_time" + \
+                                               ",app_name=" + str(args.app_name) + \
+                                               ",event=push" + \
+                                               ",container_name=" + str(container_name) + \
+                                               ",identifier=" + str(self.identifier) + \
+                                               ",outcome=" + str(execution_result) + \
+                                               ",response_code=" + str(status_code) + \
+                                               ",config_name=" + str(config_name) + \
+                                               ",env=" + str(environment) + \
+                                               ",user=" + str(settingObj.getUser())
+                                tup = (input_metric, time_taken)
+                                self.statsd_message_list.append(tup)
 
                                 if str(status_code).startswith("20"):
                                     metric = input_metric.replace("rogeros_tools_exec_time", "rogeros_events")
@@ -474,12 +530,17 @@ class RogerPush(object):
                                     self.statsd_counter_logging(metric)
 
                         except (Exception) as e:
-                            print("The following error occurred: %s" %e, file=sys.stderr)
+                            printException(e)
                             raise
 
             hooksObj.statsd_message_list = self.statsd_message_list
             hookname = "post_push"
-            hook_input_metric = "roger-tools.rogeros_tools_exec_time," + "event=" + hookname + ",app_name=" + str(args.app_name) + ",identifier=" + str(self.identifier) + ",config_name=" + str(config_name) + ",env=" + str(environment) + ",user=" + str(settingObj.getUser())
+            hook_input_metric = "roger-tools.rogeros_tools_exec_time," + "event=" + hookname + \
+                                                                         ",app_name=" + str(args.app_name) + \
+                                                                         ",identifier=" + str(self.identifier) + \
+                                                                         ",config_name=" + str(config_name) + \
+                                                                         ",env=" + str(environment) + \
+                                                                         ",user=" + str(settingObj.getUser())
             exit_code = hooksObj.run_hook(hookname, data, app_path, hook_input_metric)
             if exit_code != 0:
                 raise ValueError("{} hook failed.".format(hookname))
@@ -517,5 +578,4 @@ if __name__ == "__main__":
             for item in lst:
                 sc.timing(item[0], item[1])
     except (Exception) as e:
-        print(colored("The following error occurred: %s" %
-              e, "red"), file=sys.stderr)
+        printException(e)

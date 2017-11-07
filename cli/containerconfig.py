@@ -9,6 +9,7 @@ import requests
 import subprocess
 import sys
 from marathon import Marathon
+from cli.utils import printException, printErrorMsg
 requests.packages.urllib3.disable_warnings()
 
 # we probably need to remove (or refactor) this module (ankan, 201603)
@@ -43,7 +44,7 @@ class ContainerConfig:
           printenv MESOS_TASK_ID".format(hostname, container), stderr=subprocess.STDOUT, shell=True)
                 except Exception as e:
                     if ("Cannot connect to the Docker daemon" in str(e.output)):
-                        print("The following error occurred: {}", str(e.output))
+                        printException(e)
                         break
                     else:
                         # This is the case when a container does not have a

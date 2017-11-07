@@ -20,6 +20,7 @@ from cli.roger_push import RogerPush
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.utils import Utils
+from cli.utils import printException, printErrorMsg
 from cli.hooks import Hooks
 from cli.marathon import Marathon
 from cli.chronos import Chronos
@@ -173,16 +174,12 @@ class RogerDeploy(object):
             prog='roger deploy', description=describe())
         self.parser.add_argument('-e', '--environment', metavar='env',
                                  help="environment to deploy to. Example: 'dev' or 'stage'")
-        self.parser.add_argument('application', metavar='application', help="application to deploy. Can also push specific"
-                                 " containers(comma seperated). Example: 'all' or 'app1:app2' or 'kairos' or 'app_name[container1,container2]' or 'app1[container1,container2]:app2[container3,container4]' or 'app1:app2[container]'")
-        self.parser.add_argument('-b', '--branch', metavar='branch',
+        self.parser.add_argument('-b', '--branch', metavar='branch', default='master',
                                  help="branch to pull code from. Defaults to master. Example: 'production' or 'master'")
         self.parser.add_argument('-sg', '--skip-gitpull', action="store_true",
                                  help="skip the gitpull step. Defaults to false.")
         self.parser.add_argument('-s', '--skip-build', action="store_true",
                                  help="whether to skip the build step. Defaults to false.")
-        self.parser.add_argument('config_file', metavar='config_file',
-                                 help="configuration file to be use. Example: 'content.json' or 'kwe.json'")
         self.parser.add_argument('-M', '--incr-major', action="store_true",
                                  help="increment major in version. Defaults to false.")
         self.parser.add_argument('-sp', '--skip-push', action="store_true",
@@ -196,6 +193,15 @@ class RogerDeploy(object):
                                  help="specifies an optional secrets file for deployment runtime variables.")
         self.parser.add_argument('-d', '--directory',
                                  help="working directory. Uses a temporary directory if not specified.")
+        self.parser.add_argument('application', metavar='application', help="application to deploy. \
+                                 Can also push specific containers(comma seperated). Example: 'all' \
+                                 or 'app1:app2' or 'kairos' or 'app_name[container1,container2]' \
+                                 or'app1[container1,container2]:app2[container3,container4]' or 'app1:app2[container]'")
+        self.parser.add_argument('app_repo', metavar="app_repo",
+                                 help="Application's git repository name, repo must be under 'seomoz' organization")
+        self.parser.add_argument('config_file', metavar='config_file',
+                                 help="configuration file to be use. Example: 'content.json' or 'kwe.json'")
+
         return self.parser
 
     def main(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, args):
@@ -286,17 +292,15 @@ class RogerDeploy(object):
                             self.deployApp(settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj,
                                            root, args, config, roger_env, work_dir, config_dir, environment, app, branch, self.slack, args.config_file, common_repo, temp_dir_created, apps_container_dict)
                         except (IOError, ValueError) as e:
-                            print(colored("The following error occurred when deploying {}: {}".format(
-                                app, e), "red"), file=sys.stderr)
+                            error_msg = "Error when deploying {}: {}".format(app, repr(e))
+                            printErrorMsg(error_msg)
                             pass    # try deploying the next app
             except (Exception) as e:
-                print(colored("The following error occurred: %s" %
-                      e, "red"), file=sys.stderr)
+                printException(e)
                 raise
         except (Exception) as e:
             execution_result = 'FAILURE'
-            print(colored("The following error occurred: %s" %
-                  e, "red"), file=sys.stderr)
+            printException(e)
             raise
         finally:
             # Check if the initializition of variables carried out
@@ -337,8 +341,8 @@ class RogerDeploy(object):
                 self.statsd_message_list.append(tup)
                 self.removeDirTree(work_dir, args, temp_dir_created)
             except (Exception) as e:
-                print(colored("The following error occurred: %s" %
-                      e, "red"), file=sys.stderr)
+                error_msg = "Error when deploying {}: {}".format(app, repr(e))
+                printErrorMsg(error_msg)
                 raise
 
     def deployApp(self, settingObject, appObject, frameworkUtilsObject, gitObj, hooksObj, root, args, config,
@@ -362,9 +366,7 @@ class RogerDeploy(object):
         image_name = ''
         image = ''
 
-        skip_gitpull = False
-        if args.skip_gitpull is not None:
-            skip_gitpull = args.skip_gitpull
+        skip_gitpull = True if args.skip_gitpull else False
 
         # get/update target source(s)
         if not skip_gitpull:
@@ -374,24 +376,16 @@ class RogerDeploy(object):
             self.rogerGitPullObject.identifier = self.identifier
             self.rogerGitPullObject.main(settingObj, appObj, gitObj, hooksObj, args)
 
-        skip_build = False
-        if args.skip_build is not None:
-            skip_build = args.skip_build
-
-        skip_push = False
-        if args.skip_push is not None:
-            skip_push = args.skip_push
-
-        secrets_file = None
-        if args.secrets_file is not None:
-            secrets_file = args.secrets_file
+        skip_build = True if args.skip_build else False
+        skip_push = True if args.skip_push else False
+        secrets_file = args.secrets_file if args.secrets_file else None
 
         # Set initial version
+        # todo (vmahedia) #image_name naming should not be magic, make it explicit
         image_git_sha = getGitSha(work_dir, repo, branch, gitObj)
-        image_name = "{0}-{1}-{2}/v0.1.0".format(
-            config['name'], app, image_git_sha)
-
-        print(colored("******Fetching current version deployed or latest version from registry. This is used to bump to next version.******", "grey"))
+        image_name = "{0}-{1}-{2}/v0.1.0".format(config['name'], app, image_git_sha)
+        print(colored("******Fetching current version deployed or latest version from registry.\
+                       This is used to bump to next version.******", "grey"))
         if skip_build:
             curr_image_ver = frameworkObj.getCurrentImageVersion(
                 roger_env, environment, app)
@@ -422,7 +416,7 @@ class RogerDeploy(object):
             build_args.config_file = config_file
             build_args.env = environment
             build_args.push = True
-            build_args.verbose = args.verbose 
+            build_args.verbose = args.verbose
             try:
                 self.rogerBuildObject.identifier = self.identifier
                 self.rogerBuildObject.statsd_message_list = self.statsd_message_list
@@ -456,16 +450,67 @@ class RogerDeploy(object):
             slack.api_call(deployMessage)
         print(colored(deployMessage, "green"))
 
+    def locateConfigFile(self, args, gitObj):
+        # Clone the git repo first because config lives there, there's nothing that we can do without this file
+        # this is not the clean way but the code is very convulted for now to implement this in a clean manner
+        # For now, we will clone the repo silently and use that config. We have to clone it everytime because we
+        # have to assume that there's always a change, although it's not true - we can check if there's a change
+        # and only pull then, but that is another mess. Let's make it simple and pull everytime
+        branch = args.branch if args.branch else "master"
+        repo_dir = os.path.join(args.directory,args.app_repo)
+        if os.path.exists(args.config_file):
+            # skip the git clone
+            # this file path could be inside the cloned repo or outside
+            if args.config_file.startswith(args.directory):
+                # chdir is a decorator above but we should move it to utils or somewhere else for every file to use
+                with chdir(repo_dir):
+                    # file is inside cloned repo so Pull to fetch changes
+                    rc = gitObj.gitPull(branch, args.verbose)
+                    if rc:
+                        print(colored("WARNING: Unable to Pull branch - {}, from repo - {}. Config file will"
+                                       "not contain latest changes".format(args.branch, args.app_repo)), "yellow")
+                    # File is not inside cloned repo but somewhere else
+                    # just use it, no need to do anything
+        else:
+             if args.app_repo:
+                 if os.path.exists(repo_dir):
+                     raise ValueError("Repo directory - {} already exists but config file - {} is not present"\
+                                      .format(repo_dir, args.config_file))
+                 # chdir is a decorator defined above
+                 with chdir(args.directory):
+                    if args.verbose:
+                        print(colored("Cloning repo - {} at - {} for config file - {}".\
+                              format(args.app_repo, repo_dir, args.config_file)))
+                    # clone the repo
+                    # file does not exist and we need to clone the repo it is in repo since repo is
+                    # defined and we mandate it to be in repo
+                    exit_code = gitObj.gitShallowClone(args.app_repo, branch, args.verbose)
+                    if exit_code:
+                        raise ValueError("Error cloning repo {} while looking for config file".format(args.app_repo))
+                    # check now if we have config file in the cloned repo, otherwise bailout.
+                    if not os.path.exists(args.config_file):
+                        # we checked out the repo and either the path is not in repo and file does not exist
+                        # the path is in repo but the repo doesn't have the config file
+                        raise ValueError("Config file - {} does not exist".format(args.config_file))
+             else:
+                raise ValueError("Config file - {} does not exist, no app repo defined either".format(args.config_file))
+
 
 if __name__ == "__main__":
-    settingObj = Settings()
-    appObj = AppConfig()
-    frameworkUtils = FrameworkUtils()
-    gitObj = GitUtils()
-    hooksObj = Hooks()
+
     roger_deploy = RogerDeploy()
     roger_deploy.parser = roger_deploy.parseArgs()
     args = roger_deploy.parser.parse_args()
+    gitObj = GitUtils()
+    # appropriate exception will be thrown if config file is not found, no point of catching it
+    # since we can't do anything about it except print an error message which exception already has
+    roger_deploy.locateConfigFile(args, gitObj)
+    settingObj = Settings()
+    # if we reach here, we have already located a config file otherwise locateConfigFile would have thrown exception
+    appObj = AppConfig()
+    appObj.config_file_path = args.config_file
+    frameworkUtils = FrameworkUtils()
+    hooksObj = Hooks()
     roger_deploy.main(settingObj, appObj, frameworkUtils,
                       gitObj, hooksObj, args)
     result_list = []
@@ -487,5 +532,5 @@ if __name__ == "__main__":
             sc.timing(item[0], item[1])
 
     except (Exception) as e:
-        print(colored("The following error occurred: %s" %
-              e, "red"), file=sys.stderr)
+        error_msg = "Error when deploying {}: {}".format(app, repr(e))
+        printErrorMsg(error_msg)

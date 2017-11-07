@@ -5,6 +5,7 @@ from slackclient import SlackClient
 
 from cli.settings import Settings
 from cli.appconfig import AppConfig
+from cli.utils import printException, printErrorMsg
 
 
 class WebHook:
@@ -76,11 +77,12 @@ class WebHook:
                                                icon_emoji=self.emoji, text=text)
         except (Exception) as e:
             # notify to channel and log it as well
-            print("The following error occurred: %s" %
-                  e)
+            printException(e)
             raise
 
     def areBasicKeysAvailableInConfig(self, config):
+        if 'notifications' not in config:
+            return False
         tempList = config['notifications'].keys()
         if 'channels' not in tempList:
             return False  # if no channel is available nothing can be done
@@ -122,8 +124,7 @@ class WebHook:
                     return
             except (Exception, KeyError, ValueError) as e:
                 # notify to channel and log it as well
-                print("The following error occurred: %s" %
-                      e)
+                printException(e)
                 raise
 
     def invoke_webhook(self, appdata, hook_input_metric, config_file):
@@ -163,8 +164,7 @@ class WebHook:
                 raise ValueError
 
         except (Exception, KeyError, ValueError, IndexError) as e:
-            print("The following error occurred: %s" %
-                  e)
+            printException(e)
             raise
         try:
 
@@ -199,15 +199,13 @@ class WebHook:
             if list(commandsSet)[0] == 'all':
                 commandsSet = ['pull', 'build', 'push']
         except (Exception, KeyError, ValueError) as e:
-            print("The following error occurred: %s" %
-                  e)
+            printException(e)
             raise
         try:
             self.postToSlack(self.action, envSet, commandsSet, channelsSet)
         except (Exception) as e:
-            self.custom_api_call("The following error occurred: %s" % e, self.defChannel)
-            print("The following error occurred: %s" %
-                  e)
+            self.custom_api_call("Error : %s" % e, self.defChannel)
+            printException(e)
             raise
 
     def postToSlack(self, action, envSet, commandsSet, channelsSet):
@@ -228,9 +226,8 @@ class WebHook:
                     slackMessage = ("Completed *" + action.split('_')[1] + "* of *" + self.app_name + "* on *" + self.envr + "* in *" + readableTime + "*  (triggered by *" + self.user + "*)")
                     self.custom_api_call(slackMessage, '#' + channel)
         except (Exception) as e:
-            self.custom_api_call("The following error occurred: %s" % e, self.defChannel)
-            print("The following error occurred: %s" %
-                  e)
+            self.custom_api_call("Error : %s" % e, self.defChannel)
+            printException(e)
             raise
 
     def makeTimeReadable(self, ms):

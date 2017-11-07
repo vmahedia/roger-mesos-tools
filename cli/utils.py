@@ -11,7 +11,31 @@ import hashlib
 import time
 import json
 from pkg_resources import get_distribution
+# todo: use https://pypi.python.org/pypi/colorama instead of termcolor
+from termcolor import colored
+import inspect
+import logging
 
+# Prints filename, line number and function name we need to print in
+# front of each line.
+def getDebugInfo(stack_depth):
+  if stack_depth < len(inspect.stack()):
+      # stack_depth
+      # 0 represents this line
+      # 1 represents line at caller
+      callerframerecord = inspect.stack()[stack_depth]
+  else:
+      callerframerecord = inspect.stack()[1]
+  frame = callerframerecord[0]
+  info = inspect.getframeinfo(frame)
+  return "{}:{} fn:{}".format(info.filename, info.lineno, info.function)
+
+def printException(e):
+    logging.exception(e)
+    printErrorMsg(repr(e), 3)
+
+def printErrorMsg(error_msg, stack_depth = 2):
+    print(colored("{} - {}".format(getDebugInfo(stack_depth), error_msg), "red"))
 
 class Utils:
 
@@ -86,8 +110,7 @@ class Utils:
                 tup = (input_metric, item[1])
                 modified_message_list.append(tup)
         except (Exception) as e:
-            print("The following error occurred: %s" %
-                  e, file=sys.stderr)
+            printException(e)
         return modified_message_list
 
     def modify_task_id(self, task_id_list):
@@ -99,8 +122,7 @@ class Utils:
                 task_id = task_id.replace("/", "_")
                 modified_task_id_list.append(task_id)
         except (Exception) as e:
-            print("The following error occurred: %s" %
-                  e, file=sys.stderr)
+            printException(e)
         return modified_task_id_list
 
     def generate_task_id_list(self, data):
@@ -130,8 +152,7 @@ class Utils:
                 else:
                     task_id_list.append(str(top_level))
         except (Exception) as e:
-            print("The following error occurred: %s" %
-                  e, file=sys.stderr)
+            printException(e)
         return task_id_list
 
     def get_version(self):

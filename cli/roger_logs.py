@@ -11,6 +11,7 @@ import sys
 from cli.settings import Settings
 from cli.appconfig import AppConfig
 from cli.containerconfig import ContainerConfig
+from cli.utils import printException, printErrorMsg
 requests.packages.urllib3.disable_warnings()
 
 
@@ -100,11 +101,9 @@ class RogerLogs(object):
             except (KeyboardInterrupt, SystemExit):
                 print("Exited.")
             except (subprocess.CalledProcessError) as e:
-                print("The following error occurred:\n (error: %s).\n" %
-                      e, file=sys.stderr)
+                printException(e)
         else:
-            print("No Container found on host {0} with application Task Id {1}".format(
-                hostname, args.appTaskId))
+            print("No Container found on host {0} with application Task Id {1}".format(hostname, args.appTaskId))
 
 if __name__ == '__main__':
     settingObj = Settings()
