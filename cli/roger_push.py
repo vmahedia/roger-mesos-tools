@@ -283,7 +283,6 @@ class RogerPush(object):
             if not os.path.isdir(comp_dir):
                 os.makedirs(comp_dir)
 
-            # template marathon files
             if not container_list:
                 data_containers = data['containers']
             else:
