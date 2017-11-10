@@ -174,11 +174,8 @@ class RogerPush(object):
         '''Returns a path relative to the repo, assumed to be under [args.directory]/[repo name]'''
         repo_name = appConfig.getRepoName(repo)
         abs_path = os.path.abspath(args.directory)
-        if abs_path == args.directory:
-            return "{0}/{1}/{2}".format(args.directory, repo_name, path)
-        else:
-            return "{0}/{1}/{2}/{3}".format(os.environ.get('PWD', ''),
-                                            args.directory, repo_name, path)
+        return os.path.join(args.directory, repo_name, path)
+
 
     def getContainerName(self, container):
          return str(container.keys()[0]) if type(container) == dict else container
@@ -339,7 +336,7 @@ class RogerPush(object):
                 try:
                     template = env.get_template(containerConfig)
                 except exceptions.TemplateNotFound as e:
-                    raise ValueError("ERROR - The template file {} does not exist".format(template_with_path))
+                    raise ValueError("The template file {} does not exist".format(template_with_path))
                 except Exception as e:
                     raise ValueError("Error while reading template from {} - {}".format(template_with_path, e))
 
