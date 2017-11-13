@@ -126,8 +126,10 @@ class RogerDeploy(object):
             envs.append(each_key)
         for line in docker_search.split('\n'):
             image = line.split(' ')[0]
-            matchObj = re.match(
-                "^{0}-{1}-.*/v.*".format(config['name'], application), image)
+            # (vmahedia) todo: This belongs in a separate DockerImage class. This class should know
+            # how to generate the image name, how to search the image or return this name pattern we
+            # then use to search this image on the registry.
+            matchObj = re.match("^{0}-{1}-.*/v.*".format(config['name'], application), image)
             if matchObj and matchObj.group().startswith(config['name'] + '-' + application):
                 skip_image = False
                 for env in envs:
@@ -223,6 +225,10 @@ class RogerDeploy(object):
                 self.registry = roger_env['registry']
 
             # Setup for Slack-Client, token, and git user
+            # (vmahedia) todo: ExtractClass Notifications, it should know who all to notify on what event
+            # Event should be registered and SlackNotification should be one of the members. it can have
+            # N notifications on a particular "event", Notifications.Notify will broadcast notification to
+            # all the interested parties.
             if 'notifications' in config:
                 self.slack = Slack(config['notifications'],
                                    '/home/vagrant/.roger_cli.conf.d/slack_token')
@@ -382,6 +388,9 @@ class RogerDeploy(object):
 
         # Set initial version
         # todo (vmahedia) #image_name naming should not be magic, make it explicit
+
+        # todo (vmahedia) ExtractClass GitInfo, no need to pass args, we already have the information.
+        # We deal with only one repo at a time. It may change in future but we can change the code then.
         image_git_sha = getGitSha(work_dir, repo, branch, gitObj)
         image_name = "{0}-{1}-{2}/v0.1.0".format(config['name'], app, image_git_sha)
         print(colored("******Fetching current version deployed or latest version from registry.\

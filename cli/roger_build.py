@@ -93,7 +93,7 @@ class RogerBuild(object):
                         build_args = data['build-args']['environment'][args.env]
 
             projects = data.get('privateProjects', [])
-            docker_path = data.get('path', 'none')
+
 
             # get/update target source(s)
             file_exists = True
@@ -101,24 +101,23 @@ class RogerBuild(object):
             cur_dir = ''
             if "PWD" in os.environ:
                 cur_dir = os.environ.get('PWD')
-            abs_path = os.path.abspath(args.directory)
-            repo_name = appObj.getRepoName(repo)
+
 
             # This is bad code, assuming current directory and then trying to again guess, this is not rocket science
             # it's a fucking file path, as simple as that. https://seomoz.atlassian.net/browse/ROGER-2405
-            if docker_path != 'none':
-                if abs_path == args.directory:
-                    file_path = "{0}/{1}/{2}".format(args.directory,
-                                                     repo_name, docker_path)
-                else:
-                    file_path = "{0}/{1}/{2}/{3}".format(
-                        cur_dir, args.directory, repo_name, docker_path)
-            else:
-                if abs_path == args.directory:
-                    file_path = "{0}/{1}".format(args.directory, repo_name)
-                else:
-                    file_path = "{0}/{1}/{2}".format(cur_dir,
-                                                     args.directory, repo_name)
+            # dockerfile location possibilities
+            #    1. Path relative to the repo, we know repo path for cli is <checkout_dir>/<repo>
+            #    2. Absolute path
+            # This path comes from config file and not passed on commandline so we should not try to prefix current
+            # working directory if the relative path is passed, don't try to guess too much.
+            # changelog : relative path from current directory won't work for working_directory or checkout_dir
+            # changelog : working_directory or checkout_dir should be absolute path, not backward-compatible
+            checkout_dir = os.path.abspath(args.directory)
+            repo_name = appObj.getRepoName(repo)
+            # (vmahedia) todo : this should be called docker_file_dir 
+            dockerfile_rel_repo_path = data.get('path', '')
+            file_path = os.path.join(checkout_dir, repo_name, dockerfile_rel_repo_path)
+
 
             if not hasattr(args, "app_name"):
                 args.app_name = ""
@@ -145,6 +144,10 @@ class RogerBuild(object):
                 file_exists = os.path.exists("{0}/Dockerfile".format(file_path))
 
             if file_exists:
+                # (vmahedia) todo: We know what parameters are required for build command so we should not wait until
+                # now to bailout. Config parser should have a validator for every command to see if all the Required
+                # parameters are passed or not. Why do all this up to this point if we know we will fail on this.
+                # RequiredParameter, below, "registry"
                 if 'registry' not in roger_env:
                     raise ValueError("Registry not found in roger-mesos-tools.config file.")
                 else:
@@ -152,17 +155,17 @@ class RogerBuild(object):
                 self.tag_name = args.tag_name
                 image = "{0}/{1}".format(roger_env['registry'], args.tag_name)
                 try:
-                    if abs_path == args.directory:
+                    if checkout_dir == args.directory:
                         try:
                             dockerObj.docker_build(
-                                dockerUtilsObj, appObj, args.directory, repo, projects, docker_path, image, build_args, args.verbose, build_filename)
+                                dockerUtilsObj, appObj, args.directory, repo, projects, dockerfile_rel_repo_path, image, build_args, args.verbose, build_filename)
                         except ValueError:
                             raise ValueError("Docker build failed")
                     else:
                         directory = '{0}/{1}'.format(cur_dir, args.directory)
                         try:
                             dockerObj.docker_build(
-                                dockerUtilsObj, appObj, directory, repo, projects, docker_path, image, build_args, args.verbose, build_filename)
+                                dockerUtilsObj, appObj, directory, repo, projects, dockerfile_rel_repo_path, image, build_args, args.verbose, build_filename)
                         except ValueError:
                             print('Docker build failed.')
                             raise
